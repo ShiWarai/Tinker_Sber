@@ -397,13 +397,13 @@ void mit_bldc_thread(char en_all,float dt)
 		motor_chassis[3].motor.type=DM_8006; motor_chassis[3].param.q_flag=0;
 		motor_chassis[4].motor.type=DM_6006; motor_chassis[4].param.q_flag=1;
 		
-		motor_chassis[6].motor.type=DM_6006; motor_chassis[6].param.q_flag=0;
-		motor_chassis[7].motor.type=DM_8006; motor_chassis[7].param.q_flag=1;
-		motor_chassis[8].motor.type=DM_8006; motor_chassis[8].param.q_flag=0;
-		motor_chassis[9].motor.type=DM_8006; motor_chassis[9].param.q_flag=1;
-		motor_chassis[10].motor.type=DM_6006;motor_chassis[10].param.q_flag=0;
+		motor_chassis[5].motor.type=DM_6006; motor_chassis[5].param.q_flag=0;
+		motor_chassis[6].motor.type=DM_8006; motor_chassis[6].param.q_flag=1;
+		motor_chassis[7].motor.type=DM_8006; motor_chassis[7].param.q_flag=0;
+		motor_chassis[8].motor.type=DM_8006; motor_chassis[8].param.q_flag=1;
+		motor_chassis[9].motor.type=DM_6006; motor_chassis[9].param.q_flag=0;
 		
-		for(i=0;i<1;i++)
+		for(i=0;i<10;i++)
 			motor_chassis[i].param.control_mode=0;//POS
 	
 	#endif
