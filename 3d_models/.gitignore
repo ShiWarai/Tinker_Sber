@@ -1,8 +1,13 @@
-*.m3
+~$*.m3~
 *.bak
+<<<<<<< HEAD
 <<<<<<< HEAD
 *.a3
 *.grb
 =======
 *.a3
 >>>>>>> b3dd56e (Fix: обновил .gitignore)
+=======
+~$*.a3~
+*.grb
+>>>>>>> abb1554 (Fix: исправили gitignore)
