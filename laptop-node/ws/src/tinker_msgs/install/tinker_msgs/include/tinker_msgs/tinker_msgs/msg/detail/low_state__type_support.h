@@ -1,0 +1,36 @@
+// generated from rosidl_generator_c/resource/idl__type_support.h.em
+// with input from tinker_msgs:msg/LowState.idl
+// generated code does not contain a copyright notice
+
+// IWYU pragma: private, include "tinker_msgs/msg/low_state.h"
+
+
+#ifndef TINKER_MSGS__MSG__DETAIL__LOW_STATE__TYPE_SUPPORT_H_
+#define TINKER_MSGS__MSG__DETAIL__LOW_STATE__TYPE_SUPPORT_H_
+
+#include "rosidl_typesupport_interface/macros.h"
+
+#include "tinker_msgs/msg/rosidl_generator_c__visibility_control.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include "rosidl_runtime_c/message_type_support_struct.h"
+
+// Forward declare the get type support functions for this type.
+ROSIDL_GENERATOR_C_PUBLIC_tinker_msgs
+const rosidl_message_type_support_t *
+ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(
+  rosidl_typesupport_c,
+  tinker_msgs,
+  msg,
+  LowState
+)(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // TINKER_MSGS__MSG__DETAIL__LOW_STATE__TYPE_SUPPORT_H_
