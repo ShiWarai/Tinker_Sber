@@ -1,0 +1,23 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from tinker_msgs/msg/LowState.msg
+// generated code does not contain a copyright notice
+
+#include "builtin_interfaces/msg/Time.idl"
+#include "tinker_msgs/msg/IMUState.idl"
+#include "tinker_msgs/msg/MotorState.idl"
+
+module tinker_msgs {
+  module msg {
+    typedef tinker_msgs::msg::MotorState tinker_msgs__msg__MotorState;
+    typedef tinker_msgs__msg__MotorState tinker_msgs__msg__MotorState__10[10];
+    struct LowState {
+      builtin_interfaces::msg::Time timestamp_state;
+
+      uint32 tick;
+
+      tinker_msgs::msg::IMUState imu_state;
+
+      tinker_msgs__msg__MotorState__10 motor_state;
+    };
+  };
+};
