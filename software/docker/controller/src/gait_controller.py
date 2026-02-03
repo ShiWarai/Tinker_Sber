@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from rclpy.node import Node
 from .factories import InputDeviceFactory
-from .inference_model import InferenceModel
+from .inference_controller import InferenceController
 from tinker_msgs.msg import LowState, LowCmd, MotorCmd
 
 class GaitController(Node):
@@ -21,7 +21,7 @@ class GaitController(Node):
         self.device = InputDeviceFactory.get_device(device_type, node=self)
         self.device.initialize()
 
-        self.inference_model = InferenceModel(model_path)
+        self.inference_controller = InferenceController(model_path, robot_type='tinker')
 
         self.rpy = np.zeros(3)
         self.omega = np.zeros(3)
@@ -73,7 +73,7 @@ class GaitController(Node):
         try:
             self.commands = self.device.get_commands()
 
-            self.obs_buf = np.concatenate([self.omega, 
+            '''self.obs_buf = np.concatenate([self.omega, 
                                            self.rpy, 
                                            self.commands,
                                            self.positions,
@@ -84,7 +84,7 @@ class GaitController(Node):
             self.obs_tensor = torch.from_numpy(self.obs_buf).float().unsqueeze(0)
 
             # Run model, publish actions
-            action = self.inference_model.run(self.obs_tensor)
+            action = self.inference_model.run(self.obs_tensor)'''
 
             action = action.flatten()
             print(f'action: {action}')
@@ -96,7 +96,6 @@ class GaitController(Node):
             self.get_logger().error(f"Control loop error: {e}")
 
     def shutdown(self):
-        # self.adapter.shutdown()
         self.device.shutdown()
         self.destroy_node()
 

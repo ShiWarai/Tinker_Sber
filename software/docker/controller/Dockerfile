@@ -22,8 +22,9 @@ RUN pip3 install --no-cache-dir \
     torchvision==0.18.0 \
     numpy \
     pynput \
-    gymnasium \
-    rsl-rl-lib
+    onnxruntime \
+    scipy \
+    yaml
 
 WORKDIR /workspace
 
