@@ -8,8 +8,8 @@ from tinker_msgs.msg import LowState, LowCmd, MotorCmd
 
 class GaitController(Node):
     def __init__(self, 
-                 device_type: str = 'keyboard',
-                 model_path: str = './models/model_30000.pt'):
+                 device_type: str,
+                 model_path: str):
         super().__init__('gait_controller')
 
         # self.adapter_type = adapter_type
@@ -22,16 +22,19 @@ class GaitController(Node):
         self.device.initialize()
 
         self.inference_controller = InferenceController(model_path, robot_type='tinker')
+        self.inference_controller.load_config(config_file=f'{model_path}/params.yaml')
 
         self.rpy = np.zeros(3)
-        self.omega = np.zeros(3)
+        self.imu_quat = np.zeros(4)
+        self.ang_vel = np.zeros(3)
         self.commands = np.zeros(3)
         self.positions = np.zeros(10)
         self.velocities = np.zeros(10)
         self.prev_action = np.zeros(10)
         
-        self.obs_buf = np.zeros(39)
-        self.obs_tensor = torch.empty(39)
+        self.observations = np.zeros(self.inference_controller.observations_size)
+
+
         # self.prev_action_tensor = torch.zeros(10)
 
         self.lowstate_subscriber = self.create_subscription(
@@ -55,8 +58,9 @@ class GaitController(Node):
     def lowstate_callback(self, msg: LowState):
         # self.get_logger().info(f"Got state: omega={self.omega}, positions={self.positions[:2]}")
         imu_state = msg.imu_state
-        self.omega = imu_state.gyroscope
+        self.ang_vel = imu_state.gyroscope
         self.rpy = imu_state.rpy
+        self.imu_quat = imu_state.quaternion
         self.positions = np.array([motor.position for motor in msg.motor_state])
         self.velocities = np.array([motor.velocity for motor in msg.motor_state])
 
@@ -85,12 +89,18 @@ class GaitController(Node):
 
             # Run model, publish actions
             action = self.inference_model.run(self.obs_tensor)'''
-
-            action = action.flatten()
-            print(f'action: {action}')
-            action = np.clip(action, -15, 15)
-            self.publish_lowcmd_action(action)
-            self.prev_action = action
+            InferenceController.compute_observation(InferenceController,
+                                                    imu_quat=self.imu_quat,
+                                                    base_ang_vel=self.ang_vel,
+                                                    joint_positions=self.positions,
+                                                    joint_velocities=self.velocities,
+                                                    last_actions=self.prev_action,
+                                                    commands=self.commands)
+            InferenceController.compute_actions()
+            actions = InferenceController.actions
+            print(f'action: {actions}')
+            self.publish_lowcmd_action(actions)
+            self.prev_action = actions
 
         except Exception as e:
             self.get_logger().error(f"Control loop error: {e}")

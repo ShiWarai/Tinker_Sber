@@ -9,10 +9,14 @@ class BaseDevice(ABC):
     def __init__(self, node: Node):
         self.node = node
         self.target_subscriber = None
-        self.control_command = None
+        self.commands = None
 
     @abstractmethod
     def initialize(self):
+        pass
+
+    @abstractmethod
+    def get_commands(self):
         pass
 
     @abstractmethod

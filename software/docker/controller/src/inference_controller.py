@@ -6,19 +6,21 @@ import yaml
 import onnxruntime as ort
 from scipy.spatial.transform import Rotation as R
 from functools import partial
-import limxsdk
-import limxsdk.robot.Rate as Rate
-import limxsdk.robot.Robot as Robot
-import limxsdk.robot.RobotType as RobotType
-import limxsdk.datatypes as datatypes
+# import limxsdk
+# import limxsdk.robot.Rate as Rate
+# import limxsdk.robot.Robot as Robot
+# import limxsdk.robot.RobotType as RobotType
+# import limxsdk.datatypes as datatypes
 
 class InferenceController:
     def __init__(self, model_dir, robot_type):
         # Initialize robot and type information
         self.robot_type = robot_type
         # Load configuration and model file paths based on robot type
-        self.config_file = f'{model_dir}/{self.robot_type}/params.yaml'
-        self.model_file = f'{model_dir}/{self.robot_type}/policy/policy.onnx'
+        # self.config_file = f'{model_dir}/{self.robot_type}/params.yaml'
+        # self.model_file = f'{model_dir}/{self.robot_type}/policy/policy.onnx'
+        self.config_file = f'{model_dir}/params.yaml'
+        self.model_file = f'{model_dir}/policy/policy.onnx'
 
         # Load configuration settings from the YAML file
         self.load_config(self.config_file)
@@ -28,16 +30,16 @@ class InferenceController:
         self.policy_input_names = [self.policy_session.get_inputs()[0].name]
         self.policy_output_names = [self.policy_session.get_outputs()[0].name]
 
-        # Prepare robot command structure with default values for mode, q, dq, tau, Kp, Kd
+        '''# Prepare robot command structure with default values for mode, q, dq, tau, Kp, Kd
         self.robot_cmd = datatypes.RobotCmd()
         self.robot_cmd.mode = [0. for x in range(0, self.joint_num)]
         self.robot_cmd.q = [0. for x in range(0, self.joint_num)]
         self.robot_cmd.dq = [0. for x in range(0, self.joint_num)]
         self.robot_cmd.tau = [0. for x in range(0, self.joint_num)]
         self.robot_cmd.Kp = [self.control_cfg['stiffness'] for x in range(0, self.joint_num)]
-        self.robot_cmd.Kd = [self.control_cfg['damping'] for x in range(0, self.joint_num)]
+        self.robot_cmd.Kd = [self.control_cfg['damping'] for x in range(0, self.joint_num)]'''
 
-        # Prepare robot state structure
+        '''# Prepare robot state structure
         self.robot_state = datatypes.RobotState()
         self.robot_state.tau = [0. for x in range(0, self.joint_num)]
         self.robot_state.q = [0. for x in range(0, self.joint_num)]
@@ -50,7 +52,7 @@ class InferenceController:
         self.imu_data.quat[1] = 0
         self.imu_data.quat[2] = 0
         self.imu_data.quat[3] = 1
-        self.imu_data_tmp = copy.deepcopy(self.imu_data)
+        self.imu_data_tmp = copy.deepcopy(self.imu_data)'''
 
         '''# Set up a callback to receive updated robot state data
         self.robot_state_callback_partial = partial(self.robot_state_callback)
@@ -103,23 +105,25 @@ class InferenceController:
         
         # Set initial mode to "STAND"
         self.mode = "STAND"
+        
 
     # Main control loop
-    def run(self):
+    '''def run(self):
         # Initialize default joint angles for standing
         self.default_joint_angles = np.array([0.0] * len(self.joint_names))
         self.stand_percent += 1 / (self.stand_duration * self.loop_frequency)
         self.mode = "STAND"
         self.loop_count = 0
 
-        '''# Set the loop rate based on the frequency in the configuration
+        # Set the loop rate based on the frequency in the configuration
         rate = Rate(self.loop_frequency)
         while True:
             self.update()
             rate.sleep()'''
+        
 
     # Handle the stand mode for smoothly transitioning the robot into standing
-    def handle_stand_mode(self):
+    '''def handle_stand_mode(self):
         if self.stand_percent < 1:
             for j in range(len(self.joint_names)):
                 # Interpolate between initial and default joint angles during stand mode
@@ -129,9 +133,9 @@ class InferenceController:
             self.stand_percent += 1 / (self.stand_duration * self.loop_frequency)
         else:
             # Switch to walk mode after standing
-            self.mode = "WALK"
+            self.mode = "WALK"'''
 
-    def align_robot_state(self, robot_state: datatypes.RobotState):
+    '''def align_robot_state(self, robot_state: datatypes.RobotState):
         aligned_robot_state = copy.deepcopy(robot_state)
         aligned_robot_state.q[1] = robot_state.q[3]
         aligned_robot_state.dq[1] = robot_state.dq[3]
@@ -149,10 +153,10 @@ class InferenceController:
         aligned_robot_state.dq[4] = robot_state.dq[2]
         aligned_robot_state.tau[4] = robot_state.tau[2]
         
-        return aligned_robot_state
+        return aligned_robot_state'''
     
     # Handle the walk mode where the robot moves based on computed actions
-    def handle_walk_mode(self):
+    '''def handle_walk_mode(self):
         # Update the temporary robot state and IMU data
         self.robot_state_tmp = self.align_robot_state(copy.deepcopy(self.robot_state))
         self.imu_data_tmp = copy.deepcopy(self.imu_data)
@@ -188,12 +192,18 @@ class InferenceController:
             self.set_joint_command_aligned(i, pos_des)
 
             # Save the last action for reference
-            self.last_actions[i] = self.actions[i]
+            self.last_actions[i] = self.actions[i]'''
     
-    def compute_observation(self):
+    def compute_observation(self,
+                            imu_quat,
+                            base_ang_vel,
+                            joint_positions,
+                            joint_velocities,
+                            last_actions,
+                            commands):
         # Convert IMU orientation from quaternion to Euler angles (ZYX convention)
-        imu_orientation = np.array(self.imu_data_tmp.quat)
-        q_wi = R.from_quat(imu_orientation).as_euler('zyx')  # Quaternion to Euler ZYX conversion
+        '''imu_orientation = np.array(self.imu_data_tmp.quat)'''
+        q_wi = R.from_quat(imu_quat).as_euler('zyx')  # Quaternion to Euler ZYX conversion
         inverse_rot = R.from_euler('zyx', q_wi).inv().as_matrix()  # Get the inverse rotation matrix
 
         # Project the gravity vector (pointing downwards) into the body frame
@@ -201,18 +211,18 @@ class InferenceController:
         projected_gravity = np.dot(inverse_rot, gravity_vector)  # Transform gravity into body frame
 
         # Retrieve base angular velocity from the IMU data
-        base_ang_vel = np.array(self.imu_data_tmp.gyro)
+        '''base_ang_vel = np.array(self.imu_data_tmp.gyro)'''
         # Apply IMU orientation offset correction (using Euler angles)
-        rot = R.from_euler('zyx', self.imu_orientation_offset).as_matrix()  # Rotation matrix for offset correction
+        '''rot = R.from_euler('zyx', self.imu_orientation_offset).as_matrix()  # Rotation matrix for offset correction
         base_ang_vel = np.dot(rot, base_ang_vel)  # Apply correction to angular velocity
-        projected_gravity = np.dot(rot, projected_gravity)  # Apply correction to projected gravity
+        projected_gravity = np.dot(rot, projected_gravity)  # Apply correction to projected gravity'''
 
         # Retrieve joint positions and velocities from the robot state
-        joint_positions = np.array(self.robot_state_tmp.q)
-        joint_velocities = np.array(self.robot_state_tmp.dq)
+        '''joint_positions = np.array(self.robot_state_tmp.q)
+        joint_velocities = np.array(self.robot_state_tmp.dq)'''
 
         # Retrieve the last actions that were applied to the robot
-        actions = np.array(self.last_actions)
+        '''actions = np.array(self.last_actions)'''
 
         # Create a command scaler matrix for linear and angular velocities
         command_scaler = np.diag([
@@ -222,7 +232,7 @@ class InferenceController:
         ])
 
         # Apply scaling to the command inputs (velocity commands)
-        scaled_commands = np.dot(command_scaler, self.commands)
+        scaled_commands = np.dot(command_scaler, commands)
 
         # Create the observation vector by concatenating various state variables:
         # - Base angular velocity (scaled)
@@ -236,7 +246,7 @@ class InferenceController:
             projected_gravity,  # Projected gravity vector in body frame
             (joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos'],  # Scaled joint positions
             joint_velocities * self.obs_scales['dof_vel'],  # Scaled joint velocities
-            actions,  # Last actions taken by the robot
+            last_actions,  # Last actions taken by the robot
             scaled_commands  # Scaled velocity commands from user input
         ])
         
@@ -263,8 +273,10 @@ class InferenceController:
         
         # Flatten the output and store it as actions
         self.actions = np.array(output).flatten()
+
+        # return self.actions
         
-    def set_joint_command(self, joint_index, position):
+    '''def set_joint_command(self, joint_index, position):
         """
         Sends a command to set a joint to the desired position.
         Replace this method with actual implementation according to your hardware.
@@ -273,9 +285,9 @@ class InferenceController:
         joint_index (int): The index of the joint to command.
         position (float): The desired position of the joint.
         """
-        self.robot_cmd.q[joint_index] = position
+        self.robot_cmd.q[joint_index] = position'''
         
-    def set_joint_command_aligned(self, joint_index, position):
+    '''def set_joint_command_aligned(self, joint_index, position):
         
         if joint_index == 2:
             self.robot_cmd.q[1] = position
@@ -286,9 +298,9 @@ class InferenceController:
         elif joint_index == 3:
             self.robot_cmd.q[4] = position
         else:
-            self.robot_cmd.q[joint_index] = position
+            self.robot_cmd.q[joint_index] = position'''
 
-    def update(self):
+    '''def update(self):
         """
         Updates the robot's state based on the current mode and publishes the robot command.
         """
@@ -301,20 +313,20 @@ class InferenceController:
         self.loop_count += 1
 
         # Publish the robot command
-        self.robot.publishRobotCmd(self.robot_cmd)
+        self.robot.publishRobotCmd(self.robot_cmd)'''
         
     # Callback function for receiving robot command data
-    def robot_state_callback(self, robot_state: datatypes.RobotState):
+    '''def robot_state_callback(self, robot_state: datatypes.RobotState):
         """
         Callback function to update the robot state from incoming data.
         
         Parameters:
         robot_state (datatypes.RobotState): The current state of the robot.
         """
-        self.robot_state = robot_state
+        self.robot_state = robot_state'''
 
     # Callback function for receiving imu data
-    def imu_data_callback(self, imu_data: datatypes.ImuData):
+    '''def imu_data_callback(self, imu_data: datatypes.ImuData):
         """
         Callback function to update IMU data from incoming data.
         
@@ -329,15 +341,15 @@ class InferenceController:
         self.imu_data.quat[0] = imu_data.quat[1]
         self.imu_data.quat[1] = imu_data.quat[2]
         self.imu_data.quat[2] = imu_data.quat[3]
-        self.imu_data.quat[3] = imu_data.quat[0]
+        self.imu_data.quat[3] = imu_data.quat[0]'''
 
     # Callback function for receiving sensor joy data
-    def sensor_joy_callback(self, sensor_joy: datatypes.SensorJoy):
+    '''def sensor_joy_callback(self, sensor_joy: datatypes.SensorJoy):
         self.commands[0] = sensor_joy.axes[1] * 0.5
         self.commands[1] = sensor_joy.axes[0] * 0.5
-        self.commands[2] = sensor_joy.axes[2] * 0.5
+        self.commands[2] = sensor_joy.axes[2] * 0.5'''
 
-if __name__ == '__main__':
+'''if __name__ == '__main__':
     # Get the robot type from the environment variable
     robot_type = os.getenv("ROBOT_TYPE")
     
@@ -362,4 +374,4 @@ if __name__ == '__main__':
 
     # Create and run the PointfootController
     controller = PointfootController(f'{os.path.dirname(os.path.abspath(__file__))}/model/pointfoot', robot, robot_type)
-    controller.run()
+    controller.run()'''
