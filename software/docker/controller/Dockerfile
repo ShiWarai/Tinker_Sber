@@ -16,12 +16,15 @@ RUN apt-get update && apt-get install -y \
     ros-${ROS_DISTRO}-ros-workspace \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --no-cache-dir --break-system-packages \
     empy==3.3.4 \
     torch==2.3.0 \
     torchvision==0.18.0 \
     numpy \
-    pynput
+    pynput \
+    onnxruntime \
+    scipy \
+    pyyaml
 
 WORKDIR /workspace
 

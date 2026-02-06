@@ -1,62 +1,62 @@
 import torch
-from modules.actor_critic import ActorCriticRMA, ActorCriticMixedBarlowTwins
+import gymnasium as gym
+# from modules.actor_critic import ActorCriticRMA, ActorCriticMixedBarlowTwins
+from rsl_rl.runners import OnPolicyRunner
 
+
+import argparse
+parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
+parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to simulate.")
+parser.add_argument("--task", type=str, default='tk_blind_flat', help="Name of the task.")
+parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
+parser.add_argument("--checkpoint_path", type=str, default=None, help="Relative path to checkpoint file.")
+
+import cli_args
+# append RSL-RL cli arguments
+cli_args.add_rsl_rl_args(parser)
+args_cli = parser.parse_args()
+
+from .cfg import RslRlOnPolicyRunnerMlpCfg
 
 class InferenceModel():
     def __init__(self, model_path):
 
-        num_prop = 39
-        num_scan = 187  
-        num_priv_latent = 4 + 1 + 12 + 12 + 12 + 6 + 1 + 4 + 1 - 3 + 4 - 10  # = 48
-        num_hist = 10
-        num_actions = 10
-        num_costs = 5
+        env = gym.make(id='tk_blind_flat')
         
-        policy_cfg = {
-            'scan_encoder_dims': None,
-            'actor_hidden_dims': [512, 256, 128],
-            'critic_hidden_dims': [512, 256, 128],
-            'priv_encoder_dims': [],
-            'activation': 'elu',
-            'teacher_act': False,
-            'imi_flag': False,
-            'num_costs': num_costs
-        }
-        
-        self.model = ActorCriticMixedBarlowTwins(
-            num_prop=num_prop,
-            num_scan=num_scan,
-            num_critic_obs=num_prop + num_scan + num_priv_latent + num_hist*num_prop,
-            num_priv_latent=num_priv_latent,
-            num_hist=num_hist,
-            num_actions=num_actions,
-            init_noise_std=1.0,
-            **policy_cfg
+        ppo_runner = OnPolicyRunner(env)
+
+        agent_cfg: RslRlOnPolicyRunnerMlpCfg = cli_args.parse_rsl_rl_cfg(args_cli.task, args_cli)
+
+        ppo_runner = OnPolicyRunner(
+            env, agent_cfg.to_dict(), log_dir=None, device=agent_cfg.device
         )
 
-        self.obs_history = torch.zeros((10, 39)) 
+        ppo_runner.load(model_path)
 
-        checkpoint = torch.load(model_path, map_location='cpu')
-        self.model.load_state_dict(checkpoint['model_state_dict'])
-        self.model.eval()
+        self.policy = ppo_runner.get_inference_policy(device=env.unwrapped.device)
 
     def run(self, current_obs: torch.Tensor):
 
-        self.obs_history = torch.cat([
+        '''self.obs_history = torch.cat([
             self.obs_history[1:],                    # [9, 39]
             current_obs.squeeze(0).unsqueeze(0)      # [1, 39]
         ], dim=0)                                    # [10, 39]
         
-        # 2. Добавить batch dimension для истории
         obs_hist = self.obs_history.unsqueeze(0)     # [1, 10, 39]
         
-        # 3. Вызов модели с двумя входами
         with torch.no_grad():
             output_tensor = self.model.actor_teacher_backbone(current_obs, obs_hist)
 
         # if full_obs.dim() == 2 and full_obs.shape[0] == 1:
         #     action = output_tensor.squeeze(0).cpu().numpy()
         # else:
-        action = output_tensor.cpu().numpy()
+        action = output_tensor.cpu().numpy()'''
+
+        # From play.py:
+        #obs_dict = env.get_observations()
+        #obs = obs_dict["policy"]
+
+        with torch.inference_mode():
+            actions = self.policy(obs_dict)
         
-        return action
+        return actions
