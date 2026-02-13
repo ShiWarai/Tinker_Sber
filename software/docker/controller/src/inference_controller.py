@@ -6,6 +6,7 @@ import yaml
 import onnxruntime as ort
 from scipy.spatial.transform import Rotation as R
 from functools import partial
+from rclpy.node import Node
 # import limxsdk
 # import limxsdk.robot.Rate as Rate
 # import limxsdk.robot.Robot as Robot
@@ -13,7 +14,9 @@ from functools import partial
 # import limxsdk.datatypes as datatypes
 
 class InferenceController:
-    def __init__(self, model_dir, robot_type):
+    def __init__(self, node: Node, model_dir, robot_type):
+        # super().__init__(node)
+        self.node = node
         # Initialize robot and type information
         self.robot_type = robot_type
         # Load configuration and model file paths based on robot type
@@ -29,6 +32,9 @@ class InferenceController:
         self.policy_session = ort.InferenceSession(self.model_file)
         self.policy_input_names = [self.policy_session.get_inputs()[0].name]
         self.policy_output_names = [self.policy_session.get_outputs()[0].name]
+        self.node.get_logger().info(f'ONNX model loaded: input {self.policy_input_names[0]} with shape {self.policy_session.get_inputs()[0].shape}, output {self.policy_output_names[0]}')
+
+        self.node.get_logger().info('Inference model initialized')
 
         '''# Prepare robot command structure with default values for mode, q, dq, tau, Kp, Kd
         self.robot_cmd = datatypes.RobotCmd()
@@ -96,7 +102,7 @@ class InferenceController:
         self.stand_percent = 0  # percentage of time the robot has spent in stand mode
         self.policy_session = None  # ONNX model session for policy inference
         self.joint_num = len(self.joint_names)  # number of joints
-        self.commands = np.zeros(3)
+        self.get_logger().info(f'Observation size: {self.observations_size}, Actions size: {self.actions_size}')
 
         # Initialize joint angles based on the initial configuration
         self.init_joint_angles = np.zeros(len(self.joint_names))
@@ -104,7 +110,8 @@ class InferenceController:
             self.init_joint_angles[i] = self.init_state[self.joint_names[i]]
         
         # Set initial mode to "STAND"
-        self.mode = "STAND"
+        # self.mode = "STAND"
+        self.node.get_logger().info('Inference config loaded')
         
 
     # Main control loop
@@ -201,80 +208,90 @@ class InferenceController:
                             joint_velocities,
                             last_actions,
                             commands):
-        # Convert IMU orientation from quaternion to Euler angles (ZYX convention)
-        '''imu_orientation = np.array(self.imu_data_tmp.quat)'''
-        q_wi = R.from_quat(imu_quat).as_euler('zyx')  # Quaternion to Euler ZYX conversion
-        inverse_rot = R.from_euler('zyx', q_wi).inv().as_matrix()  # Get the inverse rotation matrix
 
-        # Project the gravity vector (pointing downwards) into the body frame
-        gravity_vector = np.array([0, 0, -1])  # Gravity in world frame (z-axis down)
-        projected_gravity = np.dot(inverse_rot, gravity_vector)  # Transform gravity into body frame
+        try:
+            # Convert IMU orientation from quaternion to Euler angles (ZYX convention)
+            '''imu_orientation = np.array(self.imu_data_tmp.quat)'''
+            q_wi = R.from_quat(imu_quat).as_euler('zyx')  # Quaternion to Euler ZYX conversion
+            inverse_rot = R.from_euler('zyx', q_wi).inv().as_matrix()  # Get the inverse rotation matrix
 
-        # Retrieve base angular velocity from the IMU data
-        '''base_ang_vel = np.array(self.imu_data_tmp.gyro)'''
-        # Apply IMU orientation offset correction (using Euler angles)
-        '''rot = R.from_euler('zyx', self.imu_orientation_offset).as_matrix()  # Rotation matrix for offset correction
-        base_ang_vel = np.dot(rot, base_ang_vel)  # Apply correction to angular velocity
-        projected_gravity = np.dot(rot, projected_gravity)  # Apply correction to projected gravity'''
+            # Project the gravity vector (pointing downwards) into the body frame
+            gravity_vector = np.array([0, 0, -1])  # Gravity in world frame (z-axis down)
+            projected_gravity = np.dot(inverse_rot, gravity_vector)  # Transform gravity into body frame
 
-        # Retrieve joint positions and velocities from the robot state
-        '''joint_positions = np.array(self.robot_state_tmp.q)
-        joint_velocities = np.array(self.robot_state_tmp.dq)'''
+            # Retrieve base angular velocity from the IMU data
+            '''base_ang_vel = np.array(self.imu_data_tmp.gyro)'''
+            # Apply IMU orientation offset correction (using Euler angles)
+            '''rot = R.from_euler('zyx', self.imu_orientation_offset).as_matrix()  # Rotation matrix for offset correction
+            base_ang_vel = np.dot(rot, base_ang_vel)  # Apply correction to angular velocity
+            projected_gravity = np.dot(rot, projected_gravity)  # Apply correction to projected gravity'''
 
-        # Retrieve the last actions that were applied to the robot
-        '''actions = np.array(self.last_actions)'''
+            # Retrieve joint positions and velocities from the robot state
+            '''joint_positions = np.array(self.robot_state_tmp.q)
+            joint_velocities = np.array(self.robot_state_tmp.dq)'''
 
-        # Create a command scaler matrix for linear and angular velocities
-        command_scaler = np.diag([
-            self.user_cmd_cfg['lin_vel_x'],  # Scale factor for linear velocity in x direction
-            self.user_cmd_cfg['lin_vel_y'],  # Scale factor for linear velocity in y direction
-            self.user_cmd_cfg['ang_vel_yaw']  # Scale factor for yaw (angular velocity)
-        ])
+            # Retrieve the last actions that were applied to the robot
+            '''actions = np.array(self.last_actions)'''
 
-        # Apply scaling to the command inputs (velocity commands)
-        scaled_commands = np.dot(command_scaler, commands)
+            # Create a command scaler matrix for linear and angular velocities
+            command_scaler = np.diag([
+                self.user_cmd_cfg['lin_vel_x'],  # Scale factor for linear velocity in x direction
+                self.user_cmd_cfg['lin_vel_y'],  # Scale factor for linear velocity in y direction
+                self.user_cmd_cfg['ang_vel_yaw']  # Scale factor for yaw (angular velocity)
+            ])
 
-        # Create the observation vector by concatenating various state variables:
-        # - Base angular velocity (scaled)
-        # - Projected gravity vector
-        # - Joint positions (difference from initial angles, scaled)
-        # - Joint velocities (scaled)
-        # - Last actions applied to the robot
-        # - Scaled command inputs
-        obs = np.concatenate([
-            base_ang_vel * self.obs_scales['ang_vel'],  # Scaled base angular velocity
-            projected_gravity,  # Projected gravity vector in body frame
-            (joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos'],  # Scaled joint positions
-            joint_velocities * self.obs_scales['dof_vel'],  # Scaled joint velocities
-            last_actions,  # Last actions taken by the robot
-            scaled_commands  # Scaled velocity commands from user input
-        ])
+            # Apply scaling to the command inputs (velocity commands)
+            scaled_commands = np.dot(command_scaler, commands)
+
+            # Create the observation vector by concatenating various state variables:
+            # - Base angular velocity (scaled)
+            # - Projected gravity vector
+            # - Joint positions (difference from initial angles, scaled)
+            # - Joint velocities (scaled)
+            # - Last actions applied to the robot
+            # - Scaled command inputs
+            obs = np.concatenate([
+                base_ang_vel * self.obs_scales['ang_vel'],  # Scaled base angular velocity
+                projected_gravity,  # Projected gravity vector in body frame
+                (joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos'],  # Scaled joint positions
+                joint_velocities * self.obs_scales['dof_vel'],  # Scaled joint velocities
+                last_actions,  # Last actions taken by the robot
+                scaled_commands  # Scaled velocity commands from user input
+            ])
+            
+            # Clip the observation values to within the specified limits for stability
+            self.observations = np.clip(
+                obs, 
+                -self.rl_cfg['clip_scales']['clip_observations'],  # Lower limit for clipping
+                self.rl_cfg['clip_scales']['clip_observations']  # Upper limit for clipping
+            )
         
-        # Clip the observation values to within the specified limits for stability
-        self.observations = np.clip(
-            obs, 
-            -self.rl_cfg['clip_scales']['clip_observations'],  # Lower limit for clipping
-            self.rl_cfg['clip_scales']['clip_observations']  # Upper limit for clipping
-        )
+        except Exception as e:
+            self.node.get_logger().error(f"Error in compute_observation: {e}")
+    
     
     def compute_actions(self):
         """
         Computes the actions based on the current observations using the policy session.
         """
-        # Concatenate observations into a single tensor and convert to float32
-        input_tensor = np.concatenate([self.observations], axis=0)
-        input_tensor = input_tensor.astype(np.float32).reshape(1,-1)
-        
-        # Create a dictionary of inputs for the policy session
-        inputs = {self.policy_input_names[0]: input_tensor}
-        
-        # Run the policy session and get the output
-        output = self.policy_session.run(self.policy_output_names, inputs)
-        
-        # Flatten the output and store it as actions
-        self.actions = np.array(output).flatten()
+        try:
+            # Concatenate observations into a single tensor and convert to float32
+            input_tensor = np.concatenate([self.observations], axis=0)
+            input_tensor = input_tensor.astype(np.float32).reshape(1,-1)
+            
+            # Create a dictionary of inputs for the policy session
+            inputs = {self.policy_input_names[0]: input_tensor}
+            
+            # Run the policy session and get the output
+            output = self.policy_session.run(self.policy_output_names, inputs)
+            
+            # Flatten the output and store it as actions
+            self.actions = np.array(output).flatten()
 
-        # return self.actions
+            # return self.actions
+
+        except Exception as e:
+            self.node.get_logger().error(f"Error in compute_actions: {e}")
         
     '''def set_joint_command(self, joint_index, position):
         """

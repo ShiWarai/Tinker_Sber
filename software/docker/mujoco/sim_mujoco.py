@@ -10,7 +10,7 @@ from rclpy.executors import MultiThreadedExecutor
 from tinker_msgs.msg import LowState, LowCmd, MotorCmd
 
 class MujocoSim(Node):
-    def __init__(self):
+    def __init__(self, xml_path):
         super().__init__("mujoco_sim")
 
         self.rpy = np.zeros(3)
@@ -21,6 +21,10 @@ class MujocoSim(Node):
         self.velocities = np.zeros(10)
 
         self.actions = np.zeros(10)
+        self.ctrl = np.zeros(10)
+        
+        self.model = mujoco.MjModel.from_xml_path(xml_path)
+        self.data = mujoco.MjData(self.model)
 
         self.cmd_subscriber = self.create_subscription(
             LowCmd,
@@ -35,10 +39,13 @@ class MujocoSim(Node):
             10
         )
 
+
     def cmd_callback(self, msg: LowCmd):
-        for motor_cmd in msg.motor_cmd:
-            # TODO: add motor command processing into actions
-            pass
+        self.actions = np.zeros(10)
+        for i in range(10):
+            self.actions[i] = msg.motor_cmd[i].position
+        print(self.actions)
+
 
     def publish_state(self):
         msg = LowState()
@@ -46,19 +53,47 @@ class MujocoSim(Node):
         msg.imu_state.rpy = self.rpy
         msg.imu_state.quaternion = self.imu_quat
 
-        # TODO: add motor state publishing
-        self.publish_state(msg)
+        for i in range(10):
+            msg.motor_state[i].position = float(self.positions[i])
+            msg.motor_state[i].velocity = float(self.velocities[i])
+
+        self.state_publisher.publish(msg)
+
 
     def control_loop(self):
         try:
-            # TODO: add control loop logic:
-            #  1. get actions from self.actions
-            #  2. apply actions to the model - ?{add position control (PID)}?
-            #  3. update positions and velocities
-            #  4. publish state
-            pass
+            actions = self.actions.copy()
+
+            current_positions = self.data.qpos[7:17]
+            current_velocities = self.data.qvel[6:16]
+            # kp = 50.0  # stiffness
+            # kd = 5.0   # damping
+            # self.ctrl[:] = kp * (actions - current_positions) - kd * current_velocities
+            # self.ctrl = np.clip(self.ctrl, -1.57, 1.57)
+            self.ctrl = np.clip(actions, -1.57, 1.57)
+            self.data.ctrl[:] = self.ctrl
+            # self.data.ctrl[:] = actions
+            # self.data.ctrl[2] = -1.0
+
+            mujoco.mj_step(self.model, self.data)
+
+            self.ang_vel = self.data.qvel[3:6]
+            self.imu_quat = self.data.qpos[3:7]
+
+            w, x, y, z = self.imu_quat
+            self.rpy = np.array([
+                np.arctan2(2 * (w * x + y * z), 1 - 2 * (x**2 + y**2)),
+                np.arcsin(2 * (w * y - z * x)),
+                np.arctan2(2 * (w * z + x * y), 1 - 2 * (y**2 + z**2))
+            ])
+            self.positions = self.data.qpos[7:17]
+            self.velocities = self.data.qvel[6:16]
+
+            self.publish_state()
+            
         except Exception as e:
-            print(f'Control loop error: {e}')
+            print(f'sim2sim control loop error: {e}')
+
 
     def shutdown(self):
         self.destroy_node()
@@ -70,23 +105,34 @@ if __name__ == "__main__":
         current_dir = os.path.dirname(os.path.abspath(__file__))
         xml_path = os.path.join(current_dir, "xml", "world.xml")
 
-        model = mujoco.MjModel.from_xml_path(xml_path)
-        data = mujoco.MjData(model)
+        # model = mujoco.MjModel.from_xml_path(xml_path)
+        # data = mujoco.MjData(model)
 
-        mujoco_sim = MujocoSim()
+        mujoco_sim = MujocoSim(xml_path)
 
         executor = MultiThreadedExecutor()
         executor.add_node(mujoco_sim)
+        print('executor started')
+        # with mujoco.viewer.launch(mujoco_sim.model, mujoco_sim.data) as viewer:
+        viewer = mujoco.viewer.launch_passive(mujoco_sim.model, mujoco_sim.data)
+        viewer.cam.lookat[:] = [0, 0, 0.5]
+        viewer.cam.distance = 2.0
+        viewer.cam.azimuth = 45
+        print('viewer started')
+        last_print_time = time.time()
 
-        with mujoco.viewer.launch(model, data) as viewer:
-            viewer.cam.lookat[:] = [0, 0, 0.5]
-            viewer.cam.distance = 2.0
-            viewer.cam.azimuth = 45
+        while viewer.is_running():
+            mujoco_sim.control_loop()
+            executor.spin_once(timeout_sec=0)
+            viewer.sync()
+            # time.sleep(0.01)
+            current_time = time.time()
 
-            while viewer.is_running():
-                # TODO: add control loop logic
-                executor.spin()
-                time.sleep(0.01)
+            if current_time - last_print_time >= 5.0:
+                print("Positions:", mujoco_sim.positions)
+                print("Velocities:", mujoco_sim.velocities)
+                print("Ctrl:", mujoco_sim.data.ctrl)
+                last_print_time = current_time
 
     except Exception as e:
         print(f"Simulator script error: {e}")

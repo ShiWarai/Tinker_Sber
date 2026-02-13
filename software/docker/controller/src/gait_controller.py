@@ -21,11 +21,11 @@ class GaitController(Node):
         self.device = InputDeviceFactory.get_device(device_type, node=self)
         self.device.initialize()
 
-        self.inference_controller = InferenceController(model_path, robot_type='tinker')
-        self.inference_controller.load_config(config_file=f'{model_path}/params.yaml')
+        self.inference_controller = InferenceController(node=self, model_dir=model_path, robot_type='tinker')
+        # self.inference_controller.load_config(config_file=f'{model_path}/params.yaml')
 
         self.rpy = np.zeros(3)
-        self.imu_quat = np.zeros(4)
+        self.imu_quat = np.array([0, 0, 0, 1])
         self.ang_vel = np.zeros(3)
         self.commands = np.zeros(3)
         self.positions = np.zeros(10)
@@ -34,8 +34,7 @@ class GaitController(Node):
         
         self.observations = np.zeros(self.inference_controller.observations_size)
 
-
-        # self.prev_action_tensor = torch.zeros(10)
+        self.first_state_received = False
 
         self.lowstate_subscriber = self.create_subscription(
             LowState,
@@ -47,7 +46,8 @@ class GaitController(Node):
         self.lowcmd_publisher = self.create_publisher(
             LowCmd, 
             '/tinker_msgs/lowcmd',
-            10)
+            10
+        )
 
         self.control_timer = self.create_timer(0.01, self.control_loop)
         
@@ -64,6 +64,10 @@ class GaitController(Node):
         self.positions = np.array([motor.position for motor in msg.motor_state])
         self.velocities = np.array([motor.velocity for motor in msg.motor_state])
 
+        if not self.first_state_received:
+            self.get_logger().info("Gait controller ready to start control loop.")
+            self.first_state_received = True
+
     def publish_lowcmd_action(self, action):
         msg = LowCmd()
         msg.motor_cmd = [MotorCmd() for _ in range(10)]
@@ -75,6 +79,10 @@ class GaitController(Node):
 
     def control_loop(self):
         try:
+            # if not self.first_state_received:
+            #     self.get_logger().debug("Gait controller is waiting for first LowState message...")
+            #     return
+            
             self.commands = self.device.get_commands()
 
             '''self.obs_buf = np.concatenate([self.omega, 
@@ -89,16 +97,15 @@ class GaitController(Node):
 
             # Run model, publish actions
             action = self.inference_model.run(self.obs_tensor)'''
-            InferenceController.compute_observation(InferenceController,
-                                                    imu_quat=self.imu_quat,
-                                                    base_ang_vel=self.ang_vel,
-                                                    joint_positions=self.positions,
-                                                    joint_velocities=self.velocities,
-                                                    last_actions=self.prev_action,
-                                                    commands=self.commands)
-            InferenceController.compute_actions()
-            actions = InferenceController.actions
-            print(f'action: {actions}')
+            self.inference_controller.compute_observation(imu_quat=self.imu_quat,
+                                                          base_ang_vel=self.ang_vel,
+                                                          joint_positions=self.positions,
+                                                          joint_velocities=self.velocities,
+                                                          last_actions=self.prev_action,
+                                                          commands=self.commands)
+            self.inference_controller.compute_actions()
+            actions = self.inference_controller.actions
+            print(f'controller ouput actions: {actions}')
             self.publish_lowcmd_action(actions)
             self.prev_action = actions
 
