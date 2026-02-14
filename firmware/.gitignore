@@ -1,2 +1,16 @@
 build/*
 *.log
+build_log.txt
+
+# Артефакт сборки (создаётся post-build: fromelf --bin)
+TEST.ANO
+*.axf
+*.hex
+*.map
+
+# Пользовательские/локальные файлы Keil uVision (не нужны в репозитории)
+*.uvguix.*
+*.uvoptx
+*.uvopt
+*.uvgui.user
+*.saved_uv4
