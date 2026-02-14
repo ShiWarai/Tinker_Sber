@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_H_
 #define _INCLUDE_H_
 //Board Type
-#define USE_OLED     1
+#define USE_OLED     0
 #define USE_AUDIO    0 //
 #define USE_SERVO1   0 //Servo
 #define USE_VR       0 

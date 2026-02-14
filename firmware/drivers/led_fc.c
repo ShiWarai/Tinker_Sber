@@ -5,7 +5,6 @@
 #include "bat.h"
 #include "usart_fc.h"
 #include "gait_math.h"
-#include "gps.h"
 #include "spi.h"
 int dog_flag;
 int KEY_DOG(void)

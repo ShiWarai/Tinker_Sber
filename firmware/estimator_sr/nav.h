@@ -41,13 +41,5 @@ typedef struct
 }_NAV;
 
 extern _NAV nav;
-
-void baro_fushion(float T);
-void pose_fushion(float T);
-void flow_data_process(float T);
-void CalcEarthRadius(double lat);
-void CalcGlobalDistance(double lat, double lon,float local_Lat,float local_Lon,float *posNorth,float *posEast );
-void CalcGlobalLocation(float posNorth,float posEast);
-float navCalcBearing(double lat1, double lon1, double lat2, double lon2);
 #endif
 

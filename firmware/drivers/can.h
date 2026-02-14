@@ -254,7 +254,9 @@ void data_can_mit_anal(motor_measure_t *ptr,uint8_t buf_rx[8]);
 char data_can_mit_send(motor_measure_t *ptr);
 char data_can_sample_only(motor_measure_t *ptr);
 u8 mit_set_pos_zero( char id);
-extern int can_write_flash,can_cmd_usb_disable;
+extern int can_write_flash, can_cmd_usb_disable;
+extern int ocu_connect;
+extern float ocu_loss_cnt;
 #endif
 
 

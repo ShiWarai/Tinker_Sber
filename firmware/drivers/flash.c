@@ -1,10 +1,10 @@
 
 #include "include.h"
 #include "flash.h"
+#include "flash_nav.h"
 #include "mems.h"	
 #include "flash_w25.h"
 #include "icm20602.h"	
-#include "mavl.h"
 #include "gait_math.h"
 #include "can.h"
 u32 STMFLASH_ReadWord(u32 faddr)
@@ -32,37 +32,37 @@ void STMFLASH_Write(u32 WriteAddr,u32 *pBuffer,u32 NumToWrite)
   FLASH_Status status = FLASH_COMPLETE;
 	u32 addrx=0;
 	u32 endaddr=0;	
-  if(WriteAddr<STM32_FLASH_BASE||WriteAddr%4)return;	//非法地址
-	FLASH_Unlock();									//解锁 
-  FLASH_DataCacheCmd(DISABLE);//FLASH擦除期间,必须禁止数据缓存
+  if(WriteAddr<STM32_FLASH_BASE||WriteAddr%4)return;	//??????
+	FLASH_Unlock();									//???? 
+  FLASH_DataCacheCmd(DISABLE);//FLASH???????,?????????????
  		
-	addrx=WriteAddr;				//写入的起始地址
-	endaddr=WriteAddr+NumToWrite*4;	//写入的结束地址
-	if(addrx<0X1FFF0000)			//只有主存储区,才需要执行擦除操作!!
+	addrx=WriteAddr;				//??????????
+	endaddr=WriteAddr+NumToWrite*4;	//??????????
+	if(addrx<0X1FFF0000)			//?????????,???????????????!!
 	{
-		while(addrx<endaddr)		//扫清一切障碍.(对非FFFFFFFF的地方,先擦除)
+		while(addrx<endaddr)		//?????????.(???FFFFFFFF????,?????)
 		{
-			if(STMFLASH_ReadWord(addrx)!=0XFFFFFFFF)//有非0XFFFFFFFF的地方,要擦除这个扇区
+			if(STMFLASH_ReadWord(addrx)!=0XFFFFFFFF)//???0XFFFFFFFF????,????????????
 			{   
-				status=FLASH_EraseSector(STMFLASH_GetFlashSector(addrx),VoltageRange_3);//VCC=2.7~3.6V之间!!
-				if(status!=FLASH_COMPLETE)break;	//发生错误了
+				status=FLASH_EraseSector(STMFLASH_GetFlashSector(addrx),VoltageRange_3);//VCC=2.7~3.6V???!!
+				if(status!=FLASH_COMPLETE)break;	//??????????
 			}else addrx+=4;
 		} 
 	}
 	if(status==FLASH_COMPLETE)
 	{
-		while(WriteAddr<endaddr)//写数据
+		while(WriteAddr<endaddr)//?????
 		{
-			if(FLASH_ProgramWord(WriteAddr,*pBuffer)!=FLASH_COMPLETE)//写入数据
+			if(FLASH_ProgramWord(WriteAddr,*pBuffer)!=FLASH_COMPLETE)//???????
 			{ 
-				break;	//写入异常
+				break;	//?????
 			}
 			WriteAddr+=4;
 			pBuffer++;
 		} 
 	}
-  FLASH_DataCacheCmd(ENABLE);	//FLASH擦除结束,开启数据缓存
-	FLASH_Lock();//上锁
+  FLASH_DataCacheCmd(ENABLE);	//FLASH????????,???????????
+	FLASH_Lock();//????
 } 
 
 
@@ -71,8 +71,8 @@ void STMFLASH_Read(u32 ReadAddr,u32 *pBuffer,u32 NumToRead)
 	u32 i;
 	for(i=0;i<NumToRead;i++)
 	{
-		pBuffer[i]=STMFLASH_ReadWord(ReadAddr);//读取4个字节.
-		ReadAddr+=4;//偏移4个字节.	
+		pBuffer[i]=STMFLASH_ReadWord(ReadAddr);//???4?????.
+		ReadAddr+=4;//???4?????.	
 	}
 }
 int flash_cnt=0;
@@ -99,7 +99,7 @@ int isnan_checki(int in)
  else 
 	 return in;
 }
-//编码
+//????
 static void setDataIntf(char * FLASH_Buffer,int i)
 {
 	*(FLASH_Buffer+flash_cnt++) = ((i << 24) >> 24);
@@ -116,7 +116,7 @@ static void setDataFloatf(char * FLASH_Buffer,float f)
 	*(FLASH_Buffer+flash_cnt++) = ((i << 8) >> 24);
 	*(FLASH_Buffer+flash_cnt++) = (i >> 24);
 }
-//解码
+//????
 static float floatFromDataf(unsigned char *data,int* anal_cnt)
 {
 	int i = 0x00;
@@ -153,9 +153,9 @@ static int intFromDataf(unsigned char *data,int* anal_cnt)
 }
 
 
-//-----------------------------------------存储参数
+//-----------------------------------------??????
 #define SIZE_PARAM 50*10
-u32 FLASH_SIZE=16*1024*1024;	//FLASH 大小为16字节
+u32 FLASH_SIZE=16*1024*1024;	//FLASH ????16???
 
 u8 need_init_mems=0;//mems flash error
 u16 SBUS_MIN =868;
@@ -175,7 +175,7 @@ module.flash_lock=1;
 #if FLASH_USE_STM32
 STMFLASH_Read(FLASH_SAVE_ADDR,(u32*)FLASH_Buffer,SIZE);	
 #else	
-W25QXX_Read(FLASH_Buffer,FLASH_SIZE-(SIZE_PARAM+10),SIZE_PARAM);					//从倒数第100个地址处开始,读出SIZE个字节
+W25QXX_Read(FLASH_Buffer,FLASH_SIZE-(SIZE_PARAM+10),SIZE_PARAM);					//???????100??????????,????SIZE?????
 #endif
 module.flash_lock=0;
 mems.Gyro_Offset.x=intFromDataf(FLASH_Buffer,&anal_cnt);
@@ -225,7 +225,7 @@ for(i=0;i<10;i++){
 
 flash_rd_end=charFromDataf(FLASH_Buffer,&anal_cnt);
 
-//异常处理
+//??????
 for(i=0;i<10;i++){
 	if(motor_chassis[i].motor.type>30){
 		motor_chassis[i].param.t_inv_flag_measure=1;
@@ -296,12 +296,12 @@ for(i=0;i<10;i++)
 }
 FLASH_Buffer[flash_cnt++]=99;
 
-//参数
+//????
 module.flash_lock=1;
 #if FLASH_USE_STM32
 STMFLASH_Write(FLASH_SAVE_ADDR,(u32*)FLASH_Buffer,SIZE);
 #else
-W25QXX_Write((u8*)FLASH_Buffer,FLASH_SIZE-(SIZE_PARAM+10),SIZE_PARAM);		//从倒数第100个地址处开始,写入SIZE长度的数据
+W25QXX_Write((u8*)FLASH_Buffer,FLASH_SIZE-(SIZE_PARAM+10),SIZE_PARAM);		//???????100??????????,???SIZE?????????
 #endif
 module.flash_lock=0;
 }
@@ -309,6 +309,7 @@ module.flash_lock=0;
 
 #define FRAM_SIZE 16
 #define SIZE_WAY FRAM_SIZE*(NAV_MAX_MISSION_LEGS+1)
+navStruct_t navData;
 void WRITE_PARM_WAY_POINTS(void)
 { 
 int16_t _temp;
@@ -341,14 +342,14 @@ _temp=(int16_t)(navData.missionLegs[i].loiterTime*100);
 FLASH_Bufferw[cnt++]=BYTE0(_temp);
 FLASH_Bufferw[cnt++]=BYTE1(_temp);
 }
-W25QXX_Write((u8*)FLASH_Bufferw,FLASH_SIZE-(SIZE_WAY+10+SIZE_PARAM+10),SIZE_WAY);		//从倒数第100个地址处开始,写入SIZE长度的数据
+W25QXX_Write((u8*)FLASH_Bufferw,FLASH_SIZE-(SIZE_WAY+10+SIZE_PARAM+10),SIZE_WAY);		//???????100??????????,???SIZE?????????
 }
 
 void READ_WAY_POINTS(void)
 {
 u16 i;
 u8 FLASH_Bufferw[SIZE_WAY]={0};	
-W25QXX_Read(FLASH_Bufferw,FLASH_SIZE-(SIZE_WAY+10+SIZE_PARAM+10),SIZE_WAY);					//从倒数第100个地址处开始,读出SIZE个字节
+W25QXX_Read(FLASH_Bufferw,FLASH_SIZE-(SIZE_WAY+10+SIZE_PARAM+10),SIZE_WAY);					//???????100??????????,????SIZE?????
 navData.Leg_num=LIMIT(FLASH_Bufferw[0],0,NAV_MAX_MISSION_LEGS);
 for(i=0;i<navData.Leg_num;i++){
 navData.missionLegs[i].targetLat=(float)((vs32)(FLASH_Bufferw[4+i*FRAM_SIZE]<<24|FLASH_Bufferw[3+i*FRAM_SIZE]<<16|

@@ -46,7 +46,6 @@ void Outer_Loop(float);
 void Duty_Servo();
 void Duty_PForce_Control();
 void Duty_Att_Fushion();
-void Duty_Link();
 void Duty_Navigation();
 void Duty_System();
 void Duty_Kin_Cal();

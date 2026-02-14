@@ -195,11 +195,6 @@ void Send_buf1(u8 *dataToSend , char length);
 #define MODE_COLOR 3
 #define MODE_LINE 4
 #define MODE_CMD  11
-#include "nlink_linktrack_aoa_nodeframe0.h"
-#include "nlink_utils.h"
-uint8_t Aoa_UnpackData(const uint8_t *data, int data_length);
-
-//mavlink
 
 void clear_nrf_uart(void);
 typedef struct

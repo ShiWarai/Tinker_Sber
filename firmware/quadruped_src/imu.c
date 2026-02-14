@@ -3,12 +3,11 @@
 #include "include.h"
 #include "parameter.h"
 #include "gait_math.h"
-#include "gps.h"
 u8 fly_ready;
 static xyz_f_t reference_v;
 static ref_t 	ref;
 float reference_vr[3];
-float Roll,Pitch,Yaw;    				//姿态角
+float Roll,Pitch,Yaw;    				//?????
 static float q0=1,q1,q2,q3;
 static float ref_q[4] = {1,0,0,0};
 static float norm_acc,norm_q;
@@ -16,7 +15,7 @@ static float norm_acc_lpf;
 static xyz_f_t mag_sim_3d;
 extern u8 fly_ready;
 
-void simple_3d_trans(_xyz_f_t *ref, _xyz_f_t *in, _xyz_f_t *out) //小范围内正确。
+void simple_3d_trans(_xyz_f_t *ref, _xyz_f_t *in, _xyz_f_t *out) //???????????
 {
 	static s8 pn;
 	static float h_tmp_x,h_tmp_y;
@@ -551,19 +550,19 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 
 	if((module.hml_imu||module.hml_imu_o)&&mems.Mag_Have_Param&&en_hml
 		&& mag_sim_3d.x != 0 && mag_sim_3d.y != 0 && mag_sim_3d.z != 0 && mag_norm != 0)
-		yaw_mag=yaw_mag_view[2]+Gps_information.off_earth;
+		yaw_mag=yaw_mag_view[2];  /* off_earth=0 ??? GPS */
 	else
 		{yaw_mag=Yaw;hmlConfidence=1;}
 	//=============================================================================
-	// 计算等效重力向量//十分重要
+	// ??????????????//??????
 
 	reference_vr[0]=reference_v.x = 2*(ref_q[1]*ref_q[3] - ref_q[0]*ref_q[2]);
 	reference_vr[1]=reference_v.y = 2*(ref_q[0]*ref_q[1] + ref_q[2]*ref_q[3]);
 	reference_vr[2]=reference_v.z = 1 - 2*(ref_q[1]*ref_q[1] + ref_q[2]*ref_q[2]);
 		
-	//这是把四元数换算成《方向余弦矩阵》中的第三列的三个元素。
-	//根据余弦矩阵和欧拉角的定义，地理坐标系的重力向量，转到机体坐标系，正好是这三个元素。
-	//所以这里的vx\y\z，其实就是当前的欧拉角（即四元数）的机体坐标参照系上，换算出来的重力单位向量。       
+	//????????????????????????????????????????????
+	//????????????????????????????????????????????????????????????????????????
+	//?????????vx\y\z??????????????????????????????????????????????????????????????????       
 //=============================================================================
 	acc_ng.x = 10 *TO_M_S2 *(ax - 4096*reference_v.x) - acc_ng_offset.x;
 	acc_ng.y = 10 *TO_M_S2 *(ay - 4096*reference_v.y) - acc_ng_offset.y;
@@ -571,7 +570,7 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	
 	acc_3d_hg.z = acc_ng.x *reference_v.x + acc_ng.y *reference_v.y + acc_ng.z *reference_v.z;
 
-	// 计算加速度向量的模
+	// ???????????????
 	norm_acc = sqrtf(ax*ax + ay*ay + az*az);   
 	norm_acc_lpf +=  NORM_ACC_LPF_HZ *(6.28f *half_T) *(norm_acc - norm_acc_lpf);  //10hz *3.14 * 2*0.001
 	mems.hmlOneACC= norm_acc_lpf/4096.*9.8;	
@@ -579,18 +578,18 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
   if(norm_acc==0)norm_acc=0.0001;
 	if(ABS(ax)<4400 && ABS(ay)<4400 && ABS(az)<4400 )
 	{	
-		//把加计的三维向量转成单位向量。
+		//???????????????????????
 		ax = ax / norm_acc;//4096.0f;
 		ay = ay / norm_acc;//4096.0f;
 		az = az / norm_acc;//4096.0f; 
 		
 		if( 3800 < norm_acc && norm_acc < 4400 )
 		{
-			/* 叉乘得到误差 */
+			/* ???????? */
 			ref.err_tmp.x = ay*reference_v.z - az*reference_v.y;
 			ref.err_tmp.y = az*reference_v.x - ax*reference_v.z;
 	    //ref.err_tmp.z = ax*reference_v.y - ay*reference_v.x;		
-			/* 误差低通 */
+			/* ????? */
 			ref_err_lpf_hz = REF_ERR_LPF_HZ *(6.28f *half_T);
 			ref.err_lpf.x += ref_err_lpf_hz *( ref.err_tmp.x  - ref.err_lpf.x );
 			ref.err_lpf.y += ref_err_lpf_hz *( ref.err_tmp.y  - ref.err_lpf.y );
@@ -606,12 +605,12 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 		ref.err.y = 0  ;
 //		ref.err.z = 0 ;
 	}
-	/* 误差积分 */
+	/* ?????? */
 	ref.err_Int.x += ref.err.x *Ki *2 *half_T ;
 	ref.err_Int.y += ref.err.y *Ki *2 *half_T ;
 	ref.err_Int.z += ref.err.z *Ki *2 *half_T ;
 	
-	/* 积分限幅 */
+	/* ??????? */
 	ref.err_Int.x = LIMIT(ref.err_Int.x, - IMU_INTEGRAL_LIM ,IMU_INTEGRAL_LIM );
 	ref.err_Int.y = LIMIT(ref.err_Int.y, - IMU_INTEGRAL_LIM ,IMU_INTEGRAL_LIM );
 	ref.err_Int.z = LIMIT(ref.err_Int.z, - IMU_INTEGRAL_LIM ,IMU_INTEGRAL_LIM );
@@ -642,14 +641,14 @@ void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, fl
 	ref.g.y = (gy - hmlConfidence*reference_v.y *yaw_correct) *ANGLE_TO_RADIAN + ( accConfidence*Kp*(ref.err.y + ref.err_Int.y) ) ;		  //IN RADIAN
 	ref.g.z = (gz - hmlConfidence*reference_v.z *yaw_correct) *ANGLE_TO_RADIAN;
 	
-	/* 用叉积误差来做PI修正陀螺零偏 */
+	/* ???????????PI??????????? */
 	// integrate quaternion rate and normalise
 	ref_q[0] = ref_q[0] +(-ref_q[1]*ref.g.x - ref_q[2]*ref.g.y - ref_q[3]*ref.g.z)*half_T;
 	ref_q[1] = ref_q[1] + (ref_q[0]*ref.g.x + ref_q[2]*ref.g.z - ref_q[3]*ref.g.y)*half_T;
 	ref_q[2] = ref_q[2] + (ref_q[0]*ref.g.y - ref_q[1]*ref.g.z + ref_q[3]*ref.g.x)*half_T;
 	ref_q[3] = ref_q[3] + (ref_q[0]*ref.g.z + ref_q[1]*ref.g.y - ref_q[2]*ref.g.x)*half_T;  
 
-	/* 四元数规一化 normalise quaternion */
+	/* ?????????? normalise quaternion */
 	norm_q = sqrtf(ref_q[0]*ref_q[0] + ref_q[1]*ref_q[1] + ref_q[2]*ref_q[2] + ref_q[3]*ref_q[3]);
 	if(norm_q==0)norm_q=1;
 	ref_q[0] = ref_q[0] / norm_q;

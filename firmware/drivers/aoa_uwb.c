@@ -7,7 +7,6 @@
 #include "mavl.h"
 #include "nav.h"
 #include "LobotSerialServo.h"
-#include "usbd_cdc_vcp.h"
 #include "nlink_linktrack_aoa_nodeframe0.h"
 #include "nlink_utils.h"
 

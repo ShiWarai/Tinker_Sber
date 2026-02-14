@@ -5,19 +5,13 @@
 #include "imu.h"
 #include "flash.h"
 #include "led_fc.h"
-#include "sbus.h"
 #include "rc_mine.h"
 #include "dog.h"
 #include "usart_fc.h"
 #include "pwm_out.h"
 #include "beep.h"
 #include "nav.h"
-#include "ms5611.h"
-#include "test.h"
-#include "mavl.h"
 #include "spi.h"
-#include "gps.h"
-#include "usbd_cdc_vcp.h" 
 #include "can.h" 
 #include "beep.h" 
 #include "gait_math.h" 
@@ -28,7 +22,8 @@
 VMC vmc[4];
 VMC_ALL vmc_all;
 robotTypeDef robotwb;
-_OCU ocu,ocu_rx;	
+_OCU ocu,ocu_rx;
+_NAV nav;	
 POS_FORCE_PARM pos_force_p;
 VMC_ROBOT_PARM vmc_robot_p;
 char stand_force_enable_flag[5]={0};
@@ -273,21 +268,6 @@ void Duty_Att_Fushion()//姿态解算 100Hz
   }				
 }
 
-void Duty_Link()//USB 通讯 上位机
-{
-	static u16 cnt[3];
-	static float pos_rx_timer[10];
-	static float cnt_mavlink_data,cnt_rc;
-	static float test_sin_t=0;
-	char i;
-	char cnt_curve=0;
-	system_dt.link_task= leg_dt[5] = Get_Cycle_T(5); 	
-	test_sin_t+=leg_dt[5]; 	
-	cnt_curve=0;
-
-	use_bldc_test(leg_dt[5]);//电机配置
-}
- 
 void Duty_System()//遥控 保护
 {  
 	u8 i;	
@@ -319,32 +299,7 @@ void Duty_System()//遥控 保护
 		vmc_all.param.cal_flag[1]=0;
 	}
 	
-	ocu.sbus_conncect=Rc_Get_SBUS.update;
-	if(Rc_Get_SBUS.update)//
-	{ 
-	  ocu.sbus_rc_main[0]=Rc_Get.THROTTLE=LIMIT(Rc_Get_SBUS.THROTTLE,1000,2000)	;
-		ocu.sbus_rc_main[1]=Rc_Get.ROLL=my_deathzoom_rc(Rc_Get_SBUS.ROLL,50)	;
-		ocu.sbus_rc_main[2]=Rc_Get.PITCH=my_deathzoom_rc(Rc_Get_SBUS.PITCH,50)	;
-		ocu.sbus_rc_main[3]=Rc_Get.YAW=my_deathzoom_rc(Rc_Get_SBUS.YAW,50)	;
-		ocu.sbus_aux[0]=Rc_Get.AUX1=Rc_Get_SBUS.AUX1;
-		ocu.sbus_aux[1]=Rc_Get.AUX2=Rc_Get_SBUS.AUX2;
-		ocu.sbus_aux[2]=Rc_Get.AUX3=Rc_Get_SBUS.AUX3;
-		ocu.sbus_aux[3]=Rc_Get.AUX4=Rc_Get_SBUS.AUX4;
-		
-		ocu.sbus_power_sw=(ocu.sbus_rc_main[0]<1100&&ocu.sbus_rc_main[1]>1800&&ocu.sbus_rc_main[3]<1100);
-		
-		ocu.sbus_mode=ocu.sbus_aux[0];
-		ocu.sbus_height=LIMIT((ocu.sbus_aux[1]-1500)/500.,-1,1);
-		ocu.sbus_mode_e=ocu.sbus_aux[2];
-		
-		ocu.rc_spd_w[Xr]=0;
-		ocu.rc_spd_w[Yr]=0;
-		ocu.rate_yaw_w=LIMIT((Rc_Get_SBUS.YAW-1500)/500.,-1,1);
-		ocu.rc_att_w[Xr]=LIMIT((Rc_Get.PITCH-1500)/500.,-1,1);
-		ocu.rc_att_w[Yr]=-LIMIT((Rc_Get.ROLL-1500)/500.,-1,1);
-	}
-	 
-	if(Rc_Get_SBUS.lose_cnt++>2/0.05)Rc_Get_SBUS.connect=0;
+	ocu.sbus_conncect=0;
 	if(o_cmd.lost_cnt++>125)o_cmd.connect=0;
 	if(ocu.loss_cnt++>2/0.05)ocu.connect=ocu.mode=0;
 	if(ocu_loss_cnt++>2/0.05)ocu_connect=0;
@@ -501,8 +456,6 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 		
 		Duty_Servo();							
 
-		Duty_Link();		
-			
 		if( loop.cnt_5ms >= 5 )//周期5ms的任务 200Hz
 		{
 			loop.cnt_5ms = 0;		
@@ -628,7 +581,6 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 				
 				IWDG_Init(4,25000);//100ms
 				
-				OLED_Show();
 				#if USE_AUDIO
 					Audio_system();
 				#endif

@@ -4,7 +4,8 @@
 #include "icm20602.h"
 #include "cycle_cal_oldx.h"
 #include "gait_math.h"
-#include "outter_hml.h"
+
+static int mag_outer[3] = {0, 0, 0};
 #include "dog.h"
 #define SAVE_FLASH_WATCHDOG 1
 

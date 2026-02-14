@@ -5,7 +5,6 @@
 #include "dog.h"
 #include "led_fc.h"
 #include "usart_fc.h"
-#include "usbd_cdc_vcp.h" 
 #include "Custom_SPI_DEVICE.h"
 void SPI3_Init(void)
 {	GPIO_InitTypeDef GPIO_InitStructure;

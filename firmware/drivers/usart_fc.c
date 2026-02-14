@@ -1,13 +1,7 @@
 #include "include.h"
 #include "usart_fc.h"
-#include "sbus.h"
 #include "gait_math.h"
-#include "gps.h"
-#include "fifo.h"
-#include "mavl.h"
 #include "nav.h"
-#include "LobotSerialServo.h"
-#include "usbd_cdc_vcp.h"
 #include "spi.h"
 #include "led_fc.h"
 #include "wsled.h"
@@ -31,7 +25,7 @@ _ARMSS arm_cmd_s;
 int id_test=0;
 int pwm_dj_test=1500;
 _Palm_DJ palm_dj;
- //UART 读数据缓冲区
+ //UART ???????????
 __IO uint8_t uartBuf[128];
 __IO int head = 0;
 __IO int tail  = 0;
@@ -42,10 +36,10 @@ void Usart1_Init(u32 br_num)//-------Radio
 	NVIC_InitTypeDef NVIC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE); //开启USART2时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE); //????USART2???
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);	
 	
-	//串口中断优先级
+	//????????????
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
 	#if USE_SERVO1
 		#if USE_VR
@@ -66,14 +60,14 @@ void Usart1_Init(u32 br_num)//-------Radio
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
 	
-	//配置PD5作为USART2　Tx
+	//????PD5???USART2??Tx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
   GPIO_Init(GPIOA, &GPIO_InitStructure); 
-	//配置PD6作为USART2　Rx
+	//????PD6???USART2??Rx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 ; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -81,23 +75,23 @@ void Usart1_Init(u32 br_num)//-------Radio
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOA, &GPIO_InitStructure); 
 
-   //USART1 初始化设置
-	USART_InitStructure.USART_BaudRate = br_num;//波特率设置
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//一个停止位
-	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
-  USART_Init(USART1, &USART_InitStructure); //初始化串口1
+   //USART1 ?????????
+	USART_InitStructure.USART_BaudRate = br_num;//??????????
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
+	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
+  USART_Init(USART1, &USART_InitStructure); //?????????1
 	
-  USART_Cmd(USART1, ENABLE);  //使能串口1 
+  USART_Cmd(USART1, ENABLE);  //??????1 
 	
 	USART_ClearFlag(USART1, USART_FLAG_TC);
 	
 
-	//使能USART2接收中断
+	//???USART2???????
 	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-	//使能USART2
+	//???USART2
 	USART_Cmd(USART1, ENABLE); 
 }
 
@@ -107,10 +101,10 @@ void Usart2_Init(u32 br_num)//--GPS
 	USART_ClockInitTypeDef USART_ClockInitStruct;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); //开启USART2时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); //????USART2???
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);	
 	
-	//串口中断优先级
+	//????????????
 	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
@@ -121,14 +115,14 @@ void Usart2_Init(u32 br_num)//--GPS
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
 	
-	//配置PD5作为USART2　Tx
+	//????PD5???USART2??Tx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
   GPIO_Init(GPIOA, &GPIO_InitStructure); 
-	//配置PD6作为USART2　Rx
+	//????PD6???USART2??Rx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3 ; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -136,20 +130,20 @@ void Usart2_Init(u32 br_num)//--GPS
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-   //USART1 初始化设置
-	USART_InitStructure.USART_BaudRate = br_num;//波特率设置
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//一个停止位
-	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
-  USART_Init(USART2, &USART_InitStructure); //初始化串口1
+   //USART1 ?????????
+	USART_InitStructure.USART_BaudRate = br_num;//??????????
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
+	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
+  USART_Init(USART2, &USART_InitStructure); //?????????1
 	
-  USART_Cmd(USART2, ENABLE);  //使能串口1 
+  USART_Cmd(USART2, ENABLE);  //??????1 
 	USART_ClearFlag(USART2, USART_FLAG_TC);
-	//使能USART2接收中断
+	//???USART2???????
 	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-	//使能USART2
+	//???USART2
 	USART_Cmd(USART2, ENABLE); 
 }
 
@@ -160,10 +154,10 @@ void Usart3_Init(u32 br_num)//-------PI
 	NVIC_InitTypeDef NVIC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); //开启USART2时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); //????USART2???
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB,ENABLE);	
 	
-	//串口中断优先级
+	//????????????
 	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
@@ -187,23 +181,23 @@ void Usart3_Init(u32 br_num)//-------PI
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOB, &GPIO_InitStructure); 
 	
-   //USART3 初始化设置
-	USART_InitStructure.USART_BaudRate = br_num;//波特率设置
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//一个停止位
-	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
-  USART_Init(USART3, &USART_InitStructure); //初始化串口1
+   //USART3 ?????????
+	USART_InitStructure.USART_BaudRate = br_num;//??????????
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
+	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
+  USART_Init(USART3, &USART_InitStructure); //?????????1
 	
-  USART_Cmd(USART3, ENABLE);  //使能串口1 
+  USART_Cmd(USART3, ENABLE);  //??????1 
 	
 	USART_ClearFlag(USART3, USART_FLAG_TC);
-	//使能USART3接收中断
+	//???USART3???????
 	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
-	//使能USART3
+	//???USART3
 	USART_Cmd(USART3, ENABLE); 
-//	//使能发送（进入移位）中断
+//	//???????????????????
 }
 
 void Usart4_Init(u32 br_num)//-------unused
@@ -213,10 +207,10 @@ void Usart4_Init(u32 br_num)//-------unused
 	NVIC_InitTypeDef NVIC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE); //开启USART2时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE); //????USART2???
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);	
 	
-	//串口中断优先级
+	//????????????
 	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
@@ -227,14 +221,14 @@ void Usart4_Init(u32 br_num)//-------unused
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_UART4);
   GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_UART4);
 	
-	//配置PD5作为USART2　Tx
+	//????PD5???USART2??Tx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
   GPIO_Init(GPIOC, &GPIO_InitStructure); 
-	//配置PD6作为USART2　Rx
+	//????PD6???USART2??Rx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 ; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -242,20 +236,20 @@ void Usart4_Init(u32 br_num)//-------unused
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOC, &GPIO_InitStructure); 
 
-   //USART1 初始化设置
-	USART_InitStructure.USART_BaudRate = br_num;//波特率设置
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//一个停止位
-	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
-  USART_Init(UART4, &USART_InitStructure); //初始化串口1
+   //USART1 ?????????
+	USART_InitStructure.USART_BaudRate = br_num;//??????????
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
+	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
+  USART_Init(UART4, &USART_InitStructure); //?????????1
 	
-  USART_Cmd(UART4, ENABLE);  //使能串口1 
+  USART_Cmd(UART4, ENABLE);  //??????1 
 	USART_ClearFlag(UART4, USART_FLAG_TC);
-	//使能USART2接收中断
+	//???USART2???????
   USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
-	//使能USART2
+	//???USART2
 	USART_Cmd(UART4, ENABLE); 
 }
 
@@ -267,18 +261,18 @@ void Uart5_Init(u32 br_num)//-----Sbus
 	NVIC_InitTypeDef NVIC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE); //开启USART2时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE); //????USART2???
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);	
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD,ENABLE);
 	
-	//串口中断优先级
+	//????????????
 	NVIC_InitStructure.NVIC_IRQChannel = UART5_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =2;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);	
   GPIO_PinAFConfig(GPIOD, GPIO_PinSource2, GPIO_AF_UART5);
-	//配置PD2作为UART5　Rx
+	//????PD2???UART5??Rx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 ; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -286,18 +280,18 @@ void Uart5_Init(u32 br_num)//-----Sbus
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOD, &GPIO_InitStructure); 
 	
-	//配置UART5
-	//中断被屏蔽了
-	USART_InitStructure.USART_BaudRate = br_num;       //波特率可以通过地面站配置
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;  //8位数据
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;   //在帧结尾传输1个停止位
-	USART_InitStructure.USART_Parity = USART_Parity_No;    //禁用奇偶校验
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //硬件流控制失能
-	USART_InitStructure.USART_Mode =  USART_Mode_Rx;  //发送、接收使能
+	//????UART5
+	//??????????
+	USART_InitStructure.USART_BaudRate = br_num;       //?????????????????????
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;  //8?????
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;   //??????????1?????
+	USART_InitStructure.USART_Parity = USART_Parity_No;    //??????????
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //????????????
+	USART_InitStructure.USART_Mode =  USART_Mode_Rx;  //????????????
 	USART_Init(UART5, &USART_InitStructure);
-	//使能UART5接收中断
+	//???UART5???????
 	USART_ITConfig(UART5, USART_IT_RXNE, ENABLE);
-	//使能USART5
+	//???USART5
 	USART_Cmd(UART5, ENABLE); 
 }
 
@@ -308,10 +302,10 @@ void Uart6_Init(u32 br_num)//-------IDLE
 	NVIC_InitTypeDef NVIC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6, ENABLE); //开启USART2时钟
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6, ENABLE); //????USART2???
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);	
 	
-	//串口中断优先级
+	//????????????
 	NVIC_InitStructure.NVIC_IRQChannel = USART6_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =3;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
@@ -322,14 +316,14 @@ void Uart6_Init(u32 br_num)//-------IDLE
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_USART6);
   GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_USART6);
 	
-	//配置PD5作为USART2　Tx
+	//????PD5???USART2??Tx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
   GPIO_Init(GPIOC, &GPIO_InitStructure); 
-	//配置PD6作为USART2　Rx
+	//????PD6???USART2??Rx
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -337,23 +331,23 @@ void Uart6_Init(u32 br_num)//-------IDLE
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
   GPIO_Init(GPIOC, &GPIO_InitStructure); 
 
-   //USART1 初始化设置
-	USART_InitStructure.USART_BaudRate = br_num;//波特率设置
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//字长为8位数据格式
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//一个停止位
-	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
-  USART_Init(USART6, &USART_InitStructure); //初始化串口1
+   //USART1 ?????????
+	USART_InitStructure.USART_BaudRate = br_num;//??????????
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
+	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
+  USART_Init(USART6, &USART_InitStructure); //?????????1
 	
-  USART_Cmd(USART6, ENABLE);  //使能串口1 
+  USART_Cmd(USART6, ENABLE);  //??????1 
 	
 	USART_ClearFlag(USART6, USART_FLAG_TC);
 	
 
-	//使能USART2接收中断
+	//???USART2???????
 	USART_ITConfig(USART6, USART_IT_RXNE, ENABLE);
-	//使能USART2
+	//???USART2
 	USART_Cmd(USART6, ENABLE); 
 }
 
@@ -436,7 +430,7 @@ void radio_control(char sel,float dt)
 	
 	switch(state){
 		case 0:
-			if(ocu_reg==0&&(ocu_mode==1||ocu_mode==12))//正确切换
+			if(ocu_reg==0&&(ocu_mode==1||ocu_mode==12))//??????
 			{
 				flag_finish=0;timer=0;
 				flag_tx=1;
@@ -445,7 +439,7 @@ void radio_control(char sel,float dt)
 				time_check=Radio_Startt;
 				state=1;
 			}
-			else if(ocu_reg==0&&ocu_mode)//异常切换
+			else if(ocu_reg==0&&ocu_mode)//?????
 			{
 				flag_finish=0;timer=0;
 				flag_tx=1;
@@ -470,7 +464,7 @@ void radio_control(char sel,float dt)
 				time_check=Radio_Slowt;
 			}
 		break;	
-		case 2://正常运行
+		case 2://????????
 			timer+=dt;
 			if(gait_mode_reg!=F_TROT&&vmc_all.gait_mode==F_TROT)
 			{
@@ -498,7 +492,7 @@ void radio_control(char sel,float dt)
 				state=3;
 			}	
 			
-			if(timer>time_check/2&&time_check>0){//重复播放
+			if(timer>time_check/2&&time_check>0){//???????
 				flag_finish=0;timer=0;
 				flag_tx=1;
 			}		
@@ -528,7 +522,7 @@ void radio_control(char sel,float dt)
 	}
 }
 
-//图像控制命令
+//??????????
 void Data_LEG_CMD(u8 *data_buf,u8 num)
 { static u8 cnt[4];
 	u8 id;
@@ -538,9 +532,9 @@ void Data_LEG_CMD(u8 *data_buf,u8 num)
 	for( i=0;i<(num-1);i++)
 		sum += *(data_buf+i);
 	sum_rx=*(data_buf+num-1);
-	if(!(sum==*(data_buf+num-1))&&*(data_buf+2)!=MODE_FACE)		return;		//判断sum
-	//if(!(sum==*(data_buf+num-1)))		return;		//判断sum
-	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//判断帧头
+	if(!(sum==*(data_buf+num-1))&&*(data_buf+2)!=MODE_FACE)		return;		//???sum
+	//if(!(sum==*(data_buf+num-1)))		return;		//???sum
+	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//?????
   if(*(data_buf+2)==MODE_CUBE)//Cube
   { 
 	  pi.connect=MODE_CUBE;
@@ -619,7 +613,7 @@ void Data_LEG_CMD(u8 *data_buf,u8 num)
 	}			
 }
 
-//数传控制命令
+//????????????
 _LINK_CMD o_cmd;
 void Anal_Outter_CMD(u8 *data_buf,u8 num)
 { static u8 cnt[4];
@@ -629,8 +623,8 @@ void Anal_Outter_CMD(u8 *data_buf,u8 num)
 	u8 i;
 	for( i=0;i<(num-1);i++)
 		sum += *(data_buf+i);
-	if(!(sum==*(data_buf+num-1)))		return;		//判断sum
-	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//判断帧头
+	if(!(sum==*(data_buf+num-1)))		return;		//???sum
+	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//?????
   if(*(data_buf+2)==1)//
   { 
 	  o_cmd.connect=1;
@@ -695,8 +689,6 @@ void USART1_IRQHandler(void)
 			if (dataCount == dataLength + 3) {
 				if (isUartRxCompleted == false) {
 					isUartRxCompleted = true;
-					memcpy(LobotRxBuf, UART_RX_BUF, dataCount+2);	
-					LobotSerialMsgHandle();
 				}
 				isGotFrameHeader = false;
 			}
@@ -736,15 +728,15 @@ void USART1_IRQHandler(void)//Radio  mavlink
 	_OCU ocu_rx;
 	uint8_t c,t;
 	char crc_check=0;
-	if(USART1->SR & USART_SR_ORE)//ORE中断
+	if(USART1->SR & USART_SR_ORE)//ORE???
 	{
 		com_data = USART1->DR;
 	}
 
-  //接收中断
+  //???????
 	if( USART_GetITStatus(USART1,USART_IT_RXNE) )
 	{
-		USART_ClearITPendingBit(USART1,USART_IT_RXNE);//清除中断标志
+		USART_ClearITPendingBit(USART1,USART_IT_RXNE);//????????
 
 		com_data = USART1->DR;
 		#if USE_SERVO1
@@ -802,12 +794,12 @@ void USART1_IRQHandler(void)//Radio  mavlink
 			RxState1 = 0;
 		
 		if(!wsled.led_lock&&0){
-			if(RxState1==0&&(com_data==0+WHEEL_ID_OFF||com_data==1+WHEEL_ID_OFF||com_data==2+WHEEL_ID_OFF||com_data==3+WHEEL_ID_OFF))// 电机ID设置为10 11
+			if(RxState1==0&&(com_data==0+WHEEL_ID_OFF||com_data==1+WHEEL_ID_OFF||com_data==2+WHEEL_ID_OFF||com_data==3+WHEEL_ID_OFF))// ???ID?????10 11
 			{
 				RxState1=1;
 				RxBuffer1c[0]=com_data;
 			}
-			else if(RxState1==1&&com_data==0x02)//速度模式 
+			else if(RxState1==1&&com_data==0x02)//????? 
 			{
 				RxState1=2;
 				RxBuffer1c[1]=com_data;
@@ -822,7 +814,7 @@ void USART1_IRQHandler(void)//Radio  mavlink
 					RxState1=0;
 					RxBufferCnt1++;
 					crc_check=PY_CRC_8_T(RxBuffer1c,9);
-					if(crc_check==RxBuffer1c[9]){//检测正确
+					if(crc_check==RxBuffer1c[9]){//??????
 						int id=LIMIT(RxBuffer1c[0]-WHEEL_ID_OFF,0,99);
 						_wheel_wx[id].connect=1;
 						_wheel_wx[id].dt_rx=Get_Cycle_T(30+(id)); 
@@ -842,7 +834,7 @@ void USART1_IRQHandler(void)//Radio  mavlink
 		}
 	 
 	}
-//轮毂电机微雪 
+//??????? 
 	 
   if(USART_GetITStatus(USART1, USART_IT_TXE) != RESET)
   {   		
@@ -864,18 +856,17 @@ void USART2_IRQHandler(void)//GPS
 { //OSIntEnter(); 
 	u8 com_data;
 	
-	if(USART2->SR & USART_SR_ORE)//ORE中断
+	if(USART2->SR & USART_SR_ORE)//ORE???
 	{
 		com_data = USART2->DR;
 	}
 
-  //接收中断
+  //???????
 	if( USART_GetITStatus(USART2,USART_IT_RXNE) )
 	{
-		USART_ClearITPendingBit(USART2,USART_IT_RXNE);//清除中断标志
+		USART_ClearITPendingBit(USART2,USART_IT_RXNE);//????????
 
 		com_data = USART2->DR;
-		GPS_IRQ(com_data);
 		#if !USE_SERVO1
 		uartBuf[tail] = com_data;
 		tail = (tail+1)%128;
@@ -919,21 +910,21 @@ void USART2_IRQHandler(void)//GPS
 			RxState2 = 0;
 	}
 
-	//发送（进入移位）中断
+	//?????????????????
 	if( USART_GetITStatus(USART2,USART_IT_TXE ) )
 	{
 				
-		USART2->DR = TxBuffer2[TxCounter2++]; //写DR清除中断标志          
+		USART2->DR = TxBuffer2[TxCounter2++]; //?DR????????          
 		if(TxCounter2 == count2)
 		{
-			USART2->CR1 &= ~USART_CR1_TXEIE;		//关闭TXE（发送中断）中断
+			USART2->CR1 &= ~USART_CR1_TXEIE;		//???TXE?????????????
 		}
 	}
 }
 
 
 
-//图像控制命令
+//??????????
 void Data_ExtCAN_FB(u8 *data_buf,u8 num)
 { static u8 cnt[4];
 	u8 id;
@@ -943,9 +934,9 @@ void Data_ExtCAN_FB(u8 *data_buf,u8 num)
 	for( i=0;i<(num-1);i++)
 		sum += *(data_buf+i);
 	sum_rx=*(data_buf+num-1);
-	if(!(sum==*(data_buf+num-1))&&*(data_buf+2)!=MODE_FACE)		return;		//判断sum
-	if(!(sum==*(data_buf+num-1)))		return;		//判断sum
-	if(!(*(data_buf)==0xBA && *(data_buf+1)==0xBF))		return;		//判断帧头
+	if(!(sum==*(data_buf+num-1))&&*(data_buf+2)!=MODE_FACE)		return;		//???sum
+	if(!(sum==*(data_buf+num-1)))		return;		//???sum
+	if(!(*(data_buf)==0xBA && *(data_buf+1)==0xBF))		return;		//?????
   if(*(data_buf+2)==0x01)//FB1
   { 
 		palm_dj.connect_link=1;
@@ -1016,7 +1007,7 @@ void Data_ExtCAN_FB(u8 *data_buf,u8 num)
 u8 TxBuffer3[256];
 u8 TxCounter3=0;
 u8 count3=0; 
-u8 Rx_Buf3[256];	//串口接收缓存
+u8 Rx_Buf3[256];	//??????????
 u8 RxBuffer3[255];
 u8 RxState3 = 0;
 u8 RxBufferNum3 = 0;
@@ -1027,15 +1018,15 @@ void USART3_IRQHandler(void)//extcan
 { // OSIntEnter();  
 	u8 com_data;
 	
-	if(USART3->SR & USART_SR_ORE)//ORE中断
+	if(USART3->SR & USART_SR_ORE)//ORE???
 	{
 		com_data = USART3->DR;
 	}
 
-  //接收中断
+  //???????
 	if( USART_GetITStatus(USART3,USART_IT_RXNE) )
 	{
-		USART_ClearITPendingBit(USART3,USART_IT_RXNE);//清除中断标志
+		USART_ClearITPendingBit(USART3,USART_IT_RXNE);//????????
 
 		com_data = USART3->DR;
 		
@@ -1078,14 +1069,14 @@ void USART3_IRQHandler(void)//extcan
 			RxState3 = 0;
 	
 	}
-	//发送（进入移位）中断
+	//?????????????????
 	if( USART_GetITStatus(USART3,USART_IT_TXE ) )
 	{
 				
-		USART3->DR = TxBuffer2[TxCounter3++]; //写DR清除中断标志          
+		USART3->DR = TxBuffer2[TxCounter3++]; //?DR????????          
 		if(TxCounter3 == count3)
 		{
-			USART3->CR1 &= ~USART_CR1_TXEIE;		//关闭TXE（发送中断）中断
+			USART3->CR1 &= ~USART_CR1_TXEIE;		//???TXE?????????????
 		}
 	}      
 }
@@ -1104,15 +1095,15 @@ void UART4_IRQHandler(void)//FLOW
 { //OSIntEnter(); 
 	u8 com_data;
 	
-	if(UART4->SR & USART_SR_ORE)//ORE中断
+	if(UART4->SR & USART_SR_ORE)//ORE???
 	{
 		com_data = UART4->DR;
 	}
 
-  //接收中断
+  //???????
 	if( USART_GetITStatus(UART4,USART_IT_RXNE) )
 	{
-		USART_ClearITPendingBit(UART4,USART_IT_RXNE);//清除中断标志
+		USART_ClearITPendingBit(UART4,USART_IT_RXNE);//????????
 
 		com_data = UART4->DR;
 		
@@ -1156,142 +1147,28 @@ void UART4_IRQHandler(void)//FLOW
 			RxState4 = 0;
 	}
 
-	//发送（进入移位）中断
+	//?????????????????
 	if( USART_GetITStatus(UART4,USART_IT_TXE ) )
 	{
 				
-		UART4->DR = TxBuffer4[TxCounter4++]; //写DR清除中断标志          
+		UART4->DR = TxBuffer4[TxCounter4++]; //?DR????????          
 		if(TxCounter4 == count4)
 		{
-			UART4->CR1 &= ~USART_CR1_TXEIE;		//关闭TXE（发送中断）中断
+			UART4->CR1 &= ~USART_CR1_TXEIE;		//???TXE?????????????
 		}
 	}
 }
 
 
 RC_GETDATA Rc_Get_PWM,Rc_Get_SBUS;
-static u8 _data_len5 = 0,_data_cnt5 = 0;
-void UART5_IRQHandler(void)//SBUS
+void UART5_IRQHandler(void)
 { 
-	u8 com_data;
-	 u16 temps;
-	if(UART5->SR & USART_SR_ORE)//ORE中断
+	if(UART5->SR & USART_SR_ORE)
+		(void)UART5->DR;
+	if(USART_GetITStatus(UART5,USART_IT_RXNE))
 	{
-		com_data = UART5->DR;
-	}
-
-  //接收中断
-	if( USART_GetITStatus(UART5,USART_IT_RXNE) )
-	{
-		USART_ClearITPendingBit(UART5,USART_IT_RXNE);//清除中断标志
-
-		com_data = UART5->DR;
-		oldx_sbus_rx(com_data);
-		if(channels[16]==500||channels[16]==503){
-		Rc_Get_SBUS.update=1;Rc_Get_SBUS.lose_cnt_rx=0;
-
-				temps=((channels[0])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.ROLL=		 temps;
-				temps=((channels[1])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.PITCH=		 temps;
-				temps=((channels[2])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.THROTTLE=		 temps;
-				temps=((channels[3])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.YAW=		 temps;
-				temps=((channels[4])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.AUX1=		 temps;
-				temps=((channels[5])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.AUX2=		 temps;
-				temps=((channels[6])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.AUX3=		 temps;
-				temps=((channels[7])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.AUX4=		 temps;
-				temps=((channels[8])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.AUX5=		 temps;	
-				temps=((channels[9])-SBUS_MID_A)*500/((SBUS_MAX_A-SBUS_MIN_A)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.AUX6=		 temps;
-				
-				temps=((channels[10])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.MOV1=		 temps;
-				temps=((channels[11])-SBUS_MID)*500/((SBUS_MAX-SBUS_MIN)/2)+1500;
-				if(temps>900&&temps<2100)
-				Rc_Get_SBUS.MOV2=		 temps;
-				
-				if(Rc_Get_SBUS.AUX1>1700)
-					Rc_Get_SBUS.AUX_SEL1=1;
-				else if(Rc_Get_SBUS.AUX1<1300)
-					Rc_Get_SBUS.AUX_SEL1=-1;
-				else 
-					Rc_Get_SBUS.AUX_SEL1=0;
-				
-				if(Rc_Get_SBUS.AUX2>1700)
-					Rc_Get_SBUS.AUX_SEL2=1;
-				else if(Rc_Get_SBUS.AUX2<1300)
-					Rc_Get_SBUS.AUX_SEL2=-1;
-				else 
-					Rc_Get_SBUS.AUX_SEL2=0;
-
-				if(Rc_Get_SBUS.AUX3>1700)
-					Rc_Get_SBUS.AUX_SEL3=1;
-				else if(Rc_Get_SBUS.AUX3<1300)
-					Rc_Get_SBUS.AUX_SEL3=-1;
-				else 
-					Rc_Get_SBUS.AUX_SEL3=0;
-
-				if(Rc_Get_SBUS.AUX4>1700)
-					Rc_Get_SBUS.AUX_SEL4=1;
-				else if(Rc_Get_SBUS.AUX4<1300)
-					Rc_Get_SBUS.AUX_SEL4=-1;
-				else 
-					Rc_Get_SBUS.AUX_SEL4=0;
-				
-				if(Rc_Get_SBUS.AUX5>1700)
-					Rc_Get_SBUS.AUX_SEL5=1;
-				else if(Rc_Get_SBUS.AUX5<1300)
-					Rc_Get_SBUS.AUX_SEL5=-1;
-				else 
-					Rc_Get_SBUS.AUX_SEL5=0;
-				
-				if(Rc_Get_SBUS.AUX6>1700)
-					Rc_Get_SBUS.AUX_SEL6=1;
-				else if(Rc_Get_SBUS.AUX6<1300)
-					Rc_Get_SBUS.AUX_SEL6=-1;
-				else 
-					Rc_Get_SBUS.AUX_SEL6=0;
-				
-				Rc_Get_SBUS.SBUS_CH[0]=LIMIT((float)(Rc_Get_SBUS.THROTTLE-1500)/500.0,-1,1);
-				Rc_Get_SBUS.SBUS_CH[1]=LIMIT((float)(Rc_Get_SBUS.PITCH-1500)/500.0,-1,1);
-				Rc_Get_SBUS.SBUS_CH[2]=LIMIT((float)(Rc_Get_SBUS.ROLL-1500)/500.0,-1,1);
-				Rc_Get_SBUS.SBUS_CH[3]=LIMIT((float)(Rc_Get_SBUS.YAW-1500)/500.0,-1,1);
-				Rc_Get_SBUS.SBUS_CH[4]=LIMIT((float)(Rc_Get_SBUS.MOV1-1500)/500.0,-1,1);
-				Rc_Get_SBUS.SBUS_CH[5]=LIMIT((float)(Rc_Get_SBUS.MOV2-1500)/500.0,-1,1);
-				
-				#if 1//yunzhuo
-				if(channels[16]==500){
-					Rc_Get_SBUS.lose_cnt=0;
-					Rc_Get_SBUS.connect=1;
-				}	
-				#else
-				if(Rc_Get_SBUS.THROTTLE!=0){
-					Rc_Get_SBUS.lose_cnt=0;
-					Rc_Get_SBUS.connect=1;
-				}
-				#endif
-
-		}
-		if(Rc_Get_SBUS.lose_cnt_rx++>100){
-		Rc_Get_SBUS.update=0;}
+		USART_ClearITPendingBit(UART5,USART_IT_RXNE);
+		(void)UART5->DR;
 	}
 }
 
@@ -1306,8 +1183,8 @@ void Anal_UART6(u8 *data_buf,u8 num)
 	float temp_imu[3];
 	for( i=0;i<(num-1);i++)
 		sum += *(data_buf+i);
-	if(!(sum==*(data_buf+num-1)))		return;		//判断sum
-	if(!(*(data_buf)==0xBA && *(data_buf+1)==0xBF))		return;		//判断帧头
+	if(!(sum==*(data_buf+num-1)))		return;		//???sum
+	if(!(*(data_buf)==0xBA && *(data_buf+1)==0xBF))		return;		//?????
 	if(*(data_buf+2)==0x01&&USE_IMU_O)//
   { 
 	  imuo.connect=1;
@@ -1336,7 +1213,7 @@ void Anal_UART6(u8 *data_buf,u8 num)
 u8 TxBuffer6[256];
 u8 TxCounter6=0;
 u8 count6=0; 
-u8 Rx_Buf6[256];	//串口接收缓存
+u8 Rx_Buf6[256];	//??????????
 u8 RxBuffer6[50];
 u8 RxState6 = 0;
 u8 RxBufferNum6 = 0;
@@ -1348,15 +1225,15 @@ void USART6_IRQHandler(void)//GPS----------------------
 { //OSIntEnter(); 
 	u8 com_data;
 	static int cnt_rx=0;
-	if(USART6->SR & USART_SR_ORE)//ORE中断
+	if(USART6->SR & USART_SR_ORE)//ORE???
 	{
 		com_data = USART6->DR;
 	}
 
-  //接收中断
+  //???????
 	if( USART_GetITStatus(USART6,USART_IT_RXNE) )
 	{
-		USART_ClearITPendingBit(USART6,USART_IT_RXNE);//清除中断标志
+		USART_ClearITPendingBit(USART6,USART_IT_RXNE);//????????
 
 		com_data = USART6->DR;
 		RxBuffer6_check[cnt_rx++]=com_data;
@@ -1434,10 +1311,10 @@ void Usart1_Send_DMA(u8 *dataToSend , u8 length)
 	SendBuff1[SendBuff1_cnt++]=dataToSend[i];
 }
 
-//微雪轮毂电机
-//电流环模式下：-32767~32767 对应量程-8~8A(非电机电流范围)，数据类型有符号 16 位
-//速度环模式下：-330~330，单位 rpm，数据类型有符号 16 位
-//位置环模式下：0~32767 对应 0°~360°，数据类型无符号 16 位
+//???????
+//???????????-32767~32767 ???????-8~8A(???????????)??????????????? 16 ?
+//?????????-330~330????? rpm??????????????? 16 ?
+//?????????0~32767 ??? 0??~360??????????????? 16 ?
 char PY_CRC_8_T(char *di, uint32_t len)
 {
   uint8_t crc_poly = 0x8C; //Bit sequence inversion of 0x31
@@ -1471,8 +1348,8 @@ void Set_motor_cmd(char id,int16_t cmd,int sys_mode)
 	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=BYTE0(_temp);
 	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
 	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;//加速模式
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=sys_mode;//制动
+	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;//??????
+	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=sys_mode;//???
 	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
 	SendBuff1[SendBuff1_cnt++]=PY_CRC_8_T(data_to_send,9);
 }
@@ -1494,10 +1371,10 @@ void Get_motor_fb(char id)
 	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
 	SendBuff1[SendBuff1_cnt++]=PY_CRC_8_T(data_to_send,9);
 }
-//模式值：
-//0x01：设定为电流环
-//0x02：设定为速度环
-//0x03：设定为位置环
+//?????
+//0x01???????????
+//0x02?????????
+//0x03?????????
 void Set_motor_mode(char id,char mode)
 { char i;	char sum = 0;
 	vs16 _temp;
@@ -1516,7 +1393,7 @@ void Set_motor_mode(char id,char mode)
 	SendBuff1[SendBuff1_cnt++]=mode;
 }
 
-//设置ID时请保证总线上只有一个电机，每次上电只允许设置一次，电机接收到5次ID设置指令后进行设置。
+//????ID????????????????????????????????????????????????5??ID????????????????
 void Set_motor_id(char id)
 { char i;	char sum = 0;
 	vs16 _temp;
@@ -1534,9 +1411,9 @@ void Set_motor_id(char id)
 	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
 	SendBuff1[SendBuff1_cnt++]=0;
 }
-//电流环模式下：-32767~32767 对应量程-8~8A(非电机电流范围)，数据类型有符号 16 位
-//速度环模式下：-330~330，单位 rpm，数据类型有符号 16 位
-//位置环模式下：0~32767 对应 0°~360°，数据类型无符号 16 位
+//???????????-32767~32767 ???????-8~8A(???????????)??????????????? 16 ?
+//?????????-330~330????? rpm??????????????? 16 ?
+//?????????0~32767 ??? 0??~360??????????????? 16 ?
 void set_motor_spd(char id,float rad_set){//rpm
 	int16_t rpm=0;
 	rpm= rad_set/(2.0 * M_PI / 60.0);
@@ -1575,7 +1452,7 @@ void set_wheel_null(char len)
 		SendBuff1[SendBuff1_cnt++]=0x00;
 }
 
-//01 64 00 00 00 00 00 FF 00 D1 校验测试
+//01 64 00 00 00 00 00 FF 00 D1 ??????
 void wheel_motor_loop(char id,float dt){
 	#if 0 //1~4 1FL FR2 HL3 HR
 		static int init[10]={0};
@@ -1597,9 +1474,9 @@ void wheel_motor_loop(char id,float dt){
 			_wheel_wx[2].cmd_flag=1;
 			_wheel_wx[3].cmd_flag=-1;
 			
-			_wheel_wx[id].r=0.1/2;//m 轮半径
+			_wheel_wx[id].r=0.1/2;//m ???
 			
-			Set_motor_mode(id+WHEEL_ID_OFF,2);//设置速度环
+			Set_motor_mode(id+WHEEL_ID_OFF,2);//????????
 			init[id]=1;
 		}else{
 		
@@ -1621,9 +1498,9 @@ void wheel_motor_loop(char id,float dt){
 			_wheel_wx[2].cmd_flag=1;
 			_wheel_wx[3].cmd_flag=-1;
 			
-			_wheel_wx[id].r=0.1/2;//m 轮半径
+			_wheel_wx[id].r=0.1/2;//m ???
 			_wheel_wx[id].i_2_tau=0.75;//Nm/A
-			Set_motor_mode(id+WHEEL_ID_OFF,2);//设置速度环
+			Set_motor_mode(id+WHEEL_ID_OFF,2);//????????
 			init[id]=1;
 		}else{
 			_wheel_wx[id].rad_set=LIMIT(_wheel_wx[id].rad_set,-20,20)*_wheel_wx[id].connect;
@@ -1638,8 +1515,8 @@ void wheel_2d_loop(float dt){
 	if(!init)
 	{
 		init=1;
-		_wheel_2d.h=0.3;//m 前后轮子间距
-		_wheel_2d.w=0.303;//m  左右轮中心距离
+		_wheel_2d.h=0.3;//m ?????????
+		_wheel_2d.w=0.303;//m  ?????????????
     _wheel_2d.v_set=0;
 		_wheel_2d.w_set=0;
 	}
@@ -1659,10 +1536,10 @@ void wheel_2d_loop(float dt){
   wheel_dq_exp[1]+=d_w;
   wheel_dq_exp[2]-=d_w;
   wheel_dq_exp[3]+=d_w;
-  if(spi_master_connect_pi){//-------------连接主控采用主控轮速控制
+  if(spi_master_connect_pi){//-------------??????????????????????
 		for(int i=0;i<4;i++)
 				rad_set[i]=wheel_dq_exp[i];
-	}else{//---------否则使用遥控器转速控制
+	}else{//---------??????????????????
 		for(int i=0;i<4;i++)
 				rad_set[i]=wheel_dq_exp[i];
 	}
@@ -1673,7 +1550,7 @@ void wheel_2d_loop(float dt){
 	DigitalLPF( rad_set[2], &_wheel_wx[2].rad_set,50,dt);
 	DigitalLPF( rad_set[3], &_wheel_wx[3].rad_set,50,dt);	
 	
-	//-----------------state est状态估计---------------
+	//-----------------state est??????---------------
 	float temp= _wheel_wx[0].v_now
 						 +_wheel_wx[1].v_now 
 						 +_wheel_wx[2].v_now
@@ -1701,26 +1578,26 @@ void wheel_2d_loop(float dt){
 
 }
 
-//--------------------钟灵舵机
+//--------------------??????
 /*
-0 末端俯仰 1末端很滚 2夹持 4云台航向 5 云台俯仰
+0 ?????? 1????? 2??? 4??????? 5 ???????
 */
 
 int pwm_dj[5]={1500,1500,1500,1500,1500};
 int time_dj[5]={0,0,0,0,0};
 void set_dj_pwm(int id,int pwm,int time){
-	char cmd_return[100];//这里的cmd_return的字符长度要足够的大，根据舵机个数定，大小 = 15*个数+10
+	char cmd_return[100];//?????cmd_return???????????????????????????????? = 15*????+10
 	int i=0;
 	SendBuff6_cnt=0;
 	pwm=LIMIT(pwm,500,2500);	
 	int len=sprintf(cmd_return, "#%03dP%04dT%04d!", id, pwm, time);
 	for(i=0;i<len;i++)
 		SendBuff6[SendBuff6_cnt++]=cmd_return[i];
-	delay_ms(1);						//延时1秒
+	delay_ms(1);						//???1??
 }
 		
 void set_dj_pwm_all(int pwm[5],int time[5]){
-	char cmd_return[100];//这里的cmd_return的字符长度要足够的大，根据舵机个数定，大小 = 15*个数+10
+	char cmd_return[100];//?????cmd_return???????????????????????????????? = 15*????+10
 	char i;
 	SendBuff6_cnt=0;
 	for(i=0;i<5;i++)
@@ -1729,7 +1606,7 @@ void set_dj_pwm_all(int pwm[5],int time[5]){
 	for(i=0;i<len;i++)
 		SendBuff6[SendBuff6_cnt++]=cmd_return[i];
  
-	delay_ms(1);						//延时1秒
+	delay_ms(1);						//???1??
 }
 
 
@@ -1737,16 +1614,16 @@ void dj_control_loop(float dt){
 	static int init=0;
 	if(!init){
 		init=1;
-		palm_dj.degree_to_pwm[0]=2000/180;//0 末端俯仰 1末端横滚 2夹持 4头航向 5头俯仰
+		palm_dj.degree_to_pwm[0]=2000/180;//0 ?????? 1????? 2??? 4????? 5?????
 		palm_dj.degree_to_pwm[1]=2000/270;//
 		palm_dj.degree_to_pwm[2]=1000;
 		palm_dj.degree_to_pwm[3]=2000/270;
 		palm_dj.degree_to_pwm[4]=2000/270;
-		palm_dj.hand_att[0]=0;//手
+		palm_dj.hand_att[0]=0;//??
 		palm_dj.hand_att[1]=0;
 		palm_dj.head_att[0]=0;
 		palm_dj.head_att[1]=0;
-		palm_dj.cap_rate=0;//夹爪 0开1关
+		palm_dj.cap_rate=0;//??? 0??1??
 	}
 	int pwm[5]={1500,1500,1500,1500,1500};
 	int time[5]={0,0,0,0,0};
@@ -1761,7 +1638,7 @@ void dj_control_loop(float dt){
 	set_dj_pwm(id_test,pwm_dj_test,0);
 }
 
-//-----------------------------------FT 舵机------------------
+//-----------------------------------FT ???------------------
 int IDs2=0;
 float Pos2=0;
 
@@ -1769,7 +1646,7 @@ int Pos;
 int Load;
 int Current;
 char test_pow=1;
-_UART_SERVO servo_s[14],servo_ss[14];//0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
+_UART_SERVO servo_s[14],servo_ss[14];//0?????? 1?????? 2????? 3??? 4????? 5?????
 float servo_test_q[14]={0};
 #define MAX_SERVO_Q_STS3215 360.0
 #define MAX_SERVO_Q_AD_STS3215 4096.0
@@ -1777,19 +1654,19 @@ float servo_test_q[14]={0};
 
 #define MAX_SERVO_Q_STS3046 360//300.0
 #define MAX_SERVO_Q_AD_STS3046 4096.0
-#define END_STS3046 0//处理器大小端结构
+#define END_STS3046 0//????????????
 
 #define MAX_SERVO_Q_SCS00091 360.0
 #define MAX_SERVO_Q_AD_SCS00091 1024.0
-#define END_SCS00091 1//处理器大小端结构
+#define END_SCS00091 1//????????????
 
 #define MAX_SERVO_Q_SCS0009 220//300.0
 #define MAX_SERVO_Q_AD_SCS0009 1024.0
-#define END_SCS0009 1//处理器大小端结构
+#define END_SCS0009 1//????????????
 
 #define MAX_SERVO_Q_SCS00092 220/2//300.0
 #define MAX_SERVO_Q_AD_SCS00092 1024.0
-#define END_SCS00092 1//处理器大小端结构
+#define END_SCS00092 1//????????????
 char END_SCS_ALL=0;
 
 uint8_t IDs[12];
@@ -1797,7 +1674,7 @@ uint16_t Positions[12];
 int16_t Positionsm[12];
 uint16_t Speeds[12];
 uint8_t Accs[12];
-//串口x配置为只写，CR1->RE=0, CR1->TE=1
+//????x?????????CR1->RE=0, CR1->TE=1
 void Uart_Flush(void)
 {
 	head = tail = 0;
@@ -1839,7 +1716,7 @@ void Uart_Send(uint8_t *buf , uint8_t len)
 }
 
 #if 1//butler
-void serial_init(void)//0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
+void serial_init(void)//0?????? 1?????? 2????? 3??? 4????? 5?????
 {
 	char i,j;
 	for(i=0;i<14;i++)
@@ -1875,12 +1752,12 @@ void serial_init(void)//0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
 	servo_ss[12].POS_OFF_SET=0;
 	servo_ss[13].POS_OFF_SET=0;	
 	
-	palm_dj.hand_att[0]=0;//手
+	palm_dj.hand_att[0]=0;//??
 	palm_dj.hand_att[1]=0;
 	palm_dj.head_att[0]=0;
 	palm_dj.head_att[1]=0;
 
-	palm_dj.cap_rate=0;//夹爪 0开1关  //0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
+	palm_dj.cap_rate=0;//??? 0??1??  //0?????? 1?????? 2????? 3??? 4????? 5?????
 	for(int i=0;i<14;i++)
 		servo_ss[i].type=STS3046;
 //	servo_s[0].type=STS3046;
@@ -1950,8 +1827,8 @@ void serial_init(void)//0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
 				 servo_ss[i].connect=0;
 	 }
 }
-#else//old Tinker舵机头
-void serial_init(void)//0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
+#else//old Tinker????
+void serial_init(void)//0?????? 1?????? 2????? 3??? 4????? 5?????
 {
 	char i,j;
 	servo_s[0].bus_id=0;
@@ -1994,12 +1871,12 @@ void serial_init(void)//0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
 	servo_s[11].POS_OFF_SET=0;	
 
 
-	palm_dj.hand_att[0]=0;//手
+	palm_dj.hand_att[0]=0;//??
 	palm_dj.hand_att[1]=0;
 	palm_dj.head_att[0]=0;
 	palm_dj.head_att[1]=0;
 
-	palm_dj.cap_rate=0;//夹爪 0开1关  //0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
+	palm_dj.cap_rate=0;//??? 0??1??  //0?????? 1?????? 2????? 3??? 4????? 5?????
 	
 	servo_s[0].type=SCS00091;
 	servo_s[1].type=SCS00091;
@@ -2076,17 +1953,17 @@ void serial_ping_loss(void)
 
 void serial_power_off_all(void)
 {
-		unLockEprom(0xfe);//打开EPROM保存功能//卸力
+		unLockEprom(0xfe);//??EPROM??????//???
 		writeWord(0xfe, SCSCL_TORQUE_ENABLE, 0);
-		LockEprom(0xfe);//关闭EPROM保存功能
+		LockEprom(0xfe);//???EPROM??????
 }
 
 void serial_power_off_joint(char id)
 {
 	if(servo_ss[id].connect){
-		unLockEprom(id);//打开EPROM保存功能//卸力
+		unLockEprom(id);//??EPROM??????//???
 		writeWord(id, SCSCL_TORQUE_ENABLE, 0);
-		LockEprom(id);//关闭EPROM保存功能
+		LockEprom(id);//???EPROM??????
 	}
 }
 
@@ -2161,7 +2038,7 @@ float test_sin=500;
 float cap_gain=120;
 int test_q=0;
 int dj_delay=20;
-void serial_servo(float dt)//0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
+void serial_servo(float dt)//0?????? 1?????? 2????? 3??? 4????? 5?????
 {
   static char state=0;
 	static float t=0,t_ping=0;
@@ -2178,7 +2055,7 @@ void serial_servo(float dt)//0末端航向 1末端俯仰 2末端横滚 3夹持 4头航向 5头俯仰
 			delay_us(dj_delay);
 		}
 	}else{
-		if(!test_q){//测试模式
+		if(!test_q){//??????
 			servo_ss[0].exp_q=palm_dj.q_exp[0];
 			servo_ss[1].exp_q=palm_dj.q_exp[1];
 			servo_ss[2].exp_q=palm_dj.q_exp[2];
@@ -2236,7 +2113,7 @@ static void Send_Uart3(char *dataToSend , char length)
      UsartSend3(dataToSend[i]);
 }
 
-void send_cmd1_extcan(void)//extcan 扩展电机指令
+void send_cmd1_extcan(void)//extcan ?????????
 {
 	char i;	char sum = 0;
 	char data_to_send[100];
@@ -2247,8 +2124,8 @@ void send_cmd1_extcan(void)//extcan 扩展电机指令
 
   data_to_send[_cnt++]=0xAA;
 	data_to_send[_cnt++]=0xAF;
-	data_to_send[_cnt++]=0x01;//功能字
-	data_to_send[_cnt++]=0;//数据量
+	data_to_send[_cnt++]=0x01;//??????
+	data_to_send[_cnt++]=0;//??????
  	#if 0//test
 	for(i=0;i<14;i++){
     palm_dj.q_exp[i]=i;
@@ -2278,7 +2155,7 @@ void send_cmd1_extcan(void)//extcan 扩展电机指令
 }
 
 
-void send_cmd2_extcan(void)//extcan 扩展电机复位与标定
+void send_cmd2_extcan(void)//extcan ????????????
 {
 	char i;	char sum = 0;
 	char data_to_send[100];
@@ -2289,8 +2166,8 @@ void send_cmd2_extcan(void)//extcan 扩展电机复位与标定
 
   data_to_send[_cnt++]=0xAA;
 	data_to_send[_cnt++]=0xAF;
-	data_to_send[_cnt++]=0x02;//功能字
-	data_to_send[_cnt++]=0;//数据量
+	data_to_send[_cnt++]=0x02;//??????
+	data_to_send[_cnt++]=0;//??????
  
 	for(i=0;i<14;i++){
 		data_to_send[_cnt++]=palm_dj.cal_div[i];
@@ -2313,7 +2190,7 @@ void send_cmd2_extcan(void)//extcan 扩展电机复位与标定
 
 float kp_servo[14]={15,10,10};//------------------------
 float kd_servo[14]={1,0.3,0.3};
-void send_cmd3_extcan(void)//extcan 扩展电机刚度
+void send_cmd3_extcan(void)//extcan ?????????
 {
 	char i;	char sum = 0;
 	char data_to_send[100];
@@ -2324,9 +2201,9 @@ void send_cmd3_extcan(void)//extcan 扩展电机刚度
 
   data_to_send[_cnt++]=0xAA;
 	data_to_send[_cnt++]=0xAF;
-	data_to_send[_cnt++]=0x03;//功能字
-	data_to_send[_cnt++]=0;//数据量
- #if 0//预设扩展电机PD参数
+	data_to_send[_cnt++]=0x03;//??????
+	data_to_send[_cnt++]=0;//??????
+ #if 0//?????????PD????
 		for(i=0;i<14;i++){
 			palm_dj.kp[i]=kp_servo[i];
 			palm_dj.kd[i]=kd_servo[i];
@@ -2459,7 +2336,7 @@ void Write_Audio_Data(uint8_t dat)
 	cmd[0] = 0xAA;
 	cmd[1] = 0x55;
 	cmd[2] = 0xFF;
-	cmd[3] = dat;  // 直接使用传入的数据
+	cmd[3] = dat;  // ??????????????
 	cmd[4] = 0xFB;
 
 	for(int j = 0; j<5 ;j++)

@@ -8,7 +8,6 @@
 #include "eso.h"
 #include "rc_mine.h"
 #include "nav.h"
-#include "usbd_cdc_vcp.h" 
 
 
 int PARAM_NRF[18][3];
