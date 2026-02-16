@@ -14,7 +14,7 @@ docker build -t gait-controller:jazzy .
 
 then **run it**:
 ```bash
-docker run -it --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix gait-controller:jazzy
+docker run -it --net host --ipc host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix gait-controller:jazzy
 ```
 
 To add changes from the src/ executable files, without affecting the message packages:

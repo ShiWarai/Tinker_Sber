@@ -12,7 +12,21 @@
 
 Данный проект является адаптацией и продолжением исходной [работы](https://github.com/Yuexuan9/Tinker/tree/main).
 
----
+```
+Tinker/           # Директория проекта
+   ├── assets/     # изображения
+   ├── assemble/     # сборка
+   │   ├── 3d_models/   # 3d-модели, файлы для печати
+   │   ├── electronics/ # электрические схемы и схемы подключения
+   │   └── images/      # хранилище фото для инструкции
+   │   └── README.md/      # инструкция по сборке
+   ├── software/     # Программное обеспечение
+   │   ├── docker/      # программы для работы с ПК
+   │   ├── ros2/      # основной контроллер низкого уровня
+   │   ├── sim/      # симуляция
+   │   └── firmware/         # контроллер двигателей
+   └── README.md     # Основная документация
+```
 
 ## Работа с репозиторием
 
@@ -78,7 +92,15 @@
 - [Assemble manual](https://github.com/Yuexuan9/Tinker/tree/main/assemble)
 - [Development](https://github.com/Yuexuan9/Tinker/tree/main/development)
 
----
+### Устройства
+
+- Контроллеры:
+  - NVIDIA Jetson Nano
+  - [Odroid C4](https://wiki.odroid.com/odroid-c4/odroid-c4#odroid-c4) или [Raspberry Pi 4](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
+  - STM32 плата
+- Интерфейсы:
+  - Wi-Fi
+  - Ethernet
 
 ## Параметры робота
 

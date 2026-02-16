@@ -1,0 +1,63 @@
+motors_number: 12
+
+motors:
+  motor_1:
+    position_limits:
+      min: -1.00 # rad
+      max: 1.00 # rad
+
+  motor_2:
+    position_limits:
+      min: -1.50 # rad
+      max: 1.50 # rad
+
+  motor_3:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_4:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_5:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_6:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_7:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_8:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_9:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_10:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_11:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
+  motor_12:
+    position_limits:
+      min: -1.57 # rad
+      max: 1.57 # rad
+
