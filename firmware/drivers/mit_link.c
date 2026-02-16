@@ -61,19 +61,19 @@ uint16_t float_to_uint_gim(float v,float v_min,float v_max,uint32_t width)
 	return utemp;
 }
 		
-u8 mit_motor_mode_en( char id,char en){//Ê¹ÄÜµç»ú
+u8 mit_motor_mode_en( char id,char en){//Ê¹ï¿½Üµï¿½ï¿½
 	u8 mbox;
   u16 i=0;
 	CanTxMsg TxMessage;
 	if(id<5)
-		TxMessage.StdId=0x00+id+1;	 // ±ê×¼±êÊ¶·ûÎª0
+		TxMessage.StdId=0x00+id+1;	 // ï¿½ï¿½×¼ï¿½ï¿½Ê¶ï¿½ï¿½Îª0
 	else
 		TxMessage.StdId=0x00+id+1-5;
 	
-  TxMessage.ExtId=0x00;//0x200;	 // ÉèÖÃÀ©Õ¹±êÊ¾·û£¨29Î»£©
-  TxMessage.IDE=0;		  // Ê¹ÓÃÀ©Õ¹±êÊ¶·û
-  TxMessage.RTR=0;		  // ÏûÏ¢ÀàÐÍÎªÊý¾ÝÖ¡£¬Ò»Ö¡8Î»
-  TxMessage.DLC=8;							 // ·¢ËÍÁ½Ö¡ÐÅÏ¢
+  TxMessage.ExtId=0x00;//0x200;	 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½29Î»ï¿½ï¿½
+  TxMessage.IDE=0;		  // Ê¹ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ê¶ï¿½ï¿½
+  TxMessage.RTR=0;		  // ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ò»Ö¡8Î»
+  TxMessage.DLC=8;							 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ï¢
 	TxMessage.Data[0] = 0xFF;//300??
 	TxMessage.Data[1] = 0xFF;
 	TxMessage.Data[2] = 0xFF;
@@ -89,30 +89,30 @@ u8 mit_motor_mode_en( char id,char en){//Ê¹ÄÜµç»ú
 	if(id<5){
 		mbox= CAN_Transmit(CAN1, &TxMessage);   
 		i=0;
-		while((CAN_TransmitStatus(CAN1, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//µÈ´ý·¢ËÍ½áÊø
+		while((CAN_TransmitStatus(CAN1, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//ï¿½È´ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½
 	}
 	else{
 		mbox= CAN_Transmit(CAN2, &TxMessage);   
 		i=0;
-		while((CAN_TransmitStatus(CAN2, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//µÈ´ý·¢ËÍ½áÊø
+		while((CAN_TransmitStatus(CAN2, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//ï¿½È´ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½
 	}
   if(i>=0XFFF)return 1;
   return 0;		
 }	
 
-u8 mit_set_pos_zero( char id){//ÉèÖÃÁãÎ»
+u8 mit_set_pos_zero( char id){//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»
 	u8 mbox;
   u16 i=0;
 	CanTxMsg TxMessage;
 	if(id<5)
-		TxMessage.StdId=0x00+id+1;	 // ±ê×¼±êÊ¶·ûÎª0
+		TxMessage.StdId=0x00+id+1;	 // ï¿½ï¿½×¼ï¿½ï¿½Ê¶ï¿½ï¿½Îª0
 	else
 		TxMessage.StdId=0x00+id+1-5;
 	
-  TxMessage.ExtId=0x00;//0x200;	 // ÉèÖÃÀ©Õ¹±êÊ¾·û£¨29Î»£©
-  TxMessage.IDE=0;		  // Ê¹ÓÃÀ©Õ¹±êÊ¶·û
-  TxMessage.RTR=0;		  // ÏûÏ¢ÀàÐÍÎªÊý¾ÝÖ¡£¬Ò»Ö¡8Î»
-  TxMessage.DLC=8;							 // ·¢ËÍÁ½Ö¡ÐÅÏ¢
+  TxMessage.ExtId=0x00;//0x200;	 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½29Î»ï¿½ï¿½
+  TxMessage.IDE=0;		  // Ê¹ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ê¶ï¿½ï¿½
+  TxMessage.RTR=0;		  // ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ò»Ö¡8Î»
+  TxMessage.DLC=8;							 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ï¢
 	TxMessage.Data[0] = 0xFF;//300??
 	TxMessage.Data[1] = 0xFF;
 	TxMessage.Data[2] = 0xFF;
@@ -125,12 +125,12 @@ u8 mit_set_pos_zero( char id){//ÉèÖÃÁãÎ»
 	if(id<5){
 		mbox= CAN_Transmit(CAN1, &TxMessage);   
 		i=0;
-		while((CAN_TransmitStatus(CAN1, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//µÈ´ý·¢ËÍ½áÊø
+		while((CAN_TransmitStatus(CAN1, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//ï¿½È´ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½
 	}
 	else{
 		mbox= CAN_Transmit(CAN2, &TxMessage);   
 		i=0;
-		while((CAN_TransmitStatus(CAN2, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//µÈ´ý·¢ËÍ½áÊø
+		while((CAN_TransmitStatus(CAN2, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//ï¿½È´ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½
 	}
   if(i>=0XFFF)return 1;
   return 0;		
@@ -150,7 +150,7 @@ int en_over_save3=0;
 float t_check_over=12;
 float err_dead=1.2;
 
-void data_can_mit_anal(motor_measure_t *ptr,uint8_t buf_rx[8])//½âÎöµç»úÊý¾Ý
+void data_can_mit_anal(motor_measure_t *ptr,uint8_t buf_rx[8])//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 {
 	char i;	
 	char sum = 0;
@@ -184,7 +184,7 @@ void data_can_mit_anal(motor_measure_t *ptr,uint8_t buf_rx[8])//½âÎöµç»úÊý¾Ý
   ptr->q_now=inv_q_flag*To_180_degrees(ptr->param.total_angle_out_single);
 	ptr->q_now_flt=To_180_degrees(ptr->q_now+ptr->param.q_reset_angle);
 
-	ptr->qd_now=To_180_degrees(ptr->q_now-ptr->param.q_now_reg)/dt;//½ÇËÙ¶ÈÎ¢·Ö  Ê¹ÓÃTD£¿
+	ptr->qd_now=To_180_degrees(ptr->q_now-ptr->param.q_now_reg)/dt;//ï¿½ï¿½ï¿½Ù¶ï¿½Î¢ï¿½ï¿½  Ê¹ï¿½ï¿½TDï¿½ï¿½
 	ptr->qd_now_flt=Moving_Median(ptr->param.id,qd_mid_f_mit,ptr->qd_now);	
 
 	ptr->param.q_now_reg=ptr->q_now;
@@ -195,7 +195,7 @@ float v_des_ff[10];
 float t_des_ff[10];
 float k_spd_all=5;//butler new
 //float k_spd_all=1;//butler old
-char data_can_mit_send(motor_measure_t *ptr){//·¢ËÍ¿ØÖÆÖ¸Áî
+char data_can_mit_send(motor_measure_t *ptr){//ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
 	u8 canbuft_mit1[20]={0};
 	int q_flag=1;
 	float set_q;
@@ -236,12 +236,12 @@ char data_can_mit_send(motor_measure_t *ptr){//·¢ËÍ¿ØÖÆÖ¸Áî
 	float v_des = fminf_mit(fmaxf_mit(V_MIN_CAN_MIT[ptr->param.id], set_dq), V_MAX_CAN_MIT[ptr->param.id]);  
 	float kp = fminf_mit(fmaxf_mit(KP_MIN_CAN_MIT[ptr->param.id], ptr->stiff*ptr->kp*EN_MIT_PID_INNER), KP_MAX_CAN_MIT[ptr->param.id]);   
 	float kd = fminf_mit(fmaxf_mit(KD_MIN_CAN_MIT[ptr->param.id], ptr->stiff*ptr->kd*EN_MIT_PID_INNER), KD_MAX_CAN_MIT[ptr->param.id]); 
-	float t_ff = fminf_mit(fmaxf_mit(T_MIN_CAN_MIT[ptr->param.id],LIMIT(set_t,-ptr->max_t,ptr->max_t)), T_MAX_CAN_MIT[ptr->param.id]); //×îÖÕ·¢ËÍµÄÁ¦¾ØÇ°À¡
+	float t_ff = fminf_mit(fmaxf_mit(T_MIN_CAN_MIT[ptr->param.id],LIMIT(set_t,-ptr->max_t,ptr->max_t)), T_MAX_CAN_MIT[ptr->param.id]); //ï¿½ï¿½ï¿½Õ·ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½
 	t_des_ff[ptr->param.id]=t_ff;
-	if(EN_MIT_PID_INNER==0||ptr->param.usb_cmd_mode==2)//´¿Á¦¾ØÇ°À¡¡¢µçÁ÷Ä£Ê½
+	if(EN_MIT_PID_INNER==0||ptr->param.usb_cmd_mode==2)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
 	   kp=kd=v_des=0;
 	
-	if(ptr->param.control_mode==1){//×ªËÙÄ£Ê½7
+	if(ptr->param.control_mode==1){//×ªï¿½ï¿½Ä£Ê½7
 		kp=0;
 		kd=LIMIT(kd,KD_MIN_CAN_MIT[ptr->param.id],KD_MAX_CAN_MIT[ptr->param.id]);
 		v_des_ff[ptr->param.id]=v_des=LIMIT(set_dq*k_spd_all,V_MIN_CAN_MIT[ptr->param.id],V_MAX_CAN_MIT[ptr->param.id]);//butler
@@ -268,14 +268,14 @@ char data_can_mit_send(motor_measure_t *ptr){//·¢ËÍ¿ØÖÆÖ¸Áî
 	u16 i=0;
 	CanTxMsg TxMessage1;
 	if(ptr->param.id<5)
-		TxMessage1.StdId=0x00+ptr->param.id+1;	 // ±ê×¼±êÊ¶·ûÎª0
+		TxMessage1.StdId=0x00+ptr->param.id+1;	 // ï¿½ï¿½×¼ï¿½ï¿½Ê¶ï¿½ï¿½Îª0
 	else
 		TxMessage1.StdId=0x00+ptr->param.id+1-5;
 	
-	TxMessage1.ExtId=0x00;//0x200;	 // ÉèÖÃÀ©Õ¹±êÊ¾·û£¨29Î»£©
-	TxMessage1.IDE=0;		  // Ê¹ÓÃÀ©Õ¹±êÊ¶·û
-	TxMessage1.RTR=0;		  // ÏûÏ¢ÀàÐÍÎªÊý¾ÝÖ¡£¬Ò»Ö¡8Î»
-	TxMessage1.DLC=8;							 // ·¢ËÍÁ½Ö¡ÐÅÏ¢
+	TxMessage1.ExtId=0x00;//0x200;	 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½29Î»ï¿½ï¿½
+	TxMessage1.IDE=0;		  // Ê¹ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ê¶ï¿½ï¿½
+	TxMessage1.RTR=0;		  // ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ò»Ö¡8Î»
+	TxMessage1.DLC=8;							 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ï¢
 	TxMessage1.Data[0] = canbuft_mit1[0];//300??
 	TxMessage1.Data[1] = canbuft_mit1[1];
 	TxMessage1.Data[2] = canbuft_mit1[2];
@@ -290,13 +290,13 @@ char data_can_mit_send(motor_measure_t *ptr){//·¢ËÍ¿ØÖÆÖ¸Áî
 		mbox = CAN_Transmit(CAN1, &TxMessage1);
 		
 		while((CAN_TransmitStatus(CAN1, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))
-			i++;	//µÈ´ý·¢ËÍ½áÊø
+			i++;	//ï¿½È´ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½
 	}
 	else{
 		mbox = CAN_Transmit(CAN2, &TxMessage1);
 		
 		while((CAN_TransmitStatus(CAN2, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))
-			i++;	//µÈ´ý·¢ËÍ½áÊø
+			i++;	//ï¿½È´ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½
 	}
 			
 	if(i>=0XFFF)
@@ -305,7 +305,7 @@ char data_can_mit_send(motor_measure_t *ptr){//·¢ËÍ¿ØÖÆÖ¸Áî
   return 0;		
 }
 
-char data_can_sample_only(motor_measure_t *ptr){//Êý¾Ý²É¼¯
+char data_can_sample_only(motor_measure_t *ptr){//ï¿½ï¿½ï¿½Ý²É¼ï¿½
 	u8 canbuft1[8];
 /// limit data to be within bounds ///  
 	int q_flag=1;
@@ -346,14 +346,14 @@ char data_can_sample_only(motor_measure_t *ptr){//Êý¾Ý²É¼¯
   u16 i=0;
 	CanTxMsg TxMessage1;
 	if(ptr->param.id<5)
-		TxMessage1.StdId=0x00+ptr->param.id+1;	 // ±ê×¼±êÊ¶·ûÎª0
+		TxMessage1.StdId=0x00+ptr->param.id+1;	 // ï¿½ï¿½×¼ï¿½ï¿½Ê¶ï¿½ï¿½Îª0
 	else
 		TxMessage1.StdId=0x00+ptr->param.id+1-5;
 	
-  TxMessage1.ExtId=0x00;//0x200;	 // ÉèÖÃÀ©Õ¹±êÊ¾·û£¨29Î»£©
-  TxMessage1.IDE=0;		  // Ê¹ÓÃÀ©Õ¹±êÊ¶·û
-  TxMessage1.RTR=0;		  // ÏûÏ¢ÀàÐÍÎªÊý¾ÝÖ¡£¬Ò»Ö¡8Î»
-  TxMessage1.DLC=8;							 // ·¢ËÍÁ½Ö¡ÐÅÏ¢
+  TxMessage1.ExtId=0x00;//0x200;	 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½29Î»ï¿½ï¿½
+  TxMessage1.IDE=0;		  // Ê¹ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ê¶ï¿½ï¿½
+  TxMessage1.RTR=0;		  // ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ò»Ö¡8Î»
+  TxMessage1.DLC=8;							 // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ï¢
 	TxMessage1.Data[0] = canbuft1[0];//300??
 	TxMessage1.Data[1] = canbuft1[1];
 	TxMessage1.Data[2] = canbuft1[2];
@@ -366,12 +366,12 @@ char data_can_sample_only(motor_measure_t *ptr){//Êý¾Ý²É¼¯
 	if(ptr->param.id<5){
 		mbox= CAN_Transmit(CAN1, &TxMessage1);   
 		i=0;
-		while((CAN_TransmitStatus(CAN1, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//µÈ´ý·¢ËÍ½áÊø
+		while((CAN_TransmitStatus(CAN1, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//ï¿½È´ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½
 	}
 	else{
 		mbox= CAN_Transmit(CAN2, &TxMessage1);   
 		i=0;
-		while((CAN_TransmitStatus(CAN2, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//µÈ´ý·¢ËÍ½áÊø
+		while((CAN_TransmitStatus(CAN2, mbox)==CAN_TxStatus_Failed)&&(i<0XFFF))i++;	//ï¿½È´ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½
 	}
   if(i>=0XFFF)return 1;
   return 0;		
@@ -438,7 +438,7 @@ void mit_bldc_thread(char en_all,float dt)
 			T_MAX_CAN_MIT[i] = 10.0f;
 			motor_chassis[i].motor.anal_type=M_MIT;
 			break;
-			case DM_6006://Ð¡ÐÍ±âÆ½µç»ú
+			case DM_6006://Ð¡ï¿½Í±ï¿½Æ½ï¿½ï¿½ï¿½
 			P_MIN_CAN_MIT[i] =-12.5f;
 			P_MAX_CAN_MIT[i]  =12.5f;
 			V_MIN_CAN_MIT[i] =-45.0f;
@@ -452,7 +452,7 @@ void mit_bldc_thread(char en_all,float dt)
 			T_MAX_CAN_MIT[i] = 12.0f;
 			motor_chassis[i].motor.anal_type=M_MIT;
 			break;
-			case DM_8006 ://¼õËÙ±È6 µç»ú		
+			case DM_8006 ://ï¿½ï¿½ï¿½Ù±ï¿½6 ï¿½ï¿½ï¿½		
 			P_MIN_CAN_MIT[i] =-12.5f;
 			P_MAX_CAN_MIT[i]  =12.5f;
 			V_MIN_CAN_MIT[i] =-45.0f;
@@ -497,7 +497,7 @@ void mit_bldc_thread(char en_all,float dt)
 		}
 	}
 	reg_cmd_mode=motor_chassis[0].cmd_mode;
-	//±ê¶¨
+	//ï¿½ê¶¨
 	for(i=0;i<10;i++){
 		if((motor_chassis[i].reset_q==1||motor_chassis[i].cal_div==1)&&motor_chassis[i].reset_q_lock==0){
 				mit_set_pos_zero(i);
@@ -526,10 +526,12 @@ void mit_bldc_thread(char en_all,float dt)
 				 motor_chassis[i].reset_q_lock=0;
 				 motor_chassis[i].reset_q=0;
 				 motor_chassis[i].reset_q_cnt=0;
+
+				motor_chassis[i].param.q_reset_angle = 0.0f; //to right set_zero_pos
 			 }
 		}
 	}		
-	//±£´æÅäÖÃ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if(can_write_flash==1){
 			//stop motor
 			for(i=0;i<10;i++){
@@ -544,24 +546,24 @@ void mit_bldc_thread(char en_all,float dt)
 			WRITE_PARM();
   }
 			
-	//·¢ËÍ¿ØÖÆÖ¸Áî
+	//ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
 	for(i=0;i<10;i++){
-		if(en_mit_out==2)//Ê¹ÄÜ·¢ËÍÃüÁî MIT¿ØÖÆÄ£Ê½
+		if(en_mit_out==2)//Ê¹ï¿½Ü·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ MITï¿½ï¿½ï¿½ï¿½Ä£Ê½
 		{
 			data_can_mit_send(&motor_chassis[i]);
 			delay_us(mit_delay);
-		}else//·ñÔò¾Í²É¼¯Êý¾Ý  µç»úÅ¤¾Ø¾ùÎª0
+		}else//ï¿½ï¿½ï¿½ï¿½Í²É¼ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½ï¿½Å¤ï¿½Ø¾ï¿½Îª0
 		{
 			data_can_sample_only(&motor_chassis[i]);
 			delay_us(mit_delay);
 		}
 	}
 
-	switch(en_mit_out)//----------------Ê¹ÄÜÐÅºÅµÄ×´Ì¬»ú
+	switch(en_mit_out)//----------------Ê¹ï¿½ï¿½ï¿½ÅºÅµï¿½×´Ì¬ï¿½ï¿½
 	{
-		case 0://¹Ø±Õ×´Ì¬
+		case 0://ï¿½Ø±ï¿½×´Ì¬
 			auto_off_t+=dt;
-			if(auto_off_t>0.5)//×Ô¶¯¹Ø±ÕÖÜÆÚ·¢ËÍ
+			if(auto_off_t>0.5)//ï¿½Ô¶ï¿½ï¿½Ø±ï¿½ï¿½ï¿½ï¿½Ú·ï¿½ï¿½ï¿½
 			{
 				auto_off_t=0;
 				for(i=0;i<10;i++){
@@ -590,8 +592,8 @@ void mit_bldc_thread(char en_all,float dt)
 				delay_us(mit_delay);
 			}				
 			break;
-		case 2://Ê¹ÄÜºó
-			if(!en_test&&!en_all)//´¥·¢Ê½¹Ø±Õ
+		case 2://Ê¹ï¿½Üºï¿½
+			if(!en_test&&!en_all)//ï¿½ï¿½ï¿½ï¿½Ê½ï¿½Ø±ï¿½
 			{
 				for(i=0;i<10;i++){
 					mit_motor_mode_en(i,0);
