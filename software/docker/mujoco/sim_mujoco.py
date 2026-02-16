@@ -62,18 +62,28 @@ class MujocoSim(Node):
 
     def control_loop(self):
         try:
+            self.data.qpos[0:3] = [0, 0, 0.4]
+            self.data.qpos[3:7] = [1, 0, 0, 0]
+            self.data.qvel[0:6] = 0
+            
             actions = self.actions.copy()
+
+            # self.ctrl[2] = 0.5 * np.sin(time.time())
+            dt = 0.01
+            t_disc = dt * np.floor(time.time() / dt)
+            self.ctrl[2] = 0.55 * np.sin(t_disc)
+            self.ctrl[7] = 0.55 * np.sin(t_disc + 2)
 
             current_positions = self.data.qpos[7:17]
             current_velocities = self.data.qvel[6:16]
-            # kp = 50.0  # stiffness
-            # kd = 5.0   # damping
-            # self.ctrl[:] = kp * (actions - current_positions) - kd * current_velocities
-            # self.ctrl = np.clip(self.ctrl, -1.57, 1.57)
-            self.ctrl = np.clip(actions, -1.57, 1.57)
+            # kp = 15  # stiffness
+            # kd = 0.65   # damping
+            # self.ctrl[2] = kp * (actions[2] - current_positions[2]) - kd * current_velocities[2]
+            self.ctrl = np.clip(self.ctrl, -1.57, 1.57)
+
             self.data.ctrl[:] = self.ctrl
             # self.data.ctrl[:] = actions
-            # self.data.ctrl[2] = -1.0
+            
 
             mujoco.mj_step(self.model, self.data)
 
@@ -128,10 +138,10 @@ if __name__ == "__main__":
             # time.sleep(0.01)
             current_time = time.time()
 
-            if current_time - last_print_time >= 5.0:
-                print("Positions:", mujoco_sim.positions)
-                print("Velocities:", mujoco_sim.velocities)
-                print("Ctrl:", mujoco_sim.data.ctrl)
+            if current_time - last_print_time >= 3.0:
+                print("Positions:", mujoco_sim.positions[2])
+                print("Velocities:", mujoco_sim.velocities[2])
+                print("Ctrl:", mujoco_sim.data.ctrl[2])
                 last_print_time = current_time
 
     except Exception as e:

@@ -5,7 +5,7 @@
 	<worldbody>
 		<include file="tinker_range_inv.xml" />
 	</worldbody>
- 	<actuator>      
+ 	<!-- <actuator>      
 		<motor name="joint_l_yaw"   joint="joint_l_yaw"   gear="1" ctrllimited="true" ctrlrange="-12 12"/>
 		<motor name="joint_l_roll"  joint="joint_l_roll"  gear="1" ctrllimited="true" ctrlrange="-12 12"/>
 		<motor name="joint_l_pitch" joint="joint_l_pitch" gear="1" ctrllimited="true" ctrlrange="-12 12"/>
@@ -17,21 +17,21 @@
 		<motor name="joint_r_pitch" joint="joint_r_pitch" gear="1" ctrllimited="true" ctrlrange="-12 12"/>
 		<motor name="joint_r_knee"  joint="joint_r_knee"  gear="1" ctrllimited="true" ctrlrange="-12 12"/>
 		<motor name="joint_r_ankle" joint="joint_r_ankle" gear="1" ctrllimited="true" ctrlrange="-12 12"/>
-    </actuator>
+    </actuator> -->
     
-	<!-- <actuator>      
-		<position name="joint_l_yaw" joint="joint_l_yaw" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />
-		<position name="joint_l_roll" joint="joint_l_roll" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />
-		<position name="joint_l_pitch" joint="joint_l_pitch" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />
-		<position name="joint_l_knee" joint="joint_l_knee" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />
-		<position name="joint_l_ankle" joint="joint_l_ankle" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />	
-		<position name="joint_r_yaw" joint="joint_r_yaw" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />
-		<position name="joint_r_roll" joint="joint_r_roll" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />
-		<position name="joint_r_pitch" joint="joint_r_pitch" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />
-		<position name="joint_r_knee" joint="joint_r_knee" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />
-		<position name="joint_r_ankle" joint="joint_r_ankle" gear="1" ctrllimited="true" kp="1" ctrlrange="-1.57 1.57" />	 
+	<actuator>      
+		<position name="joint_l_yaw" 	joint="joint_l_yaw" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />
+		<position name="joint_l_roll" 	joint="joint_l_roll" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />
+		<position name="joint_l_pitch" 	joint="joint_l_pitch" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />
+		<position name="joint_l_knee" 	joint="joint_l_knee" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />
+		<position name="joint_l_ankle" 	joint="joint_l_ankle" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />	
+		<position name="joint_r_yaw" 	joint="joint_r_yaw" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />
+		<position name="joint_r_roll" 	joint="joint_r_roll" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />
+		<position name="joint_r_pitch" 	joint="joint_r_pitch" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />
+		<position name="joint_r_knee" 	joint="joint_r_knee" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />
+		<position name="joint_r_ankle" 	joint="joint_r_ankle" 	gear="1" ctrllimited="true" kp="1" kv="0.1" ctrlrange="-1.57 1.57" />	 
 		
-		<velocity name="joint_l_yawv" joint="joint_l_yaw" kv="0.50" user="1"/>
+		<!-- <velocity name="joint_l_yawv" joint="joint_l_yaw" kv="0.50" user="1"/>
 		<velocity name="joint_l_rollv" joint="joint_l_roll" kv="0.50" user="1"/>
 		<velocity name="joint_l_pitchv" joint="joint_l_pitch" kv="0.50" user="1"/>
 		<velocity name="joint_l_kneev" joint="joint_l_knee" kv="0.50" user="1"/>
@@ -41,8 +41,8 @@
 		<velocity name="joint_r_rollv" joint="joint_r_roll" kv="0.50" user="1"/>
 		<velocity name="joint_r_pitchv" joint="joint_r_pitch" kv="0.50" user="1"/>
 		<velocity name="joint_r_kneev" joint="joint_r_knee" kv="0.50" user="1"/>
-		<velocity name="joint_r_anklev" joint="joint_r_ankle" kv="0.50" user="1"/>
-    </actuator> -->
+		<velocity name="joint_r_anklev" joint="joint_r_ankle" kv="0.50" user="1"/> -->
+    </actuator>
 
     <sensor>
     		<!--pos-->
