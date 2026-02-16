@@ -5,6 +5,7 @@
 # !.vscode/extensions.json
 *.code-workspace
 .vscode/
+.vscode/settings.json
 
 # Local History for Visual Studio Code
 .history/
@@ -176,4 +177,5 @@ CMakeUserPresets.json
 *.ptx
 *.cubin
 *.fatbin
+
 
