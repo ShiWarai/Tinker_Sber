@@ -1,0 +1,43 @@
+{
+  "model_checkpoint": "/home/dzirt/RL/docker_rl/Alpha_Human_gym-main/logs/h1_constraint_trot/Oct09_15-54-01_/model_30000.pt",
+  "test_configuration": {
+    "model_path": "/home/dzirt/RL/docker_rl/Alpha_Human_gym-main/resources/h1/xml/world.xml",
+    "total_tests": 3
+  },
+  "test_results": {
+    "test_500steps": {
+      "reward_mean": 0.1379239806454142,
+      "reward_std": 0.015168575840044756,
+      "total_time": 0.18074846267700195,
+      "steps_per_sec": 2766.2752567555804,
+      "max_forward": 0.007855200858478323,
+      "final_forward": 0.007003970814187539,
+      "avg_velocity": 0.8253672960684117,
+      "avg_action": 0.09709962457418442,
+      "stability_large_changes": 0
+    },
+    "test_2000steps": {
+      "reward_mean": 0.0016130647356418918,
+      "reward_std": 0.08410475350471491,
+      "total_time": 1.2039213180541992,
+      "steps_per_sec": 1661.2381307712355,
+      "max_forward": 0.007855200858478323,
+      "final_forward": -0.05196550563131036,
+      "avg_velocity": 1.170555252290557,
+      "avg_action": 0.09562456607818604,
+      "stability_large_changes": 0
+    },
+    "test_5000steps": {
+      "reward_mean": -0.03332086680064714,
+      "reward_std": 0.06035769648112546,
+      "total_time": 1.880932331085205,
+      "steps_per_sec": 2658.2561835785164,
+      "max_forward": 0.007855200858478323,
+      "final_forward": -0.0553590841069385,
+      "avg_velocity": 0.5106211809495309,
+      "avg_action": 0.09163641929626465,
+      "stability_large_changes": 0
+    }
+  },
+  "timestamp": "2025-10-27 00:33:01"
+}

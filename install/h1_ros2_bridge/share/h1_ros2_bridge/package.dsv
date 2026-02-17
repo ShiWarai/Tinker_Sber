@@ -1,0 +1,8 @@
+source;share/h1_ros2_bridge/hook/path.dsv
+source;share/h1_ros2_bridge/hook/path.sh
+source;share/h1_ros2_bridge/hook/pythonpath.dsv
+source;share/h1_ros2_bridge/hook/pythonpath.sh
+source;share/h1_ros2_bridge/hook/pythonscriptspath.dsv
+source;share/h1_ros2_bridge/hook/pythonscriptspath.sh
+source;share/h1_ros2_bridge/hook/ament_prefix_path.dsv
+source;share/h1_ros2_bridge/hook/ament_prefix_path.sh

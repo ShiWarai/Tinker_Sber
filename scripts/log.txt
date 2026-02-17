@@ -1,0 +1,23 @@
+Action rate: tensor([0.], device='cuda:0', grad_fn=<DivBackward0>)
+Z vel: tensor([0.0171], device='cuda:0')
+XY vel: tensor([1.7371], device='cuda:0')
+Feet air reward 0.0
+STAGE:2025-10-23 13:40:10 11799:11799 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
+STAGE:2025-10-23 13:40:12 11799:11799 ActivityProfilerController.cpp:320] Completed Stage: Collection
+STAGE:2025-10-23 13:40:12 11799:11799 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                            aten::addmm        15.55%     154.608ms        20.66%     205.393ms      29.342us      13.875ms        29.57%      14.597ms       2.085us          7000  
+void gemvNSP_kernel<__half, __half, __half, float, 1...         0.00%       0.000us         0.00%       0.000us       0.000us       8.844ms        18.85%       8.844ms       1.474us          6000  
+                                               aten::mm        12.19%     121.157ms        16.44%     163.435ms      27.239us       8.194ms        17.46%       8.915ms       1.486us          6000  
+                                              aten::elu         8.95%      88.985ms        13.45%     133.693ms      19.099us       7.000ms        14.92%       7.746ms       1.107us          7000  
+void at::native::vectorized_elementwise_kernel<4, at...         0.00%       0.000us         0.00%       0.000us       0.000us       7.000ms        14.92%       7.000ms       1.000us          7000  
+void gemv2T_kernel_val<int, int, __half, __half, __h...         0.00%       0.000us         0.00%       0.000us       0.000us       6.856ms        14.61%       6.856ms       2.285us          3000  
+                                          aten::baddbmm         6.11%      60.778ms        12.89%     128.117ms      42.706us       5.844ms        12.46%       6.500ms       2.167us          3000  
+                                              aten::cat         7.39%      73.427ms        11.04%     109.770ms      21.954us       5.000ms        10.66%       5.485ms       1.097us          5000  
+void gemv2T_kernel_val<int, int, __half, __half, __h...         0.00%       0.000us         0.00%       0.000us       0.000us       4.003ms         8.53%       4.003ms       2.002us          2000  
+                                aten::native_layer_norm         3.49%      34.739ms         7.37%      73.265ms      36.633us       4.000ms         8.53%       4.165ms       2.083us          2000  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 994.079ms
+Self CUDA time total: 46.920ms

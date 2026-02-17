@@ -1,0 +1,104 @@
+<mujoco model="tinymal">
+  <compiler angle="radian" coordinate="local" inertiafromgeom="true"/>
+  <option timestep="0.0025" integrator="RK4"/>
+  
+  <default>
+    <joint armature="0.01" damping="0.1" limited="true"/>
+    <geom conaffinity="0" condim="3" friction="1 0.005 0.0001" margin="0.001"/>
+    <motor ctrllimited="true" ctrlrange="-1 1"/>
+  </default>
+  
+  <worldbody>
+    <light cutoff="100" diffuse="1 1 1" dir="-0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1"/>
+    <geom conaffinity="1" condim="3" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="40 40 40" type="plane"/>
+    
+    <body name="tinymal" pos="0 0 -0.15" quat="1 0 0 0">
+        <joint name="float_base" type="free"/>
+        <inertial pos="-0.030485 0.000283 0.020881" quat="1 0 0 0" mass="2.3933" diaginertia="0.01079522 0.01240703 0.00996364"/>  
+        <geom type="box" size="0.2 0.1 0.05" rgba="0.3 0.3 0.8 1"/>
+        <site name="imu" size="0.01" pos="0.0 0 0.0"/>
+
+        <!-- Left Leg -->
+        <body name="link_l_yaw" pos="0.0025357 0.053301 0.056145">
+            <inertial pos="0.0031721 3.773e-05 -0.050777" quat="0.999618 -0.00349618 0.0274106 -0.000616623" mass="0.4033" diaginertia="0.00038287 0.00023882 0.00020175" />
+            <joint name="joint_l_yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-0.66 0.66"/>
+            <geom type="capsule" fromto="0 0 0 0.01 0 -0.05" size="0.02" rgba="0.89804 0.91765 0.92941 1"/>
+            <body name="link_l_roll" pos="-0.010958 0 -0.054965">
+                <inertial pos="0.0090994 0.06545 -0.013394" quat="0.10126 0.439014 0.726345 0.519073" mass="0.46748" diaginertia="0.00037171 0.00037591 0.00036991" />
+                <joint name="joint_l_roll" pos="0 0 0" axis="1 0 0" limited="true" range="-0.57 0.57"/>
+                <geom type="capsule" fromto="0 0 0 0.01 0.07 -0.01" size="0.018" rgba="0.89804 0.91765 0.92941 1"/>
+                <body name="link_l_pitch" pos="0.010958 0.071699 -0.014313">
+                    <inertial pos="-0.0013138 0.0056716 -0.12051" quat="0.710837 -0.0349039 0.0167031 0.702291" mass="0.56676" diaginertia="0.00142093 0.00165467 0.00033524" />
+                    <joint name="joint_l_pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-1.57 0.57"/>
+                    <geom type="capsule" fromto="0 0 0 0 0 -0.14" size="0.015" rgba="1 1 1 1"/>
+                    <body name="link_l_knee" pos="0 0 -0.14738">
+                        <inertial pos="-2.3595e-06 -0.0058981 -0.11387" quat="0.706202 0.0340951 -0.0341471 0.706364" mass="0.35345" diaginertia="0.00078577 0.00084805 0.00012468" />
+                        <joint name="joint_l_knee" pos="0 0 0" axis="0 1 0" limited="true" range="0 2.57"/>
+                        <geom type="capsule" fromto="0 0 0 0 0 -0.14" size="0.012" rgba="1 1 1 1"/>
+                        <body name="link_l_ankle" pos="0 0 -0.14049">
+                            <inertial pos="0.020853 0.0048146 -0.030186" quat="0.598198 0.414527 0.587571 0.353677" mass="0.17624" diaginertia="0.00007821 0.00029166 0.00027058" />
+                            <joint name="joint_l_ankle" pos="0 0 0" axis="0 1 0" limited="true" range="-1.57 0.57"/>
+                            <geom type="sphere" size="0.015" rgba="1 0.90588 0.91765 1"/>
+                            <site name="left_ankle_site" pos="0.02 0 -0.05" size="0.01"/>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+        
+        <!-- Right Leg -->
+        <body name="link_r_yaw" pos="0.0025357 -0.053425 0.056145">
+            <inertial pos="0.0031721 3.773e-05 -0.050777" quat="0.999618 -0.00349618 0.0274106 -0.000616623" mass="0.4033" diaginertia="0.00038287 0.00023882 0.00020175" />
+            <joint name="joint_r_yaw" pos="0 0 0" axis="0 0 1" limited="true" range="-0.66 0.66"/>
+            <geom type="capsule" fromto="0 0 0 0.01 0 -0.05" size="0.02" rgba="0.89804 0.91765 0.92941 1"/>
+            <body name="link_r_roll" pos="-0.010958 0 -0.054965">
+                <inertial pos="0.0090994 -0.06469 -0.013394" quat="0.510119 0.72481 0.450148 0.108613" mass="0.46748" diaginertia="0.00036594 0.00037591 0.00036414" />
+                <joint name="joint_r_roll" pos="0 0 0" axis="1 0 0" limited="true" range="-0.57 0.57"/>
+                <geom type="capsule" fromto="0 0 0 0.01 -0.07 -0.01" size="0.018" rgba="0.89804 0.91765 0.92941 1"/>
+                <body name="link_r_pitch" pos="0.010958 -0.071575 -0.014313">
+                    <inertial pos="-0.0013138 -0.0047951 -0.11962" quat="0.703677 0.0110046 -0.037368 0.709451" mass="0.56676" diaginertia="0.00146780 0.00170154 0.00033524" />
+                    <joint name="joint_r_pitch" pos="0 0 0" axis="0 1 0" limited="true" range="-1.57 0.57"/>
+                    <geom type="capsule" fromto="0 0 0 0 0 -0.14" size="0.015" rgba="1 1 1 1"/>
+                    <body name="link_r_knee" pos="0 0 -0.14738">
+                        <inertial pos="7.3527e-06 0.0067747 -0.11375" quat="0.706248 -0.0338418 0.0339636 0.706339" mass="0.35345" diaginertia="0.00078911 0.00085139 0.00012468" />
+                        <joint name="joint_r_knee" pos="0 0 0" axis="0 1 0" limited="true" range="0 2.57"/>
+                        <geom type="capsule" fromto="0 0 0 0 0 -0.14" size="0.012" rgba="1 1 1 1"/>
+                        <body name="link_r_ankle" pos="0 0 -0.14049">
+                            <inertial pos="0.014562 -0.0039946 -0.031306" quat="0.341262 0.618982 0.375042 0.599787" mass="0.175" diaginertia="0.00007468 0.00032189 0.00030379" />
+                            <joint name="joint_r_ankle" pos="0 0 0" axis="0 1 0" limited="true" range="-1.57 0.57"/>
+                            <geom type="sphere" size="0.015" rgba="1 1 1 1"/>
+                            <site name="right_ankle_site" pos="0.02 0 -0.045" size="0.01"/>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </body>
+  </worldbody>
+  
+  <actuator>
+    <motor joint="joint_l_yaw" gear="50"/>
+    <motor joint="joint_l_roll" gear="80"/>
+    <motor joint="joint_l_pitch" gear="100"/>
+    <motor joint="joint_l_knee" gear="80"/>
+    <motor joint="joint_l_ankle" gear="50"/>
+    <motor joint="joint_r_yaw" gear="50"/>
+    <motor joint="joint_r_roll" gear="80"/>
+    <motor joint="joint_r_pitch" gear="100"/>
+    <motor joint="joint_r_knee" gear="80"/>
+    <motor joint="joint_r_ankle" gear="50"/>
+  </actuator>
+  
+  <sensor>
+    <jointpos name="l_yaw_pos" joint="joint_l_yaw"/>
+    <jointpos name="l_roll_pos" joint="joint_l_roll"/>
+    <jointpos name="l_pitch_pos" joint="joint_l_pitch"/>
+    <jointpos name="l_knee_pos" joint="joint_l_knee"/>
+    <jointpos name="l_ankle_pos" joint="joint_l_ankle"/>
+    <jointpos name="r_yaw_pos" joint="joint_r_yaw"/>
+    <jointpos name="r_roll_pos" joint="joint_r_roll"/>
+    <jointpos name="r_pitch_pos" joint="joint_r_pitch"/>
+    <jointpos name="r_knee_pos" joint="joint_r_knee"/>
+    <jointpos name="r_ankle_pos" joint="joint_r_ankle"/>
+  </sensor>
+</mujoco>
