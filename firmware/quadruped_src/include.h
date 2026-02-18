@@ -36,6 +36,15 @@ extern int spi_comm_mess_type;//Э��汾
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdarg.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265f
+#endif
+
+#ifndef M_PI_2
+#define M_PI_2 (M_PI / 2.0f)
+#endif
+
 #if !RUN_WEBOTS
 #include <stm32f4xx.h>	    
 #include "time.h"
@@ -124,7 +133,6 @@ extern int spi_comm_mess_type;//Э��汾
 #define MAX_THR       80 			///%	����ͨ�����ռ��80%����20%��������
 #define READY_SPEED   20			///%	��������ת��20%����
 //================ϵͳ===================
-#define USE_CYCLE_HML_CAL  0//0->ʹ���������
 #define GET_TIME_NUM 	(100)		//���û�ȡʱ�����������
 #define USE_TOE_IN_UNLOCK 0 // 0��Ĭ�Ͻ�����ʽ��1����˽�����ʽ
 //============== DMAʹ��=========================

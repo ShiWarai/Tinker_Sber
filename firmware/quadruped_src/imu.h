@@ -15,15 +15,9 @@ typedef struct
 	xyz_f_t g;
 	
 }ref_t;
-int madgwick_update_new(float T,float wx, float wy, float wz, float ax, float ay, float az,float mx,float my,float mz,float *rol,float *pit,float *yaw);
-extern xyz_f_t reference_v;
-extern float reference_vr[3],accConfidence;
+int madgwick_update_new(float T,float wx, float wy, float wz, float ax, float ay, float az,float *rol,float *pit,float *yaw);
+extern float reference_vr[3];
 void IMUupdate(float half_T,float gx, float gy, float gz, float ax, float ay, float az,float *rol,float *pit,float *yaw);
 extern float Roll,Pitch,Yaw;
-void IMU_AHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) ;
-extern float ref_q[4] , q_nav[4];
-extern float yaw_mag_view[4];
-extern float reference_vr[3];
-extern float Roll,Pitch,Yaw,accConfidence;    				//вкл╛╫г
 #endif
 

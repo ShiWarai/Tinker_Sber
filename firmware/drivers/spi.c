@@ -479,9 +479,8 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------��Linux��
 		leg_motor.reset_err=rc_value_temp%10;//��λ����
 
 		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-		mems.Acc_CALIBRATE=rc_value_temp/100;//�궨���ٶȼ�
-		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//�궨������
-		mems.Mag_CALIBRATE=rc_value_temp%10;//�궨�ų�
+		mems.Acc_CALIBRATE=rc_value_temp/100;
+		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;
 		
     robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//������״̬		
 		

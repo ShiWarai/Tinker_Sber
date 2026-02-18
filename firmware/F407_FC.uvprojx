@@ -82,7 +82,7 @@
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>fromelf --bin !L --output TEST.ANO</UserProg1Name>
+            <UserProg1Name>fromelf --bin !L --output .\build\OmniBotHub_Core.bin</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F40_41xxx,USE_STDPERIPH_DRIVER,ARM_MATH_CM4,__CC_ARM,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING,ARM_MATH_CM4,__FPU_USED=1U,__FPU_PRESENT=1U,__CC_ARM,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING</Define>
               <Undefine></Undefine>
-              <IncludePath>.\quadruped_src;.\estimator_sr;.\drivers;.\applications;.\build;.\Libraries\STM32F4xx_StdPeriph_Driver\inc;.\DSP_LIB\Include;.\Libraries\CMSIS\ST\STM32F4xx\Include;.\Libraries\FatFS\src;.\Libraries\CMSIS\Include;.\DSP_LIB\Include;.\DSP_LIB\;.\CMSIS\Include;.\SCSs;.\system_src;.\balance_controller</IncludePath>
+              <IncludePath>.\quadruped_src;.\drivers;.\applications;.\build;.\Libraries\STM32F4xx_StdPeriph_Driver\inc;.\DSP_LIB\Include;.\Libraries\CMSIS\ST\STM32F4xx\Include;.\Libraries\FatFS\src;.\Libraries\CMSIS\Include;.\DSP_LIB\Include;.\DSP_LIB\;.\CMSIS\Include;.\SCSs;.\system_src;.\balance_controller</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -681,11 +681,6 @@
               <FileName>fliter_math.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\balance_controller\fliter_math.c</FilePath>
-            </File>
-            <File>
-              <FileName>cycle_cal_oldx.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>.\estimator_sr\cycle_cal_oldx.lib</FilePath>
             </File>
             <File>
               <FileName>arm_cortexM4lf_math.lib</FileName>
