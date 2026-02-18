@@ -62,24 +62,24 @@ class MujocoSim(Node):
 
     def control_loop(self):
         try:
-            self.data.qpos[0:3] = [0, 0, 0.4]
-            self.data.qpos[3:7] = [1, 0, 0, 0]
-            self.data.qvel[0:6] = 0
+            # self.data.qpos[0:3] = [0, 0, 0.4]
+            # self.data.qpos[3:7] = [1, 0, 0, 0]
+            # self.data.qvel[0:6] = 0
             
-            actions = self.actions.copy()
+            ctrl = self.actions.copy()
 
             # self.ctrl[2] = 0.5 * np.sin(time.time())
-            dt = 0.01
-            t_disc = dt * np.floor(time.time() / dt)
-            self.ctrl[2] = 0.55 * np.sin(t_disc)
-            self.ctrl[7] = 0.55 * np.sin(t_disc + 2)
+            # dt = 0.01
+            # t_disc = dt * np.floor(time.time() / dt)
+            # self.ctrl[2] = 0.55 * np.sin(t_disc)
+            # self.ctrl[7] = 0.55 * np.sin(t_disc + 2)
 
-            current_positions = self.data.qpos[7:17]
-            current_velocities = self.data.qvel[6:16]
+            # current_positions = self.data.qpos[7:17]
+            # current_velocities = self.data.qvel[6:16]
             # kp = 15  # stiffness
             # kd = 0.65   # damping
             # self.ctrl[2] = kp * (actions[2] - current_positions[2]) - kd * current_velocities[2]
-            self.ctrl = np.clip(self.ctrl, -1.57, 1.57)
+            self.ctrl = np.clip(ctrl, -1.57, 1.57)
 
             self.data.ctrl[:] = self.ctrl
             # self.data.ctrl[:] = actions
