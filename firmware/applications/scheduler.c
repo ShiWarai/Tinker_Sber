@@ -9,7 +9,6 @@
 #include "usart_fc.h"
 #include "pwm_out.h"
 #include "beep.h"
-#include "nav.h"
 #include "spi.h"
 #include "can.h" 
 #include "beep.h" 
@@ -17,6 +16,11 @@
 #include "locomotion_header.h"
 #include "wsled.h"
 #include "Custom_SPI_Device.h"
+
+typedef struct
+{
+	float fake_yaw;
+} _NAV;
 
 VMC vmc[4];
 VMC_ALL vmc_all;
@@ -137,13 +141,10 @@ void Duty_Att_Fushion()//姿态解算 100Hz
 	}
 		
 	if(cnt_init++>1/T&&!imuo.connect){cnt_init=65530;
-		#if defined(ATT_MAD)//&&!defined(BOARD_FOR_CAN)
+		#if defined(ATT_MAD)
 			madgwick_update_new(T,
 			mems.Gyro_deg_rt.x/57.3, mems.Gyro_deg_rt.y/57.3,mems.Gyro_deg_rt.z/57.3, 
 			mems.Acc_rt.x, mems.Acc_rt.y, mems.Acc_rt.z,
-			mems.Mag_rt.x*module.hml_imu*mems.Mag_Have_Param*0,
-			mems.Mag_rt.y*module.hml_imu*mems.Mag_Have_Param*0,
-			mems.Mag_rt.z*module.hml_imu*mems.Mag_Have_Param*0,
 			&Pitch,&Roll,&Yaw);
 		#endif
 		#if defined(ATT_COM)//&&!defined(BOARD_FOR_CAN)

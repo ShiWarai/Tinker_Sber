@@ -1,7 +1,6 @@
 #include "include.h"
 #include "usart_fc.h"
 #include "gait_math.h"
-#include "nav.h"
 #include "spi.h"
 #include "led_fc.h"
 #include "wsled.h"

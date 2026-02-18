@@ -1,9 +1,9 @@
-build/*
+build/
 *.log
 build_log.txt
 
 # Артефакт сборки (создаётся post-build: fromelf --bin)
-TEST.ANO
+*.bin
 *.axf
 *.hex
 *.map

@@ -35,12 +35,12 @@ typedef struct
 	xyz_f_t Gain_3d;
 	xyz_f_t Off_3d;
  	char Mag_CALIBRATE,Mag_Have_Param,Mag_ERR,Mag_update;
-	xyz_s16_t Mag_Adc,Mag_Adc_o;			//²ÉÑùÖµ
-	xyz_f_t   Mag_Offset,Mag_Offseto;		//Æ«ÒÆÖµ
-	xyz_f_t   Mag_Offset_c,Mag_Offset_co;		//Æ«ÒÆÖµ
-	xyz_f_t   Mag_Gain,Mag_Gaino;		//Æ«ÒÆÖµ
-	xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			//±ÈÀıËõ·Å	
-	xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			//¾ÀÕıºóµÄÖµ
+	xyz_s16_t Mag_Adc,Mag_Adc_o;			//é‡‡æ ·å€¼
+	xyz_f_t   Mag_Offset,Mag_Offseto;		//åç§»å€¼
+	xyz_f_t   Mag_Offset_c,Mag_Offset_co;		//åç§»å€¼
+	xyz_f_t   Mag_Gain,Mag_Gaino;		//åç§»å€¼
+	xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			//æ¯”ä¾‹ç¼©æ”¾	
+	xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			//çº æ­£åçš„å€¼
 	float hmlOneMAG,hmlOneACC;
   float Yaw_Mag;
 	float Ftempreature;
@@ -52,5 +52,4 @@ extern u8 acc_3d_calibrate_f,acc_3d_step;
 
 void IMU_Read(void);
 void IMU_Data_Prepare(float T);
-void LIS_CalOffset_Mag(float dt);
 #endif

@@ -63,7 +63,6 @@ typedef union
 }pid_setup_t;
 
 #define _xyz_f_t xyz_f_t
-void simple_3d_trans(_xyz_f_t *ref, _xyz_f_t *in, _xyz_f_t *out);
 void Senser_Calibrat_Read(void);
 void PID_Para_Read(void);
 void Para_Init(void);
@@ -72,7 +71,6 @@ void Para_ResetToFactorySetup(void);
 void Param_SavePID(void);
 void Param_SaveAccelOffset(xyz_f_t *offset);
 void Param_SaveGyroOffset(xyz_f_t *offset);
-void Param_SaveMagOffset(xyz_f_t *offset);
 void Parameter_Save(void);
 
 #endif
