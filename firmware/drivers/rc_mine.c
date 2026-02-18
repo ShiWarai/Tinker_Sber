@@ -5,7 +5,6 @@
 #include "usart_fc.h"
 #include "imu.h"
 #include "time.h"
-#include "eso.h"
 #include "rc_mine.h"
 #include "nav.h"
 

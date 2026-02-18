@@ -41,7 +41,6 @@ void SPI3_Init(void)
 //	SPI_CS(NRF2401,1);
 	SPI_CS(ICM20602,1);
 	SPI_CS(CS_FLASH,1);
-//	SPI_CS(MS5611,1);
 //	SPI_CS(CS_LIS,1);
 	
 
@@ -79,10 +78,10 @@ void SPI3_Init(void)
 
 void SPI_SetSpeed(u8 SPI_BaudRatePrescaler)
 {
-  assert_param(IS_SPI_BAUDRATE_PRESCALER(SPI_BaudRatePrescaler));//ÅÐ¶ÏÓÐÐ§ÐÔ
-	SPI3->CR1&=0XFFC7;//Î»3-5ÇåÁã£¬ÓÃÀ´ÉèÖÃ²¨ÌØÂÊ
-	SPI3->CR1|=SPI_BaudRatePrescaler;	//ÉèÖÃSPI1ËÙ¶È 
-	SPI_Cmd(SPI3,ENABLE); //Ê¹ÄÜSPI1
+  assert_param(IS_SPI_BAUDRATE_PRESCALER(SPI_BaudRatePrescaler));//ï¿½Ð¶ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
+	SPI3->CR1&=0XFFC7;//Î»3-5ï¿½ï¿½ï¿½ã£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½
+	SPI3->CR1|=SPI_BaudRatePrescaler;	//ï¿½ï¿½ï¿½ï¿½SPI1ï¿½Ù¶ï¿½ 
+	SPI_Cmd(SPI3,ENABLE); //Ê¹ï¿½ï¿½SPI1
 } 
 
 u8 SPI3_RW(u8 dat) 
@@ -130,12 +129,6 @@ switch(sel)
 		GPIO_ResetBits(GPIOC, GPIO_Pin_4);
 		//delay_us(10);
 		break;
-	case MS5611:
-		if(set)	
-		GPIO_SetBits(GPIOB, GPIO_Pin_12);
-		else
-		GPIO_ResetBits(GPIOB, GPIO_Pin_12);
-		break;	
 	case CS_FLASH:
 		if(set)	
 		GPIO_SetBits(GPIOA, GPIO_Pin_8);
@@ -170,41 +163,41 @@ static void spi_dma_init(void)
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
 	
 	/* DMA RX config */
-	DMA_InitStructure.DMA_Channel = DMA_Channel_3;                                     // DMA  Í¨µÀ RX
-	DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_ADDR;                   //  ÍâÉèµØÖ·
-	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)SPI_RX_BUFFER;     // ½ÓÊÕ»º³åÇø£¨ÄÚ´æÖÐµÄÓÐÒ»¸öÊý×é£©
-	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;                    //DMA ´«Êä·½Ïò
-	DMA_InitStructure.DMA_BufferSize = RX_LEN;                                                     //  DMA ´«ÊäµÄÊýÁ¿    Õâ¸öºóÆÚ»¹¿ÉÒÔÔÙ¸Ä
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;             //  ÍâÉèµØÖ·×ÔÔö  È¡Ïû
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                    // ÄÚ´æµØÖ·×ÔÔö  Ê¹ÄÜ
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;     //  ´«ÊäµÄ µ¥Î» £¨byte  8bit£©
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;// ´«ÊäµÄ µ¥Î» £¨byte  8bit£©
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                                   //  ÆÕÍ¨Ä£Ê½  ´«ÊäÍê³ÉÒ»´Î¾Í×Ô¶¯½áÊø
-	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;                              // ÓÅÏÈ¼¶ ÖÐµÈ
-	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;                   //²»Ê¹ÓÃ FIFO
+	DMA_InitStructure.DMA_Channel = DMA_Channel_3;                                     // DMA  Í¨ï¿½ï¿½ RX
+	DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_ADDR;                   //  ï¿½ï¿½ï¿½ï¿½ï¿½Ö·
+	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)SPI_RX_BUFFER;     // ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½Ðµï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½é£©
+	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;                    //DMA ï¿½ï¿½ï¿½ä·½ï¿½ï¿½
+	DMA_InitStructure.DMA_BufferSize = RX_LEN;                                                     //  DMA ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½    ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;             //  ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½  È¡ï¿½ï¿½
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                    // ï¿½Ú´ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½  Ê¹ï¿½ï¿½
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;     //  ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î» ï¿½ï¿½byte  8bitï¿½ï¿½
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î» ï¿½ï¿½byte  8bitï¿½ï¿½
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                                   //  ï¿½ï¿½Í¨Ä£Ê½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î¾ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
+	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;                              // ï¿½ï¿½ï¿½È¼ï¿½ ï¿½Ðµï¿½
+	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;                   //ï¿½ï¿½Ê¹ï¿½ï¿½ FIFO
 	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;             //
 	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;              //
 	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;        //
-	DMA_Init(DMA1_Stream3, &DMA_InitStructure);                                            //³õÊ¼»¯
+	DMA_Init(DMA1_Stream3, &DMA_InitStructure);                                            //ï¿½ï¿½Ê¼ï¿½ï¿½
 	                                                                                                                   //
 	/* DMA TX Config */                                                                                      //
-	DMA_InitStructure.DMA_Channel = DMA_Channel_4;                                     // DMA  Í¨µÀ TX
-	DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_ADDR;                   //   ÍâÉèµØÖ· 
-	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)SPI_TX_BUFFER;     // ½ÓÊÕ»º³åÇø£¨ÄÚ´æÖÐµÄÓÐÒ»¸öÊý×é£©
-	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;                    // DMA ´«Êä·½Ïò 
-	DMA_InitStructure.DMA_BufferSize = TX_LEN;                                                     //  DMA ´«ÊäµÄÊýÁ¿    Õâ¸öºóÆÚ»¹¿ÉÒÔÔÙ¸Ä
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;             //  ÍâÉèµØÖ·×ÔÔö  È¡Ïû
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                    // ÄÚ´æµØÖ·×ÔÔö  Ê¹ÄÜ
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;     //   ´«ÊäµÄ µ¥Î» £¨byte  8bit£© 
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;// ´«ÊäµÄ µ¥Î» £¨byte  8bit£©
-//	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                                   //   ÆÕÍ¨Ä£Ê½  ´«ÊäÍê³ÉÒ»´Î¾Í×Ô¶¯½áÊø 
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;                                   //   ÆÕÍ¨Ä£Ê½  ´«ÊäÍê³ÉÒ»´Î¾Í×Ô¶¯½áÊø 
-	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;                              // ÓÅÏÈ¼¶ ÖÐµÈ
+	DMA_InitStructure.DMA_Channel = DMA_Channel_4;                                     // DMA  Í¨ï¿½ï¿½ TX
+	DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_ADDR;                   //   ï¿½ï¿½ï¿½ï¿½ï¿½Ö· 
+	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)SPI_TX_BUFFER;     // ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½Ðµï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½é£©
+	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;                    // DMA ï¿½ï¿½ï¿½ä·½ï¿½ï¿½ 
+	DMA_InitStructure.DMA_BufferSize = TX_LEN;                                                     //  DMA ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½    ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;             //  ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½  È¡ï¿½ï¿½
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                    // ï¿½Ú´ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½  Ê¹ï¿½ï¿½
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;     //   ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î» ï¿½ï¿½byte  8bitï¿½ï¿½ 
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î» ï¿½ï¿½byte  8bitï¿½ï¿½
+//	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                                   //   ï¿½ï¿½Í¨Ä£Ê½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î¾ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ 
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;                                   //   ï¿½ï¿½Í¨Ä£Ê½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î¾ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ 
+	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;                              // ï¿½ï¿½ï¿½È¼ï¿½ ï¿½Ðµï¿½
 	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;                   //
 	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;             //
 	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;              //
 	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;        //
-	DMA_Init(DMA1_Stream4, &DMA_InitStructure);                                            //³õÊ¼»¯
+	DMA_Init(DMA1_Stream4, &DMA_InitStructure);                                            //ï¿½ï¿½Ê¼ï¿½ï¿½
 }
 
 
@@ -230,11 +223,11 @@ void SPI2_Init(void)
 	RCC_APB1PeriphResetCmd(RCC_APB1Periph_SPI2,ENABLE);
 	RCC_APB1PeriphResetCmd(RCC_APB1Periph_SPI2,DISABLE);
          	
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;  //ÉèÖÃSPIµ¥Ïò»òÕßË«ÏòµÄÊý¾ÝÄ£Ê½:SPIÉèÖÃÎªË«ÏßË«ÏòÈ«Ë«¹¤
+	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;  //ï¿½ï¿½ï¿½ï¿½SPIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½:SPIï¿½ï¿½ï¿½ï¿½ÎªË«ï¿½ï¿½Ë«ï¿½ï¿½È«Ë«ï¿½ï¿½
 
 	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
 
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;		//ÉèÖÃSPIµÄÊý¾Ý´óÐ¡:SPI·¢ËÍ½ÓÊÕ8Î»Ö¡½á¹¹
+	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;		//ï¿½ï¿½ï¿½ï¿½SPIï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½Ð¡:SPIï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½8Î»Ö¡ï¿½á¹¹
 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;    // CPOL = 0  PI
 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;  // CPHA = 0
 
@@ -243,10 +236,10 @@ void SPI2_Init(void)
 //SPI_SPEED_8   8??   (SPI 3M     --sys 24M)
 //SPI_SPEED_16  16??  (SPI 1.5M    --sys 24M)
 //SPI_SPEED_256 256?? (SPI  905.6K --sys 24M)
-	SPI_InitStructure.SPI_BaudRatePrescaler = SLAVE_SPI_BAUDRATE;		//¶¨Òå²¨ÌØÂÊÔ¤·ÖÆµµÄÖµ:²¨ÌØÂÊÔ¤·ÖÆµÖµÎª256
+	SPI_InitStructure.SPI_BaudRatePrescaler = SLAVE_SPI_BAUDRATE;		//ï¿½ï¿½ï¿½å²¨ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½Æµï¿½ï¿½Öµ:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½ÆµÖµÎª256
 
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;	//Ö¸¶¨Êý¾Ý´«Êä´ÓMSBÎ»»¹ÊÇLSBÎ»¿ªÊ¼:Êý¾Ý´«Êä´ÓMSBÎ»¿ªÊ¼
-	SPI_InitStructure.SPI_CRCPolynomial = 7;	//CRCÖµ¼ÆËãµÄ¶àÏîÊ½
+	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;	//Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½ï¿½MSBÎ»ï¿½ï¿½ï¿½ï¿½LSBÎ»ï¿½ï¿½Ê¼:ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½ï¿½MSBÎ»ï¿½ï¿½Ê¼
+	SPI_InitStructure.SPI_CRCPolynomial = 7;	//CRCÖµï¿½ï¿½ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½Ê½
 	SPI_Init(SPI2, &SPI_InitStructure); 
 #if DMA_SPI2
 	SPI_I2S_DMACmd(SPI2, SPI_I2S_DMAReq_Tx, ENABLE);  
@@ -272,7 +265,7 @@ void SPI2_Init(void)
 	//SPI_I2S_ITConfig(SPI2, SPI_I2S_IT_TXE, ENABLE);
 	SPI_I2S_ITConfig(SPI2,SPI_I2S_IT_RXNE, ENABLE);	
 	//SPI_SSOutputCmd(SPI2, DISABLE);
-	SPI_Cmd(SPI2, ENABLE); //Ê¹ÄÜSPIÍâÉè
+	SPI_Cmd(SPI2, ENABLE); //Ê¹ï¿½ï¿½SPIï¿½ï¿½ï¿½ï¿½
 	#endif
 }
 
@@ -364,7 +357,7 @@ static int intFromData_spi(unsigned char *data,int* anal_cnt)
 }
 
 //for slave
-void slave_send(char sel)//·¢ËÍµ½Odroid
+void slave_send(char sel)//ï¿½ï¿½ï¿½Íµï¿½Odroid
 {
   int i;
 	char id=0;
@@ -378,7 +371,7 @@ void slave_send(char sel)//·¢ËÍµ½Odroid
 	spi_tx_buf[spi_tx_cnt++]=0;
 	switch(sel)
 	{
-		case 26://STM32µÄÕûÌå·¢ËÍµ½Odrid  tinker human  ½Ç¶ÈÓë×ËÌ¬
+		case 26://STM32ï¿½ï¿½ï¿½ï¿½ï¿½å·¢ï¿½Íµï¿½Odrid  tinker human  ï¿½Ç¶ï¿½ï¿½ï¿½ï¿½ï¿½Ì¬
 
 				setDataFloat_spi(robotwb.now_att.pitch);
 				setDataFloat_spi(robotwb.now_att.roll);
@@ -388,7 +381,7 @@ void slave_send(char sel)//·¢ËÍµ½Odroid
 				setDataFloat_spi(robotwb.now_rate.roll);
 				setDataFloat_spi(robotwb.now_rate.yaw);	
 			
-				setDataFloat_spi(vmc_all.acc_b.x);//»úÌå¼ÓËÙ¶È
+				setDataFloat_spi(vmc_all.acc_b.x);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½
 				setDataFloat_spi(vmc_all.acc_b.y);
 				setDataFloat_spi(vmc_all.acc_b.z);
 			
@@ -396,13 +389,13 @@ void slave_send(char sel)//·¢ËÍµ½Odroid
 //			leg_motor.connect_motor[10] = 1;
 //			leg_motor.ready[10] = 1;
 				for(id=0;id<10;id++){
-					setDataFloat_spi_int(leg_motor.q_now[id],CAN_POS_DIV);//¹Ø½Ú½Ç¶È
-					setDataFloat_spi_int(leg_motor.qd_now[id],CAN_DPOS_DIV);//¹Ø½Ú½ÇËÙ¶È
-					setDataFloat_spi_int(leg_motor.t_now[id],CAN_T_DIV);//¹Ø½ÚÅ¤¾Ø
-					spi_tx_buf[spi_tx_cnt++]=leg_motor.connect*100+leg_motor.connect_motor[id]*10+leg_motor.ready[id];//Çý¶¯×´Ì¬
+					setDataFloat_spi_int(leg_motor.q_now[id],CAN_POS_DIV);//ï¿½Ø½Ú½Ç¶ï¿½
+					setDataFloat_spi_int(leg_motor.qd_now[id],CAN_DPOS_DIV);//ï¿½Ø½Ú½ï¿½ï¿½Ù¶ï¿½
+					setDataFloat_spi_int(leg_motor.t_now[id],CAN_T_DIV);//ï¿½Ø½ï¿½Å¤ï¿½ï¿½
+					spi_tx_buf[spi_tx_cnt++]=leg_motor.connect*100+leg_motor.connect_motor[id]*10+leg_motor.ready[id];//ï¿½ï¿½ï¿½ï¿½×´Ì¬
 				}		
 		break;
-//		case 36://STM32µÄÕûÌå·¢ËÍµ½Odrid  tinker human  °´¼üÓëµç»ú½Ç¶È
+//		case 36://STM32ï¿½ï¿½ï¿½ï¿½ï¿½å·¢ï¿½Íµï¿½Odrid  tinker human  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¶ï¿½
 //				spi_tx_buf[spi_tx_cnt++]=ocu.connect; 
 //				spi_tx_buf[spi_tx_cnt++]=ocu.key_st;
 //				spi_tx_buf[spi_tx_cnt++]=ocu.key_back;
@@ -429,10 +422,10 @@ void slave_send(char sel)//·¢ËÍµ½Odroid
 //					spi_tx_buf[spi_tx_cnt++]=0;			
 //					
 //				for(id=0;id<12;id++){
-//					setDataFloat_spi_int(servo_s[id].q,CAN_POS_DIV);//À©Õ¹¹Ø½Ú½Ç¶È
-//					//setDataFloat_spi_int(servo_s[id].dq,CAN_DPOS_DIV);//¹Ø½Ú½ÇËÙ¶È
-//					setDataFloat_spi_int(servo_s[id].t,CAN_T_DIV);//À©Õ¹¹Ø½ÚTau
-//					spi_tx_buf[spi_tx_cnt++]=servo_s[id].connect;//Çý¶¯×´Ì¬
+//					setDataFloat_spi_int(servo_s[id].q,CAN_POS_DIV);//ï¿½ï¿½Õ¹ï¿½Ø½Ú½Ç¶ï¿½
+//					//setDataFloat_spi_int(servo_s[id].dq,CAN_DPOS_DIV);//ï¿½Ø½Ú½ï¿½ï¿½Ù¶ï¿½
+//					setDataFloat_spi_int(servo_s[id].t,CAN_T_DIV);//ï¿½ï¿½Õ¹ï¿½Ø½ï¿½Tau
+//					spi_tx_buf[spi_tx_cnt++]=servo_s[id].connect;//ï¿½ï¿½ï¿½ï¿½×´Ì¬
 //				}
 //				break;
 	}
@@ -448,7 +441,7 @@ void slave_send(char sel)//·¢ËÍµ½Odroid
 float test_spi_rx[2]={0};
 int sum_spi_err=0;
 int temp_sel[4][128]={0};
-void slave_rx(u8 *data_buf,u8 num)//---------------------------´ÓLinux¿ØÖÆÆ÷½ÓÊÕÖ¸Áî
+void slave_rx(u8 *data_buf,u8 num)//---------------------------ï¿½ï¿½Linuxï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
 { static u8 cnt[4];
 	u8 id;
 	char temp_char;
@@ -466,12 +459,12 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------´ÓLinux¿ØÖÆÆ÷½ÓÊÕ
 	if(!(sum==*(data_buf+num-1)))		{
 		sum_spi_err++;
 		return;
-	}		//ÅÐ¶Ïsum
+	}		//ï¿½Ð¶ï¿½sum
 	
 	if(!(*(data_buf)==0xFE && *(data_buf+1)==0xFC))
-		return;		//ÅÐ¶ÏÖ¡Í·
+		return;		//ï¿½Ð¶ï¿½Ö¡Í·
 	
-  if(*(data_buf+2)==45)//Ö÷¿ØµÄÕûÌå½ÓÊÜ==============tinker human BLDC ÎÞË¢µç»ú¿ØÖÆÖ¸Áî1Khz
+  if(*(data_buf+2)==45)//ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½==============tinker human BLDC ï¿½ï¿½Ë¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½1Khz
   { 
 		spi_comm_mess_type=SPI_MESS_TYPE_3BLDC_DIV;
 		spi_dt[1] = Get_Cycle_T(17); 
@@ -481,26 +474,26 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------´ÓLinux¿ØÖÆÆ÷½ÓÊÕ
 		spi_rx_cnt_all++;
 		
 		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-		leg_motor.motor_en=rc_value_temp/100;//µç»úÊ¹ÄÜ
+		leg_motor.motor_en=rc_value_temp/100;//ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
 		leg_motor.reset_q=(rc_value_temp-leg_motor.motor_en*100)/10;//cal bldc all
-		leg_motor.reset_err=rc_value_temp%10;//¸´Î»¹ÊÕÏ
+		leg_motor.reset_err=rc_value_temp%10;//ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½
 
 		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-		mems.Acc_CALIBRATE=rc_value_temp/100;//±ê¶¨¼ÓËÙ¶È¼Æ
-		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//±ê¶¨ÍÓÂÝÒÇ
-		mems.Mag_CALIBRATE=rc_value_temp%10;//±ê¶¨´Å³¡
+		mems.Acc_CALIBRATE=rc_value_temp/100;//ï¿½ê¶¨ï¿½ï¿½ï¿½Ù¶È¼ï¿½
+		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//ï¿½ê¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		mems.Mag_CALIBRATE=rc_value_temp%10;//ï¿½ê¶¨ï¿½Å³ï¿½
 		
-    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//·äÃùÆ÷×´Ì¬		
+    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬		
 		
 		for(i=0;i<10;i++){
-			leg_motor.q_set[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//ÆÚÍû½Ç¶È
+			leg_motor.q_set[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//ï¿½ï¿½ï¿½ï¿½ï¿½Ç¶ï¿½
 			leg_motor.qd_set[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_DPOS_DIV);
-			leg_motor.set_t[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_T_DIV);//ÆÚÍûÅ¤¾Ø
+			leg_motor.set_t[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_T_DIV);//ï¿½ï¿½ï¿½ï¿½Å¤ï¿½ï¿½
 			leg_motor.kp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_P);
 			leg_motor.kd[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_D);		
 		}
 
-//----------------Êä³öµ½»º´æÊý×é---------------------
+//----------------ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½---------------------
 		//if(ocu_connect==0){
 			for(i=0;i<10;i++){
 				motor_chassis[i].set_q=leg_motor.q_set[i];
@@ -519,7 +512,7 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------´ÓLinux¿ØÖÆÆ÷½ÓÊÕ
 			}
 		//}
 	}
-// if(*(data_buf+2)==55)//Ö÷¿ØµÄÕûÌå½ÓÊÜ==============tinker human DJ1 À©Õ¹¿ØÖÆÖ¸Áî 50Hz
+// if(*(data_buf+2)==55)//ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½==============tinker human DJ1 ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ 50Hz
 //  { 
 //		spi_comm_mess_type=SPI_MESS_TYPE_3BLDC_DIV;
 //		spi_dt[2] = Get_Cycle_T(18); 
@@ -529,45 +522,45 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------´ÓLinux¿ØÖÆÆ÷½ÓÊÕ
 //		spi_rx_cnt_all++;
 //		
 //		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		palm_dj.power=rc_value_temp;//µç»úÊ¹ÄÜ
+//		palm_dj.power=rc_value_temp;//ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
 
 //		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		mems.Acc_CALIBRATE=rc_value_temp/100;//±ê¶¨¼ÓËÙ¶È¼Æ
-//		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//±ê¶¨ÍÓÂÝÒÇ
-//		mems.Mag_CALIBRATE=rc_value_temp%10;//±ê¶¨´Å³¡
+//		mems.Acc_CALIBRATE=rc_value_temp/100;//ï¿½ê¶¨ï¿½ï¿½ï¿½Ù¶È¼ï¿½
+//		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//ï¿½ê¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//		mems.Mag_CALIBRATE=rc_value_temp%10;//ï¿½ê¶¨ï¿½Å³ï¿½
 //		
-//    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//·äÃùÆ÷×´Ì¬		
+//    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬		
 //		
 //		for(i=0;i<10;i++){
-//			palm_dj.q_exp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//±ê0½Ç¶È
-//			leg_motor.q_reset[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//±ê0½Ç¶È
+//			palm_dj.q_exp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//ï¿½ï¿½0ï¿½Ç¶ï¿½
+//			leg_motor.q_reset[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//ï¿½ï¿½0ï¿½Ç¶ï¿½
 //			leg_motor.stiff[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_F_DIV);//stiff
 //			leg_motor.cal_div[i]=charFromData_spi(spi_rx_buf,&anal_cnt);//cal divde
 //		}
 //				
-////----------------Êä³öµ½»º´æÊý×é---------------------
+////----------------ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½---------------------
 //		if(ocu_connect==0){
 //			for(i=0;i<10;i++){
 ////			  if(motor_chassis[i].param.control_mode==1)	
 ////					motor_chassis[i].set_qd=leg_motor.q_set[i]; 
 ////				else
-////					motor_chassis[i].set_qd=0;//Ô¤Áô
+////					motor_chassis[i].set_qd=0;//Ô¤ï¿½ï¿½
 //				motor_chassis[i].set_q=leg_motor.q_set[i];
 //				motor_chassis[i].set_qd=leg_motor.qd_set[i];				
 //				motor_chassis[i].set_t=leg_motor.set_t[i];
 //				motor_chassis[i].param.q_reset_angle=leg_motor.q_reset[i];
 //				motor_chassis[i].kp=leg_motor.kp[i]; 
 //				motor_chassis[i].kd=leg_motor.kd[i]; 	
-//				motor_chassis[i].max_t=leg_motor.max_t[i]; //×î´óÅ¤¾ØÏÞÖÆÓÉÉÏÎ»»úÉèÖÃ
+//				motor_chassis[i].max_t=leg_motor.max_t[i]; //ï¿½ï¿½ï¿½Å¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //				motor_chassis[i].stiff=leg_motor.stiff[i]; 
 //				if(leg_motor.reset_q==2&&motor_chassis[i].reset_q==0)
 //					motor_chassis[i].reset_q=1;
-//				motor_chassis[i].param.usb_cmd_mode=1;//ÉèÖÃÎªÎ»ÖÃÄ£Ê½
-//				motor_chassis[i].cal_div=leg_motor.cal_div[i];//µ¥¶À±ê¶¨Ä£Ê½
+//				motor_chassis[i].param.usb_cmd_mode=1;//ï¿½ï¿½ï¿½ï¿½ÎªÎ»ï¿½ï¿½Ä£Ê½
+//				motor_chassis[i].cal_div=leg_motor.cal_div[i];//ï¿½ï¿½ï¿½ï¿½ï¿½ê¶¨Ä£Ê½
 //			}
 //		}
 //	} 
-//	if(*(data_buf+2)==56)//Ö÷¿ØµÄÕûÌå½ÓÊÜ==============tinker human DJ2-extcan À©Õ¹µç»ú¿ØÖÆÖ¸Áî 50Hz
+//	if(*(data_buf+2)==56)//ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½==============tinker human DJ2-extcan ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ 50Hz
 //  { 
 //		spi_comm_mess_type=SPI_MESS_TYPE_3BLDC_DIV;
 //		spi_dt[3] = Get_Cycle_T(19); 
@@ -577,23 +570,23 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------´ÓLinux¿ØÖÆÆ÷½ÓÊÕ
 //		spi_rx_cnt_all++;
 //		
 //		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		palm_dj.power=rc_value_temp;//µç»úÊ¹ÄÜ
+//		palm_dj.power=rc_value_temp;//ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
 
 //		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		mems.Acc_CALIBRATE=rc_value_temp/100;//±ê¶¨¼ÓËÙ¶È¼Æ
-//		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//±ê¶¨ÍÓÂÝÒÇ
-//		mems.Mag_CALIBRATE=rc_value_temp%10;//±ê¶¨´Å³¡
+//		mems.Acc_CALIBRATE=rc_value_temp/100;//ï¿½ê¶¨ï¿½ï¿½ï¿½Ù¶È¼ï¿½
+//		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//ï¿½ê¶¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//		mems.Mag_CALIBRATE=rc_value_temp%10;//ï¿½ê¶¨ï¿½Å³ï¿½
 //		
-//    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//·äÃùÆ÷×´Ì¬		
+//    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬		
 //		
-//		for(i=0;i<10;i++){//À©Õ¹µç»úPDÏµÊýÄÚÖÃÖ»ÉèÖÃ¸Õ¶È
-//			palm_dj.t_exp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//ÆÚÍûTau
-//			palm_dj.q_reset[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//±ê0½Ç¶È
-//			palm_dj.stiff[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_F_DIV);//¸Õ¶È
+//		for(i=0;i<10;i++){//ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½PDÏµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½Ã¸Õ¶ï¿½
+//			palm_dj.t_exp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//ï¿½ï¿½ï¿½ï¿½Tau
+//			palm_dj.q_reset[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//ï¿½ï¿½0ï¿½Ç¶ï¿½
+//			palm_dj.stiff[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_F_DIV);//ï¿½Õ¶ï¿½
 //			palm_dj.cal_div[i]=charFromData_spi(spi_rx_buf,&anal_cnt);//cal divde
 //		}
 //	}
-//		else if (*(data_buf+2)==50)//OCU mems ´«¸ÐÆ÷ÉèÖÃ
+//		else if (*(data_buf+2)==50)//OCU mems ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //  {
 //		mems.imu_pos.x=floatFromData_spi_int(spi_rx_buf,&anal_cnt,1000);	
 //		mems.imu_pos.y=floatFromData_spi_int(spi_rx_buf,&anal_cnt,1000);	
@@ -608,7 +601,7 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------´ÓLinux¿ØÖÆÆ÷½ÓÊÕ
 //		mems.Gyro_CALIBRATE=charFromData_spi(spi_rx_buf,&anal_cnt);
 //		mems.Mag_CALIBRATE=charFromData_spi(spi_rx_buf,&anal_cnt);
 //	}		
-//	if(*(data_buf+2)==51)//Ö÷¿ØµÄÕûÌå½ÓÊÜ==============tinker human System state 1Hz
+//	if(*(data_buf+2)==51)//ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½==============tinker human System state 1Hz
 //  { 
 //		spi_comm_mess_type=SPI_MESS_TYPE_3BLDC_DIV;
 //		spi_dt[3] = Get_Cycle_T(19); 
@@ -620,22 +613,22 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------´ÓLinux¿ØÖÆÆ÷½ÓÊÕ
 //		robot.ip1=charFromData_spi(spi_rx_buf,&anal_cnt);
 //		robot.ip2=charFromData_spi(spi_rx_buf,&anal_cnt);
 //		
-//		for(i=0;i<10;i++){//À©Õ¹µç»úPDÏµÊý
-//			palm_dj.kp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_P_M);//ÆÚÍûTau
-//			palm_dj.kd[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_D_M);//±ê0½Ç¶È
+//		for(i=0;i<10;i++){//ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½PDÏµï¿½ï¿½
+//			palm_dj.kp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_P_M);//ï¿½ï¿½ï¿½ï¿½Tau
+//			palm_dj.kd[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_D_M);//ï¿½ï¿½0ï¿½Ç¶ï¿½
 //		}
 //	}
 }
 
 u8 SPI2_ReadWriteByte_s(u8 TxData)
 {		 			 
-  while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET){}//µÈ´ý·¢ËÍÇø¿Õ    Ê¹ÓÃifµÄ»°·¢ËÍ²»ÎÈ¶¨ÈÝÒ×
+  while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET){}//ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½    Ê¹ï¿½ï¿½ifï¿½Ä»ï¿½ï¿½ï¿½ï¿½Í²ï¿½ï¿½È¶ï¿½ï¿½ï¿½ï¿½ï¿½
 	
-	SPI_I2S_SendData(SPI2, TxData); //Í¨¹ýÍâÉèSPIx·¢ËÍÒ»¸öbyte  Êý¾Ý
+	SPI_I2S_SendData(SPI2, TxData); //Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SPIxï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½byte  ï¿½ï¿½ï¿½ï¿½
 }
 
  
-void SPI2_IRQHandler(void)//unuse now Ä¿Ç°²ÉÓÃDMA1_Stream4_IRQHandlerÖÐ¶Ï½øÐÐSPIÊý¾ÝÍ¨ÐÅ  
+void SPI2_IRQHandler(void)//unuse now Ä¿Ç°ï¿½ï¿½ï¿½ï¿½DMA1_Stream4_IRQHandlerï¿½Ð¶Ï½ï¿½ï¿½ï¿½SPIï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½  
 { 
 	static char state=0,rx_cnt;
 	static int spi_tx_cnt_send=0;
@@ -650,7 +643,7 @@ void SPI2_IRQHandler(void)//unuse now Ä¿Ç°²ÉÓÃDMA1_Stream4_IRQHandlerÖÐ¶Ï½øÐÐSPI
 	static float timer_sys=0;
 	if (SPI_I2S_GetITStatus(SPI2, SPI_I2S_IT_TXE) != RESET) {
 			SPI2_ReadWriteByte_s(spi_tx_buf[spi_tx_cnt_send++]); 
-			if(spi_tx_cnt_send>=spi_tx_cnt&&spi_flag_pi[1]==0)//·¢ËÍÍê±Ï¿ÉÒÔÖØÐÂ¸³Öµ
+			if(spi_tx_cnt_send>=spi_tx_cnt&&spi_flag_pi[1]==0)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¸ï¿½Öµ
 			{ spi_flag_pi[1]=1;
 			}
 	}
@@ -667,8 +660,8 @@ void SPI2_IRQHandler(void)//unuse now Ä¿Ç°²ÉÓÃDMA1_Stream4_IRQHandlerÖÐ¶Ï½øÐÐSPI
 			}else{
 				if(send_flag==1){
 				send_flag=0;
-				slave_send(1);//×ËÌ¬
-				}//·¢ËÍÊý¾ÝÖØÐÂ¸³Öµ
+				slave_send(1);//ï¿½ï¿½Ì¬
+				}//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¸ï¿½Öµ
 				else{
 				send_flag=1;
 				slave_send(2);
@@ -677,7 +670,7 @@ void SPI2_IRQHandler(void)//unuse now Ä¿Ç°²ÉÓÃDMA1_Stream4_IRQHandlerÖÐ¶Ï½øÐÐSPI
 			 spi_tx_cnt_send=0;
 		}					
 		
-		data = SPI_I2S_ReceiveData(SPI2);//ÖÐ¶Ï¶ÁÈ¡SPIÊý¾Ý
+		data = SPI_I2S_ReceiveData(SPI2);//ï¿½Ð¶Ï¶ï¿½È¡SPIï¿½ï¿½ï¿½ï¿½
 	
 		if(state==0&&data==0xFB)
 		{
@@ -719,8 +712,8 @@ void SPI2_IRQHandler(void)//unuse now Ä¿Ç°²ÉÓÃDMA1_Stream4_IRQHandlerÖÐ¶Ï½øÐÐSPI
 		else
 			state = 0;
 		
-		//Í¬²½·¢ËÍ
-		if(spi_tx_cnt_send>=spi_tx_cnt&&spi_flag_pi[1]==0)//·¢ËÍÍê±Ï¿ÉÒÔÖØÐÂ¸³Öµ
+		//Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		if(spi_tx_cnt_send>=spi_tx_cnt&&spi_flag_pi[1]==0)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¸ï¿½Öµ
 		{ spi_flag_pi[1]=1;
 		}else
 			SPI2_ReadWriteByte_s(spi_tx_buf[spi_tx_cnt_send++]); 

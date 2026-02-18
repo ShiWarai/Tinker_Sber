@@ -3,10 +3,10 @@
 #include "sys.h"	 
 #include "stm32f4xx_can.h" 
 #define CAN_ANL_MIT_MODE 
-//Ö÷¿Ø
-#define CAN_FB_SYNC 1//Í¬²½²ÉÓÃ
+//ï¿½ï¿½ï¿½ï¿½
+#define CAN_FB_SYNC 1//Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #define CAN_NART_SEL DISABLE//ENABLE//DISABLE//ENABLE
-//DISABLE  µ×²ã½ÚµãÃ»·¨ÊÕµ½  µ«ÊÇÄÜ±£Ö¤²»¼ÓÑÓÊ±
+//DISABLE  ï¿½×²ï¿½Úµï¿½Ã»ï¿½ï¿½ï¿½Õµï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½Ü±ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±
 #define BAUD_2M 1
 
 
@@ -83,17 +83,17 @@
 #define MIT_R_T_D 9.549
 #define MIT_D_T_R 0.1047
 
-//CAN1½ÓÊÕRX0ÖÐ¶ÏÊ¹ÄÜ
+//CAN1ï¿½ï¿½ï¿½ï¿½RX0ï¿½Ð¶ï¿½Ê¹ï¿½ï¿½
 #define CAN_ABOM_E 1
 
-#define CAN1_RX0_INT_ENABLE	1	//0,²»Ê¹ÄÜ;1,Ê¹ÄÜ.								    
+#define CAN1_RX0_INT_ENABLE	1	//0,ï¿½ï¿½Ê¹ï¿½ï¿½;1,Ê¹ï¿½ï¿½.								    
 extern int can_rx_over[5];
 extern int can_rx_cnt[5];							 				    
-u8 CAN1_Mode_Init(u8 tsjw,u8 tbs2,u8 tbs1,float brp,u8 mode);//CAN³õÊ¼»¯
+u8 CAN1_Mode_Init(u8 tsjw,u8 tbs2,u8 tbs1,float brp,u8 mode);//CANï¿½ï¿½Ê¼ï¿½ï¿½
  
-u8 CAN1_Send_Msg(u8* msg,u8 len,uint32_t id);						//·¢ËÍÊý¾Ý
+u8 CAN1_Send_Msg(u8* msg,u8 len,uint32_t id);						//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-u8 CAN1_Receive_Msg(u8 *buf);							//½ÓÊÕÊý¾Ý
+u8 CAN1_Receive_Msg(u8 *buf);							//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 extern u8 canbuft1[8];
 extern u8 canbufr1[8];
 extern uint32_t can1_rx_id;
@@ -101,14 +101,14 @@ extern float cnt_rst1;
 extern int can1_rx_cnt;
 void data_can_anal_master(u8 rx_data[8]);
 
-//CAN1½ÓÊÕRX0ÖÐ¶ÏÊ¹ÄÜ
-#define CAN2_RX0_INT_ENABLE	1		//0,²»Ê¹ÄÜ;1,Ê¹ÄÜ.								    
+//CAN1ï¿½ï¿½ï¿½ï¿½RX0ï¿½Ð¶ï¿½Ê¹ï¿½ï¿½
+#define CAN2_RX0_INT_ENABLE	1		//0,ï¿½ï¿½Ê¹ï¿½ï¿½;1,Ê¹ï¿½ï¿½.								    
 								 							 				    
-u8 CAN2_Mode_Init(u8 tsjw,u8 tbs2,u8 tbs1,float brp,u8 mode);//CAN³õÊ¼»¯
+u8 CAN2_Mode_Init(u8 tsjw,u8 tbs2,u8 tbs1,float brp,u8 mode);//CANï¿½ï¿½Ê¼ï¿½ï¿½
  
-u8 CAN2_Send_Msg(u8* msg,u8 len,uint32_t id);						//·¢ËÍÊý¾Ý
+u8 CAN2_Send_Msg(u8* msg,u8 len,uint32_t id);						//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-u8 CAN2_Receive_Msg(u8 *buf);							//½ÓÊÕÊý¾Ý
+u8 CAN2_Receive_Msg(u8 *buf);							//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 extern u8 canbuft2[8];
 extern u8 canbufr2[8];
 extern uint32_t can2_rx_id;
@@ -159,7 +159,7 @@ void CAN_motor_init(void);
 void CAN_set_zero_off(char id);
 extern char reset_err_flag;
 void reset_current_cmd(char id);
-void CAN_get_fb(char can_sel);//Ò£¿Ø·´À¡»ñÈ¡
+void CAN_get_fb(char can_sel);//Ò£ï¿½Ø·ï¿½ï¿½ï¿½ï¿½ï¿½È¡
 extern  float can_dt[4];
 
 enum Motor_type
@@ -174,7 +174,7 @@ enum Motor_type
 #define MODE_MIT 3
 #define MODE_MIT_CURRENT 4
 
-#define EN_MIT_PID_INNER 1 //ÄÚ²¿PDÄ£Ê½
+#define EN_MIT_PID_INNER 1 //ï¿½Ú²ï¿½PDÄ£Ê½
 typedef struct{
 	char id,init,connect;
 	int loss_cnt;

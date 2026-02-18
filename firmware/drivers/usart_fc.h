@@ -53,7 +53,7 @@ typedef struct int16_rcget{
 				float signal_rate;
 				int16_t RST;}RC_GETDATA;
 
-extern RC_GETDATA Rc_Get,Rc_Get_PWM,Rc_Get_SBUS,Rc_Wifi;//½ÓÊÕµ½µÄRCÊý¾Ý,1000~2000
+extern RC_GETDATA Rc_Get,Rc_Get_PWM,Rc_Get_SBUS,Rc_Wifi;//ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½RCï¿½ï¿½ï¿½ï¿½,1000~2000
 						
 
 typedef struct
@@ -90,10 +90,10 @@ extern _IMUO imuo;
 
 typedef struct{
 	char check;
-	 int x;//Ä¿±êµÄx×ø±ê
-	 int y;//Ä¿±êµÄy×ø±ê
-	 int w;//Ä¿±êµÄ¿í¶È
-	 int h;//Ä¿±êµÄ¸ß¶È
+	 int x;//Ä¿ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½
+	 int y;//Ä¿ï¿½ï¿½ï¿½yï¿½ï¿½ï¿½ï¿½
+	 int w;//Ä¿ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½
+	 int h;//Ä¿ï¿½ï¿½Ä¸ß¶ï¿½
 	 int s;
 	float angle;
 	float pos[3],att[3];
@@ -112,7 +112,7 @@ typedef struct{
 	u8 visual_mode;
 	u8 connect;
 	u16 lost_cnt;
-}_PI;//Ê¶±ð½á¹û
+}_PI;//Ê¶ï¿½ï¿½ï¿½ï¿½
 
 extern _PI pi;
 
@@ -124,7 +124,7 @@ typedef struct{
 	u8 mode;
 	u8 connect;
 	u16 lost_cnt;
-}_ODOMETER;//Ê¶±ð½á¹û
+}_ODOMETER;//Ê¶ï¿½ï¿½ï¿½ï¿½
 
 extern _ODOMETER flow;
 
@@ -153,8 +153,8 @@ typedef struct{
 
 extern _FLOW optical_flow;
 extern _LINK_CMD o_cmd;
-#define SEND_BUF_SIZE1 64+32	//·¢ËÍÊý¾Ý³¤¶È,×îºÃµÈÓÚsizeof(TEXT_TO_SEND)+2µÄÕûÊý±¶.250	//·¢ËÍÊý¾Ý³¤¶È,×îºÃµÈÓÚsizeof(TEXT_TO_SEND)+2µÄÕûÊý±¶.
-extern u8 SendBuff1[SEND_BUF_SIZE1];	//·¢ËÍÊý¾Ý»º³åÇø
+#define SEND_BUF_SIZE1 64+32	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½Ãµï¿½ï¿½ï¿½sizeof(TEXT_TO_SEND)+2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.250	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½Ãµï¿½ï¿½ï¿½sizeof(TEXT_TO_SEND)+2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+extern u8 SendBuff1[SEND_BUF_SIZE1];	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½
 extern u8 SendBuff1_cnt;
 extern u8 SendBuff3_cnt;
 extern u8 SendBuff6_cnt;
@@ -170,20 +170,20 @@ extern u16 leg_uart_cnt,leg_pi_cnt;
 char isRxCompleted(void);
 void radio_control(char sel,float dt);
 void radio_off(void);
-#define SEND_BUF_SIZE2 40	//·¢ËÍÊý¾Ý³¤¶È,×îºÃµÈÓÚsizeof(TEXT_TO_SEND)+2µÄÕûÊý±¶.
-extern u8 SendBuff2[SEND_BUF_SIZE2];	//·¢ËÍÊý¾Ý»º³åÇø
+#define SEND_BUF_SIZE2 40	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½Ãµï¿½ï¿½ï¿½sizeof(TEXT_TO_SEND)+2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+extern u8 SendBuff2[SEND_BUF_SIZE2];	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½
 void data_per_uart2(void);
 
-#define SEND_BUF_SIZE3 100	//·¢ËÍÊý¾Ý³¤¶È,×îºÃµÈÓÚsizeof(TEXT_TO_SEND)+2µÄÕûÊý±¶.
-extern u8 SendBuff3[SEND_BUF_SIZE3];	//·¢ËÍÊý¾Ý»º³åÇø
+#define SEND_BUF_SIZE3 100	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½Ãµï¿½ï¿½ï¿½sizeof(TEXT_TO_SEND)+2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+extern u8 SendBuff3[SEND_BUF_SIZE3];	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½
 void data_per_uart3(u8 sel);
 
-#define SEND_BUF_SIZE4 64	//·¢ËÍÊý¾Ý³¤¶È,×îºÃµÈÓÚsizeof(TEXT_TO_SEND)+2µÄÕûÊý±¶.
-extern u8 SendBuff4[SEND_BUF_SIZE4];	//·¢ËÍÊý¾Ý»º³åÇø
+#define SEND_BUF_SIZE4 64	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½Ãµï¿½ï¿½ï¿½sizeof(TEXT_TO_SEND)+2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+extern u8 SendBuff4[SEND_BUF_SIZE4];	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½
 void data_per_uart4(u8 sel);
 
-#define SEND_BUF_SIZE6 100	//·¢ËÍÊý¾Ý³¤¶È,×îºÃµÈÓÚsizeof(TEXT_TO_SEND)+2µÄÕûÊý±¶.
-extern u8 SendBuff6[SEND_BUF_SIZE6];	//·¢ËÍÊý¾Ý»º³åÇø
+#define SEND_BUF_SIZE6 100	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½,ï¿½ï¿½Ãµï¿½ï¿½ï¿½sizeof(TEXT_TO_SEND)+2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+extern u8 SendBuff6[SEND_BUF_SIZE6];	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½ï¿½ï¿½
 
 extern int16_t BLE_DEBUG[16];
 void data_per_uart_rc(int16_t ax,int16_t ay, int16_t az, int16_t gx,int16_t  gy, int16_t gz,int16_t hx, int16_t hy, int16_t hz,
@@ -309,7 +309,7 @@ typedef struct
 extern _Palm_DJ palm_dj;
 	
 
-//-------------------·ÉÌØ¶æ»ú
+//-------------------ï¿½ï¿½ï¿½Ø¶ï¿½ï¿½
 
 enum SCS_type
 {

@@ -1,6 +1,5 @@
 #include "scheduler.h"
 #include "include.h"
-#include "EKF_AHRS.h"
 #include "bat.h"
 #include "imu.h"
 #include "flash.h"
@@ -153,24 +152,6 @@ void Duty_Att_Fushion()//姿态解算 100Hz
 			mems.Acc_rt.x, mems.Acc_rt.y, mems.Acc_rt.z,
 			&Pitch,&Roll,&Yaw);
 		#endif
-		#if defined(ATT_EKF)//||defined(BOARD_FOR_CAN)
-			ahrs_ekf.acc_m[0]=(float) mems.Acc_rt.x/4096.*9.8;
-			ahrs_ekf.acc_m[1]=(float) mems.Acc_rt.y/4096.*9.8;
-			ahrs_ekf.acc_m[2]=(float) mems.Acc_rt.z/4096.*9.8;
-			ahrs_ekf.gyro_m[0]=(float) mems.Gyro_deg_rt.x/57.3;
-			ahrs_ekf.gyro_m[1]=(float) mems.Gyro_deg_rt.y/57.3;
-			ahrs_ekf.gyro_m[2]=(float) mems.Gyro_deg_rt.z/57.3;	
-			#if EN_GYRO_Z_F_ODOM
-				float err_z=fabs(my_deathzoom(mems.Gyro_deg_rt.z-vmc_all.att_rate_vm[YAWr],5));
-				float yaw_f_weight=LIMIT(err_z,0,15)/15;
-				yaw_f_weight=LIMIT(yaw_f_weight+0.0,0,1);
-				ahrs_ekf.gyro_m[2]=(float)(mems.Gyro_deg_rt.z*yaw_f_weight+(1-yaw_f_weight)*vmc_all.att_rate_vm[YAWr])/57.3;	
-			#endif
-			EKF_AHRS_UPDATE(T);
-			Pitch=ahrs_ekf.att_f_use[0];
-			Roll=ahrs_ekf.att_f_use[1];
-			Yaw=ahrs_ekf.att_f_use[2]-mems.imu_att.z;
-		#endif
   float a_br[3],acc_temp[3];
 	static float acc_flt[3];
 	a_br[0] =(float) mems.Acc_rt.x/4096.;
@@ -247,19 +228,9 @@ void Duty_Att_Fushion()//姿态解算 100Hz
 	#if VIR_MODEL
 	  vmc_all.att[YAWr]=nav.fake_yaw;
 	#endif
-	#if defined(ATT_EKF)
-		vmc_all.att_rate[PITr]=ahrs_ekf.gyro_f_use[0]*57.3;
-		vmc_all.att_rate[ROLr]=ahrs_ekf.gyro_f_use[1]*57.3;
-		vmc_all.att_rate[YAWr]=ahrs_ekf.gyro_f_use[2]*57.3;
-	#elif defined(ATT_EKF_Q)
-		vmc_all.att_rate[PITr]=INS.Gyro_fix[0]*57.3;
-		vmc_all.att_rate[ROLr]=INS.Gyro_fix[1]*57.3;
-		vmc_all.att_rate[YAWr]=INS.Gyro_fix[2]*57.3;
-	#else
-		vmc_all.att_rate[PITr]=mems.Gyro_deg_rt.x;
-		vmc_all.att_rate[ROLr]=mems.Gyro_deg_rt.y;
-		vmc_all.att_rate[YAWr]=mems.Gyro_deg_rt.z;
-	#endif
+	vmc_all.att_rate[PITr]=mems.Gyro_deg_rt.x;
+	vmc_all.att_rate[ROLr]=mems.Gyro_deg_rt.y;
+	vmc_all.att_rate[YAWr]=mems.Gyro_deg_rt.z;
 	DigitalLPF( acc_temp[0]*9.8, &vmc_all.acc[Xr], FLT_ACC, T);
 	DigitalLPF(-acc_temp[1]*9.8, &vmc_all.acc[Yr], FLT_ACC, T);
 	DigitalLPF( acc_temp[2]*9.8, &vmc_all.acc[Zr], FLT_ACC, T);

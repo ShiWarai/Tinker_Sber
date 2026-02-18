@@ -1,10 +1,9 @@
 #include "include.h"
-#include "eso.h"
 #include "gait_math.h"
 #if !RUN_WEBOTS
 #include "arm_math.h"
 #endif
-//------------------------------ÊýÑ§¿â
+//------------------------------ÃŠÃ½Ã‘Â§Â¿Ã¢
 float sindw(float in){
     return sinf(in/57.3);
 }
@@ -463,7 +462,7 @@ float dead(float x,float zoom)
   return (t);
 }
 
-//------------------------------------¾ØÕóMatrix-----------------------
+//------------------------------------Â¾Ã˜Ã•Ã³Matrix-----------------------
 static void inv22(const float x[4], float y[4])
 {
   float r;
