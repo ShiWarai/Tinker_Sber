@@ -7,6 +7,7 @@ import onnxruntime as ort
 from scipy.spatial.transform import Rotation as R
 from functools import partial
 from rclpy.node import Node
+from collections import deque
 # import limxsdk
 # import limxsdk.robot.Rate as Rate
 # import limxsdk.robot.Robot as Robot
@@ -33,6 +34,19 @@ class InferenceController:
         self.policy_input_names = [self.policy_session.get_inputs()[0].name]
         self.policy_output_names = [self.policy_session.get_outputs()[0].name]
         self.node.get_logger().info(f'ONNX model loaded: input {self.policy_input_names[0]} with shape {self.policy_session.get_inputs()[0].shape}, output {self.policy_output_names[0]}')
+
+        self.history_length = 5
+        self.loop_count = 0
+        self.gait_command = np.array([2.0, 0.5, 0.5])  # freq, offset, contact_duration
+        
+        self.base_ang_vel_queue = deque(maxlen=self.history_length)
+        self.projected_gravity_queue = deque(maxlen=self.history_length)
+        self.joint_positions_queue = deque(maxlen=self.history_length)
+        self.joint_velocities_queue = deque(maxlen=self.history_length)
+        self.last_actions_queue = deque(maxlen=self.history_length)
+        self.scaled_commands_queue = deque(maxlen=self.history_length)
+        self.gait_phase_queue = deque(maxlen=self.history_length)
+        self.gait_command_queue = deque(maxlen=self.history_length)
 
         self.node.get_logger().info('Inference model initialized')
 
@@ -102,7 +116,7 @@ class InferenceController:
         self.stand_percent = 0  # percentage of time the robot has spent in stand mode
         self.policy_session = None  # ONNX model session for policy inference
         self.joint_num = len(self.joint_names)  # number of joints
-        self.get_logger().info(f'Observation size: {self.observations_size}, Actions size: {self.actions_size}')
+        self.node.get_logger().info(f'Observation size: {self.observations_size}, Actions size: {self.actions_size}')
 
         # Initialize joint angles based on the initial configuration
         self.init_joint_angles = np.zeros(len(self.joint_names))
@@ -201,6 +215,18 @@ class InferenceController:
             # Save the last action for reference
             self.last_actions[i] = self.actions[i]'''
     
+    def compute_gait_phase(self):
+        loop_count = self.loop_count
+        gait_indices = (loop_count / 100.0) * self.gait_command[0] % 1.0
+
+        sin_phase = np.sin(2 * np.pi * gait_indices)
+        cos_phase = np.cos(2 * np.pi * gait_indices)
+
+        return np.array([sin_phase, cos_phase])
+        
+    def compute_gait_command(self):
+        return self.gait_command
+
     def compute_observation(self,
                             imu_quat,
                             base_ang_vel,
@@ -219,20 +245,6 @@ class InferenceController:
             gravity_vector = np.array([0, 0, -1])  # Gravity in world frame (z-axis down)
             projected_gravity = np.dot(inverse_rot, gravity_vector)  # Transform gravity into body frame
 
-            # Retrieve base angular velocity from the IMU data
-            '''base_ang_vel = np.array(self.imu_data_tmp.gyro)'''
-            # Apply IMU orientation offset correction (using Euler angles)
-            '''rot = R.from_euler('zyx', self.imu_orientation_offset).as_matrix()  # Rotation matrix for offset correction
-            base_ang_vel = np.dot(rot, base_ang_vel)  # Apply correction to angular velocity
-            projected_gravity = np.dot(rot, projected_gravity)  # Apply correction to projected gravity'''
-
-            # Retrieve joint positions and velocities from the robot state
-            '''joint_positions = np.array(self.robot_state_tmp.q)
-            joint_velocities = np.array(self.robot_state_tmp.dq)'''
-
-            # Retrieve the last actions that were applied to the robot
-            '''actions = np.array(self.last_actions)'''
-
             # Create a command scaler matrix for linear and angular velocities
             command_scaler = np.diag([
                 self.user_cmd_cfg['lin_vel_x'],  # Scale factor for linear velocity in x direction
@@ -243,152 +255,69 @@ class InferenceController:
             # Apply scaling to the command inputs (velocity commands)
             scaled_commands = np.dot(command_scaler, commands)
 
-            # Create the observation vector by concatenating various state variables:
-            # - Base angular velocity (scaled)
-            # - Projected gravity vector
-            # - Joint positions (difference from initial angles, scaled)
-            # - Joint velocities (scaled)
-            # - Last actions applied to the robot
-            # - Scaled command inputs
-            obs = np.concatenate([
-                base_ang_vel * self.obs_scales['ang_vel'],  # Scaled base angular velocity
-                projected_gravity,  # Projected gravity vector in body frame
-                (joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos'],  # Scaled joint positions
-                joint_velocities * self.obs_scales['dof_vel'],  # Scaled joint velocities
-                last_actions,  # Last actions taken by the robot
-                scaled_commands  # Scaled velocity commands from user input
+            # Compute gait phase
+            gait_phase = self.compute_gait_phase()
+            gait_command = self.gait_command
+
+            # Scale current values
+            scaled_base_ang_vel = base_ang_vel * self.obs_scales['ang_vel']
+            scaled_joint_pos = (joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos']
+            scaled_joint_vel = joint_velocities * self.obs_scales['dof_vel']
+
+            # Initialize queues if empty
+            if len(self.base_ang_vel_queue) == 0:
+                for _ in range(self.history_length):
+                    self.base_ang_vel_queue.append(scaled_base_ang_vel)
+                    self.projected_gravity_queue.append(projected_gravity)
+                    self.joint_positions_queue.append(scaled_joint_pos)
+                    self.joint_velocities_queue.append(scaled_joint_vel)
+                    self.last_actions_queue.append(last_actions)
+                    self.scaled_commands_queue.append(scaled_commands)
+                    self.gait_phase_queue.append(gait_phase)
+                    self.gait_command_queue.append(gait_command)
+
+            # Add current values to queues
+            self.base_ang_vel_queue.append(scaled_base_ang_vel)
+            self.projected_gravity_queue.append(projected_gravity)
+            self.joint_positions_queue.append(scaled_joint_pos)
+            self.joint_velocities_queue.append(scaled_joint_vel)
+            self.last_actions_queue.append(last_actions)
+            self.scaled_commands_queue.append(scaled_commands)
+            self.gait_phase_queue.append(gait_phase)
+            self.gait_command_queue.append(gait_command)
+
+            # Create observation from entire history
+            history_obs = np.concatenate([
+                np.array(self.base_ang_vel_queue).flatten(),
+                np.array(self.projected_gravity_queue).flatten(),
+                np.array(self.joint_positions_queue).flatten(),
+                np.array(self.joint_velocities_queue).flatten(),
+                np.array(self.last_actions_queue).flatten(),
+                np.array(self.scaled_commands_queue).flatten(),
+                np.array(self.gait_phase_queue).flatten(),
+                np.array(self.gait_command_queue).flatten()
             ])
-            
-            # Clip the observation values to within the specified limits for stability
+
             self.observations = np.clip(
-                obs, 
-                -self.rl_cfg['clip_scales']['clip_observations'],  # Lower limit for clipping
-                self.rl_cfg['clip_scales']['clip_observations']  # Upper limit for clipping
+                history_obs,
+                -self.rl_cfg['clip_scales']['clip_observations'],
+                self.rl_cfg['clip_scales']['clip_observations']
             )
+
+            self.loop_count += 1
         
         except Exception as e:
-            self.node.get_logger().error(f"Error in compute_observation: {e}")
-    
-    
+            self.node.get_logger().error(f"[Inference] Error in compute_observation: {e}")
+
     def compute_actions(self):
         """
         Computes the actions based on the current observations using the policy session.
         """
         try:
-            # Concatenate observations into a single tensor and convert to float32
-            input_tensor = np.concatenate([self.observations], axis=0)
-            input_tensor = input_tensor.astype(np.float32).reshape(1,-1)
-            
-            # Create a dictionary of inputs for the policy session
+            input_tensor = self.observations.astype(np.float32).reshape(1, -1)
             inputs = {self.policy_input_names[0]: input_tensor}
-            
-            # Run the policy session and get the output
             output = self.policy_session.run(self.policy_output_names, inputs)
-            
-            # Flatten the output and store it as actions
             self.actions = np.array(output).flatten()
-
-            # return self.actions
-
+            
         except Exception as e:
-            self.node.get_logger().error(f"Error in compute_actions: {e}")
-        
-    '''def set_joint_command(self, joint_index, position):
-        """
-        Sends a command to set a joint to the desired position.
-        Replace this method with actual implementation according to your hardware.
-        
-        Parameters:
-        joint_index (int): The index of the joint to command.
-        position (float): The desired position of the joint.
-        """
-        self.robot_cmd.q[joint_index] = position'''
-        
-    '''def set_joint_command_aligned(self, joint_index, position):
-        
-        if joint_index == 2:
-            self.robot_cmd.q[1] = position
-        elif joint_index == 4:
-            self.robot_cmd.q[2] = position
-        elif joint_index == 1:
-            self.robot_cmd.q[3] = position
-        elif joint_index == 3:
-            self.robot_cmd.q[4] = position
-        else:
-            self.robot_cmd.q[joint_index] = position'''
-
-    '''def update(self):
-        """
-        Updates the robot's state based on the current mode and publishes the robot command.
-        """
-        if self.mode == "STAND":
-            self.handle_stand_mode()
-        elif self.mode == "WALK":
-            self.handle_walk_mode()
-        
-        # Increment the loop count
-        self.loop_count += 1
-
-        # Publish the robot command
-        self.robot.publishRobotCmd(self.robot_cmd)'''
-        
-    # Callback function for receiving robot command data
-    '''def robot_state_callback(self, robot_state: datatypes.RobotState):
-        """
-        Callback function to update the robot state from incoming data.
-        
-        Parameters:
-        robot_state (datatypes.RobotState): The current state of the robot.
-        """
-        self.robot_state = robot_state'''
-
-    # Callback function for receiving imu data
-    '''def imu_data_callback(self, imu_data: datatypes.ImuData):
-        """
-        Callback function to update IMU data from incoming data.
-        
-        Parameters:
-        imu_data (datatypes.ImuData): The IMU data containing stamp, acceleration, gyro, and quaternion.
-        """
-        self.imu_data.stamp = imu_data.stamp
-        self.imu_data.acc = imu_data.acc
-        self.imu_data.gyro = imu_data.gyro
-        
-        # Rotate quaternion values
-        self.imu_data.quat[0] = imu_data.quat[1]
-        self.imu_data.quat[1] = imu_data.quat[2]
-        self.imu_data.quat[2] = imu_data.quat[3]
-        self.imu_data.quat[3] = imu_data.quat[0]'''
-
-    # Callback function for receiving sensor joy data
-    '''def sensor_joy_callback(self, sensor_joy: datatypes.SensorJoy):
-        self.commands[0] = sensor_joy.axes[1] * 0.5
-        self.commands[1] = sensor_joy.axes[0] * 0.5
-        self.commands[2] = sensor_joy.axes[2] * 0.5'''
-
-'''if __name__ == '__main__':
-    # Get the robot type from the environment variable
-    robot_type = os.getenv("ROBOT_TYPE")
-    
-    # Check if the ROBOT_TYPE environment variable is set, otherwise exit with an error
-    if not robot_type:
-        print("Error: Please set the ROBOT_TYPE using 'export ROBOT_TYPE=<robot_type>'.")
-        sys.exit(1)
-
-    # Create a Robot instance of the specified type
-    robot = Robot(RobotType.PointFoot)
-
-    # Default IP address for the robot
-    robot_ip = "127.0.0.1"
-    
-    # Check if command-line argument is provided for robot IP
-    if len(sys.argv) > 1:
-        robot_ip = sys.argv[1]
-
-    # Initialize the robot with the provided IP address
-    if not robot.init(robot_ip):
-        sys.exit()
-
-    # Create and run the PointfootController
-    controller = PointfootController(f'{os.path.dirname(os.path.abspath(__file__))}/model/pointfoot', robot, robot_type)
-    controller.run()'''
+            self.node.get_logger().error(f"[Inference] Error in compute_actions: {e}")

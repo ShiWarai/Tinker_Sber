@@ -23,6 +23,8 @@ class GaitController(Node):
 
         self.inference_controller = InferenceController(node=self, model_dir=model_path, robot_type='tinker')
         # self.inference_controller.load_config(config_file=f'{model_path}/params.yaml')
+        
+        self.history_length = 5 
 
         self.rpy = np.zeros(3)
         self.imu_quat = np.array([0, 0, 0, 1])
@@ -31,6 +33,9 @@ class GaitController(Node):
         self.positions = np.zeros(10)
         self.velocities = np.zeros(10)
         self.prev_action = np.zeros(10)
+
+        self.loop_count = 0
+        self.gait_command = np.array([2.0, 0.5, 0.5])
         
         self.observations = np.zeros(self.inference_controller.observations_size)
 
@@ -76,7 +81,7 @@ class GaitController(Node):
             msg.motor_cmd[i].position = float(pos)
 
         self.lowcmd_publisher.publish(msg)
-
+    
     def control_loop(self):
         try:
             # if not self.first_state_received:
@@ -84,19 +89,7 @@ class GaitController(Node):
             #     return
             
             self.commands = self.device.get_commands()
-
-            '''self.obs_buf = np.concatenate([self.omega, 
-                                           self.rpy, 
-                                           self.commands,
-                                           self.positions,
-                                           self.velocities,
-                                           self.prev_action])
             
-
-            self.obs_tensor = torch.from_numpy(self.obs_buf).float().unsqueeze(0)
-
-            # Run model, publish actions
-            action = self.inference_model.run(self.obs_tensor)'''
             self.inference_controller.compute_observation(imu_quat=self.imu_quat,
                                                           base_ang_vel=self.ang_vel,
                                                           joint_positions=self.positions,
@@ -111,7 +104,7 @@ class GaitController(Node):
 
         except Exception as e:
             self.get_logger().error(f"Control loop error: {e}")
-
+    
     def shutdown(self):
         self.device.shutdown()
         self.destroy_node()

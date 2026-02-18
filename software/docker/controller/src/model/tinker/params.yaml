@@ -46,7 +46,7 @@ TinkerCfg:
 
   size:
     actions_size: 10
-    observations_size: 39   # 27 was for pointfoot, +4 DOF: +4 qpos +4 qvel +4 actions
+    observations_size: 39   # 27 was for pointfoot, +4 DOF: {+4 qpos +4 qvel +4 actions}
     commands_size: 3
 
   stand_mode:
