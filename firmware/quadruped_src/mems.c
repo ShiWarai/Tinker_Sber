@@ -46,6 +46,36 @@ u16 acc_sum_cnt = 0,acc_sum_cnt_3d=0,acc_smple_cnt_3d=0,gyro_sum_cnt = 0;
 #define OFFSET_AV_NUM_ACC 50
 void MEMS_Data_Offset()
 {
+#if defined(MEM_ICM)
+    if (mems.Acc_CALIBRATE == 1) {
+		#if SAVE_FLASH_WATCHDOG
+		IWDG_Init(1, 10000);
+		#endif
+		if (icm20602_accel_calibrate_step(mems.Acc_I16.x, mems.Acc_I16.y, mems.Acc_I16.z,
+				&mems.Acc_Offset.x, &mems.Acc_Offset.y, &mems.Acc_Offset.z)) {
+			mems.Acc_CALIBRATE = 0;
+			if (vmc_all.param.cal_flag[1]==0 && vmc_all.param.cal_flag[0]==0 && module.flash)
+				WRITE_PARM();
+			#if SAVE_FLASH_WATCHDOG
+			IWDG_Init(4, 150);
+			#endif
+		}
+	}
+    if (mems.Gyro_CALIBRATE) {
+		#if SAVE_FLASH_WATCHDOG
+		IWDG_Init(1, 10000);
+		#endif
+		if (icm20602_gyro_calibrate_step(mems.Gyro_I16.x, mems.Gyro_I16.y, mems.Gyro_I16.z,
+				&mems.Gyro_Offset.x, &mems.Gyro_Offset.y, &mems.Gyro_Offset.z)) {
+			mems.Gyro_CALIBRATE = 0;
+			if (module.flash)
+				WRITE_PARM();
+			#if SAVE_FLASH_WATCHDOG
+			IWDG_Init(4, 150);
+			#endif
+		}
+	}
+#else
     if(mems.Acc_CALIBRATE == 1)
     {
 			#if SAVE_FLASH_WATCHDOG
@@ -56,13 +86,11 @@ void MEMS_Data_Offset()
 				  sum_temp_att[0]+=Pitch;
 					sum_temp_att[1]+=Roll;
 				}
-				
 				{
         sum_temp[A_X] += mems.Acc_I16.x;
         sum_temp[A_Y] += mems.Acc_I16.y;
         sum_temp[A_Z] += mems.Acc_I16.z - 65536/16;   // +-8G
 				}
-
         if( acc_sum_cnt >= OFFSET_AV_NUM )
         {   
 					if(vmc_all.param.cal_flag[1]==0&&vmc_all.param.cal_flag[0]==0){
@@ -167,6 +195,8 @@ void MEMS_Data_Offset()
 					#endif
         }
     }
+#endif /* MEM_ICM */
+
 }
 
 void Transform(float itx,float ity,float itz,float *it_x,float *it_y,float *it_z)

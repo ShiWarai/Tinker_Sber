@@ -2,8 +2,8 @@
 #define __SPI_H
 #include "include.h"
 
-#define SPI_PI_IS_MASTER 0//SPI主发送
-// SPI总线速度设置 
+#define SPI_PI_IS_MASTER 0//SPI??????
+// SPI??????????? 
 #define SPI_SPEED_2   		0
 #define SPI_SPEED_4   		1
 #define SPI_SPEED_8   		2
@@ -13,15 +13,14 @@
 #define SPI_SPEED_128 		6
 #define SPI_SPEED_256 		7
 						  	    													  
-void SPI3_Init(void);			 //初始化SPI1口
-void SPI2_Init(void);			 //初始化SPI1口
-u8 SPI3_RW(u8 TxData);//SPI1总线读写一个字节
+void SPI3_Init(void);			 //?????SPI1??
+void SPI2_Init(void);			 //?????SPI1??
+u8 SPI3_RW(u8 TxData);//SPI1?????锟斤拷??????
 
 #define ICM20602 0
 #define NRF2401 1
-#define MS5611  2
-#define CS_FLASH 3
-#define CS_LIS 4
+#define CS_FLASH 2
+#define CS_LIS 3
 void SPI_CS(u8 sel,u8 set);
 void SPI_Receive(uint8_t *pData, uint16_t Size);
 void SPI_SetSpeed(u8 SPI_BaudRatePrescaler);
@@ -34,7 +33,7 @@ void master_send(void);
 extern float test_spi_rx[2];
 extern int spi_master_loss_pi;
 extern int spi_master_connect_pi,spi_master_loss_pi_all;
-#define SPI_BUF_SIZE 254  //偶数
+#define SPI_BUF_SIZE 254  //???
 #define SPIT_FLAG_TIMEOUT              ((uint32_t)0x1000)
 #define SPIT_LONG_TIMEOUT              ((uint32_t)(10 * SPIT_FLAG_TIMEOUT))
 extern unsigned char  spi_tx_buf[SPI_BUF_SIZE];

@@ -12,7 +12,7 @@
 #define LED4_OFF         ANO_GPIO_LED->BSRRL = ANO_Pin_LED4
 #define LED4_ON          ANO_GPIO_LED->BSRRH = ANO_Pin_LED4
 
-/***************LED GPIO¶¨Òå******************/
+/***************LED GPIOå®šä¹‰******************/
 #define ANO_RCC_LED			RCC_AHB1Periph_GPIOC
 #define ANO_GPIO_LED		GPIOC
 #define ANO_Pin_LED1		GPIO_Pin_1
@@ -28,12 +28,11 @@ void LED_Duty(void);
 void LEDRGB_STATE(float dt);
 void LED_MPU_Err(void);
 void LED_Mag_Err(void);
-void LED_MS5611_Err(void);
 int KEY_DOG(void);
 extern u8 LED_Brightness[4],LED[3];
 extern int dj_sel;
 
-		//´ø²Îºê£¬¿ÉÒÔÏñÄÚÁªº¯ÊıÒ»ÑùÊ¹ÓÃ
+		//å¸¦å‚å®ï¼Œå¯ä»¥åƒå†…è”å‡½æ•°ä¸€æ ·ä½¿ç”¨
 #define LED1S(a)	if (a)	\
 					GPIO_SetBits(GPIOE,GPIO_Pin_0);\
 					else		\

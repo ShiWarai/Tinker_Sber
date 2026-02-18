@@ -1,5 +1,4 @@
 #include "can.h"
-#include "ecos_link.h" 
 #include "delay.h"
 #include "led_fc.h"
 #include "include.h"
@@ -196,9 +195,8 @@ void CAN1_RX0_IRQHandler(void)
 		uint32_t cmd = (frameID >> 4);
 		uint32_t nodeID = (frameID & 0xF)-1;
 		
-		//----------------------------MIT  ???CAN1 ID??1???  ???CAN1???????  ??????????? ???
-		if ((motor_chassis[0].motor.type<EC_1)&&
-		(RxMessage.IDE == CAN_Id_Standard) //??????
+		//----------------------------MIT  CAN1
+		if ((RxMessage.IDE == CAN_Id_Standard) //??????
 		&& (RxMessage.IDE == CAN_RTR_Data) //???????
 		&& ((RxMessage.DLC == 6||RxMessage.DLC == 8))) /* ????????8 */
 		{
@@ -245,22 +243,6 @@ void CAN1_RX0_IRQHandler(void)
 				leg_motor.t_now[6]=motor_chassis[6].t_now_flt;
 			}
 		}	
-		
-				//----------------------------RV??? VESC????
-		if (
-		(RxMessage.IDE == CAN_Id_Standard) //??????
-		&& (RxMessage.IDE == CAN_RTR_Data) //???????
-		&& ((RxMessage.DLC >=6)) &&
-			motor_chassis[0].motor.type>=EC_1) /* ????????8 */
-		{
-			RV_can_data_repack(&RxMessage,0,0);
-			for(i=0;i<10;i++)
-			{
-				leg_motor.q_now[i]=motor_chassis[i].q_now_flt;
-				leg_motor.qd_now[i]=motor_chassis[i].qd_now_flt;
-				leg_motor.t_now[i]=motor_chassis[i].t_now_flt;
-			}
-		}			
 		
 	  can1_rx_cnt++;
 }
@@ -406,9 +388,8 @@ void CAN2_RX0_IRQHandler(void)
 //		canbufr2[i]=RxMessage.Data[i];
 //	can2_rx_id=RxMessage.StdId;	
 // 
-	//----------------------------MIT???CAN2 ID??1???  ???CAN2???????  ??????????? ???
-	if ((motor_chassis[0].motor.type<EC_1)&& 
-	(RxMessage.IDE == CAN_Id_Standard) //??????
+	//----------------------------MIT CAN2
+	if ((RxMessage.IDE == CAN_Id_Standard) //??????
 	&& (RxMessage.IDE == CAN_RTR_Data) //???????
 	&& ((RxMessage.DLC == 6||RxMessage.DLC == 8))) /* ????????8 */
 	{
@@ -456,21 +437,6 @@ void CAN2_RX0_IRQHandler(void)
 			}
 	}	
 	
-		//----------------------------RV??? VESC????
-		if (
-		(RxMessage.IDE == CAN_Id_Standard) //??????
-		&& (RxMessage.IDE == CAN_RTR_Data) //???????
-		&& ((RxMessage.DLC >=6)) &&
-			motor_chassis[0].motor.type>=EC_1) /* ????????8 */
-		{
-			RV_can_data_repack(&RxMessage,0,1);//can2
-			for(i=0;i<10;i++){
-				leg_motor.q_now[i]=motor_chassis[i].q_now_flt;
-				leg_motor.qd_now[i]=motor_chassis[i].qd_now_flt; 
-				leg_motor.t_now[i]=motor_chassis[i].t_now_flt;
-			}
-		}			
-		
 		can2_rx_cnt++;
 }
 #endif
@@ -560,41 +526,20 @@ u8 CAN2_Send_Msg_Board(u8* msg,u8 len,uint32_t id)
 void CAN_motor_sm(float dt)
 {
 	char i=0;
-	char id_cnt=0;
-	
-	if(motor_chassis[0].motor.type>=EC_1)//----------ECOS??? motor.type ???????????????
+	if(!can_cmd_usb_disable||ocu_connect==0)//usb�????
 	{
-		if(!can_cmd_usb_disable||ocu_connect==0)//usb�????
-		{
-			for(i=0;i<10;i++)
-				motor_chassis[i].en_cmd=leg_motor.motor_en;
-				mit_bldc_thread_rv(leg_motor.motor_en,dt);
-		}
-		else
-		{
-			for(i=0;i<10;i++)
-			{
-				motor_chassis[i].en_cmd=motor_chassis[i].en_cmd_ocu;
-				mit_bldc_thread_rv(motor_chassis[0].en_cmd_ocu,dt);
-			}
-		}
+		for(i=0;i<10;i++)
+			motor_chassis[i].en_cmd=leg_motor.motor_en;
+		
+		mit_bldc_thread(leg_motor.motor_en,dt);
 	}
-	else	//---------------------------------------------DM???
+	else
 	{
-		if(!can_cmd_usb_disable||ocu_connect==0)//usb�????
-		{
-			for(i=0;i<10;i++)
-				motor_chassis[i].en_cmd=leg_motor.motor_en;
-			
-			mit_bldc_thread(leg_motor.motor_en,dt);
-		}
-		else
-		{
-			for(i=0;i<10;i++)
-				motor_chassis[i].en_cmd=motor_chassis[i].en_cmd_ocu;
-			
-			mit_bldc_thread(motor_chassis[0].en_cmd_ocu,dt);
-		}
+		for(i=0;i<10;i++)
+			motor_chassis[i].en_cmd=motor_chassis[i].en_cmd_ocu;
+		
+		mit_bldc_thread(motor_chassis[0].en_cmd_ocu,dt);
 	}
 }
+
 

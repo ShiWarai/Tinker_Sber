@@ -1,12 +1,11 @@
 #include "include.h"
 #include "locomotion_header.h"
 #include "math.h"
-#include "eso.h"
 #include "gait_math.h"
 #if !RUN_WEBOTS
 #include "arm_math.h"
 #endif
-//----------------------����ת����
+//----------------------×ø±ê×ª»»¿â
 void mat_trans(float src[3][3],float dis[3][3])
 {
 	char i,j;
@@ -180,7 +179,7 @@ void converV_b_to_n_RT(float RT[3][3], float yaw, float xb,float yb,float zb,flo
 	*zn=z;
 }
 
-//������ϵת�����ֲ�
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµ×ªï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½
 char use_cor_trans=1;
 void force_n_to_b(VMC *in)
 {
@@ -188,7 +187,7 @@ void force_n_to_b(VMC *in)
 	force_n.x=in->force_n[Xr];
 	force_n.y=in->force_n[Yr];
 	force_n.z=in->force_n[Zr];
-	//ת��������  Xǰ��  Y�෽  Z�Ϸ�
+	//×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  XÇ°ï¿½ï¿½  Yï¿½à·½  Zï¿½Ï·ï¿½
 	in->force_b[Xr] = vmc_all.Rn_b[0][0]*force_n.x + vmc_all.Rn_b[0][1]*force_n.y + vmc_all.Rn_b[0][2]*force_n.z;
 	in->force_b[Yr] = vmc_all.Rn_b[1][0]*force_n.x + vmc_all.Rn_b[1][1]*force_n.y + vmc_all.Rn_b[1][2]*force_n.z;
 	in->force_b[Zr] = vmc_all.Rn_b[2][0]*force_n.x + vmc_all.Rn_b[2][1]*force_n.y + vmc_all.Rn_b[2][2]*force_n.z;

@@ -62,12 +62,12 @@ s16 Tempreature;
 float TEM_LPF;
 float Ftempreature;
 
-xyz_s16_t Mag_Adc;			//²ÉÑùÖµ
-xyz_f_t   Mag_Offset,Mag_Offseto;		//Æ«ÒÆÖµ
-xyz_f_t   Mag_Offset_c,Mag_Offset_co;		//Æ«ÒÆÖµ
-xyz_f_t   Mag_Gain,Mag_Gaino;		//Æ«ÒÆÖµ
-xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			//±ÈÀıËõ·Å	
-xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			//¾ÀÕıºóµÄÖµ
+xyz_s16_t Mag_Adc;			//é‡‡æ ·å€¼
+xyz_f_t   Mag_Offset,Mag_Offseto;		//åç§»å€¼
+xyz_f_t   Mag_Offset_c,Mag_Offset_co;		//åç§»å€¼
+xyz_f_t   Mag_Gain,Mag_Gaino;		//åç§»å€¼
+xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			//æ¯”ä¾‹ç¼©æ”¾	
+xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			//çº æ­£åçš„å€¼
 u8 Mag_CALIBRATED;
 float yaw;
 float Pressure;
@@ -133,25 +133,25 @@ void LSM6_readGyro(u8 fast);
 
 //-
 
-//========ICM20602¼Ä´æÆ÷µØÖ·========================
+//========ICM20602å¯„å­˜å™¨åœ°å€========================
 /********************************************
-*¸´Î»ºóËùÓĞ¼Ä´æÆ÷µØÖ·¶¼Îª0£¬³ıÁË
+*å¤ä½åæ‰€æœ‰å¯„å­˜å™¨åœ°å€éƒ½ä¸º0ï¼Œé™¤äº†
 *Register 26  CONFIG				= 0x80
 *Register 107 Power Management 1 	= 0x41
 *Register 117 WHO_AM_I 				= 0x12
 *********************************************/
-//ÍÓÂİÒÇÎÂ¶È²¹³¥
+//é™€èºä»ªæ¸©åº¦è¡¥å¿
 #define	ICM20_XG_OFFS_TC_H				0x04
 #define	ICM20_XG_OFFS_TC_L				0x05
 #define	ICM20_YG_OFFS_TC_H				0x07
 #define	ICM20_YG_OFFS_TC_L				0x08
 #define	ICM20_ZG_OFFS_TC_H				0x0A
 #define	ICM20_ZG_OFFS_TC_L				0x0B
-//¼ÓËÙ¶È×Ô¼ìÊä³ö(³ö²úÊ±ÉèÖÃ£¬ÓÃÓÚÓëÓÃ»§µÄ×Ô¼ìÊä³öÖµ±È½Ï£©
+//åŠ é€Ÿåº¦è‡ªæ£€è¾“å‡º(å‡ºäº§æ—¶è®¾ç½®ï¼Œç”¨äºä¸ç”¨æˆ·çš„è‡ªæ£€è¾“å‡ºå€¼æ¯”è¾ƒï¼‰
 #define	ICM20_SELF_TEST_X_ACCEL			0x0D
 #define	ICM20_SELF_TEST_Y_ACCEL			0x0E
 #define	ICM20_SELF_TEST_Z_ACCEL			0x0F
-//ÍÓÂİÒÇ¾²Ì¬Æ«ÒÆ
+//é™€èºä»ªé™æ€åç§»
 #define	ICM20_XG_OFFS_USRH				0x13
 #define	ICM20_XG_OFFS_USRL				0x14
 #define	ICM20_YG_OFFS_USRH				0x15
@@ -166,7 +166,7 @@ void LSM6_readGyro(u8 fast);
 #define	ICM20_ACCEL_CONFIG2				0x1D
 #define	ICM20_LP_MODE_CFG				0x1E
 
-//ÔË¶¯»½ĞÑ¼ÓËÙ¶ÈãĞÖµ
+//è¿åŠ¨å”¤é†’åŠ é€Ÿåº¦é˜ˆå€¼
 #define	ICM20_ACCEL_WOM_X_THR			0x20
 #define	ICM20_ACCEL_WOM_Y_THR			0x21
 #define	ICM20_ACCEL_WOM_Z_THR			0x22
@@ -179,24 +179,24 @@ void LSM6_readGyro(u8 fast);
 #define	ICM20_FIFO_WM_INT_STATUS		0x39
 #define	ICM20_INT_STATUS				0x3A
 
-//¼ÓËÙ¶ÈÊä³ö
+//åŠ é€Ÿåº¦è¾“å‡º
 #define	ICM20_ACCEL_XOUT_H				0x3B
 #define	ICM20_ACCEL_XOUT_L				0x3C
 #define	ICM20_ACCEL_YOUT_H				0x3D
 #define	ICM20_ACCEL_YOUT_L				0x3E
 #define	ICM20_ACCEL_ZOUT_H				0x3F
 #define	ICM20_ACCEL_ZOUT_L				0x40
-//ÎÂ¶ÈÊä³ö
+//æ¸©åº¦è¾“å‡º
 #define	ICM20_TEMP_OUT_H				0x41
 #define	ICM20_TEMP_OUT_L				0x42
-//½ÇËÙ¶ÈÊä³ö
+//è§’é€Ÿåº¦è¾“å‡º
 #define	ICM20_GYRO_XOUT_H				0x43
 #define	ICM20_GYRO_XOUT_L				0x44
 #define	ICM20_GYRO_YOUT_H				0x45
 #define	ICM20_GYRO_YOUT_L				0x46
 #define	ICM20_GYRO_ZOUT_H				0x47
 #define	ICM20_GYRO_ZOUT_L				0x48
-//ÍÓÂİÒÇ×Ô¼ìÊä³ö
+//é™€èºä»ªè‡ªæ£€è¾“å‡º
 #define	ICM20_SELF_TEST_X_GYRO			0x50
 #define	ICM20_SELF_TEST_Y_GYRO			0x51
 #define	ICM20_SELF_TEST_Z_GYRO			0x52
@@ -206,7 +206,7 @@ void LSM6_readGyro(u8 fast);
 #define	ICM20_SIGNAL_PATH_RESET			0x68
 #define	ICM20_ACCEL_INTEL_CTRL 			0x69
 #define	ICM20_USER_CTRL					0x6A
-//µçÔ´¿ØÖÆ
+//ç”µæºæ§åˆ¶
 #define	ICM20_PWR_MGMT_1				0x6B
 #define	ICM20_PWR_MGMT_2				0x6C
 
@@ -216,7 +216,7 @@ void LSM6_readGyro(u8 fast);
 #define	ICM20_FIFO_R_W					0x74
 
 #define	ICM20_WHO_AM_I 					0x75
-//¼ÓËÙ¶È¾²Ì¬Æ«ÒÆ
+//åŠ é€Ÿåº¦é™æ€åç§»
 #define	ICM20_XA_OFFSET_H				0x77
 #define	ICM20_XA_OFFSET_L				0x78
 #define	ICM20_YA_OFFSET_H				0x7A
@@ -226,12 +226,12 @@ void LSM6_readGyro(u8 fast);
 //===========================================================
 
 
-//¼ÓËÙ¶ÈÁ¿³Ì
+//åŠ é€Ÿåº¦é‡ç¨‹
 #define ICM20_ACCEL_FS_2G			(0<<3)
 #define ICM20_ACCEL_FS_4G			(1<<3)
 #define ICM20_ACCEL_FS_8G			(2<<3)
 #define ICM20_ACCEL_FS_16G			(3<<3)
-//½ÇËÙ¶ÈÁ¿³Ì
+//è§’é€Ÿåº¦é‡ç¨‹
 #define ICM20_GYRO_FS_250			(0<<3)
 #define ICM20_GYRO_FS_500			(1<<3)
 #define ICM20_GYRO_FS_1000			(2<<3)
@@ -261,9 +261,9 @@ void LSM6_readGyro(u8 fast);
 #define ACCEL_DLPF_BW_420           0x06	
 
 
-#define GRAVITY_MSS 9.7833f                                //ÖØÁ¦¼ÓËÙ¶È
-#define _ACCEL_SCALE_1G    (GRAVITY_MSS / 2048.0f)			//¼Ó¼ÆÁ¿³Ì16G
-#define _DEG_TO_RAD    0.0174532f 							//¶È×ª»¡¶È
+#define GRAVITY_MSS 9.7833f                                //é‡åŠ›åŠ é€Ÿåº¦
+#define _ACCEL_SCALE_1G    (GRAVITY_MSS / 2048.0f)			//åŠ è®¡é‡ç¨‹16G
+#define _DEG_TO_RAD    0.0174532f 							//åº¦è½¬å¼§åº¦
 
 
 uint8_t icm20602_init(void);
@@ -272,4 +272,9 @@ uint8_t icm20602_set_accel_fullscale(uint8_t fs);
 uint8_t icm20602_get_accel_adc(void);
 uint8_t icm20602_get_gyro_adc(void);
 float icm20602_get_temp(void);
+
+void icm20602_gyro_calibrate_start(void);
+int icm20602_gyro_calibrate_step(s16 gx, s16 gy, s16 gz, float *out_ox, float *out_oy, float *out_oz);
+void icm20602_accel_calibrate_start(void);
+int icm20602_accel_calibrate_step(s16 ax, s16 ay, s16 az, float *out_ox, float *out_oy, float *out_oz);
 #endif

@@ -1,12 +1,11 @@
 #include "include.h"
 #include "locomotion_header.h"
 #include "math.h"
-#include "eso.h"
 #include "gait_math.h"
 #if !RUN_WEBOTS
 #include "arm_math.h"
 #endif
-//------------------------------ÔË¶¯Ñ§ÔËËã¿â
+//------------------------------è¿åŠ¨å­¦è¿ç®—åº“
 float FLT_SPD_END = 30;
 
 void espd_to_neg_dq(int id,float dt)
@@ -24,12 +23,12 @@ robotwb.Leg[id].tar_sita_d[1]=temp[1]*flt_espd+(1-flt_espd)*robotwb.Leg[id].tar_
 
 void force_to_tao(int id,float dt)
 {	
-float flt_t=1;//ÂË²¨ÏµÊý
-float gain_t=-1;//Êä³ö·ûºÅ
+float flt_t=1;//æ»¤æ³¢ç³»æ•°
+float gain_t=-1;//è¾“å‡ºç¬¦å·
 float temp[3]={0,0,0};
 temp[0]=(robotwb.Leg[id].jacobi[0]*robotwb.Leg[id].tar_force_h.x+robotwb.Leg[id].jacobi[2]*robotwb.Leg[id].tar_force_h.z)*gain_t;
 temp[1]=(robotwb.Leg[id].jacobi[1]*robotwb.Leg[id].tar_force_h.x+robotwb.Leg[id].jacobi[3]*robotwb.Leg[id].tar_force_h.z)*gain_t;
-//Á¦ÌÝ¶È£¿£¿
+//åŠ›æ¢¯åº¦ï¼Ÿï¼Ÿ
 robotwb.Leg[id].taod[0]=temp[0]*flt_t+(1-flt_t)*robotwb.Leg[id].taod[0];
 robotwb.Leg[id].taod[1]=temp[1]*flt_t+(1-flt_t)*robotwb.Leg[id].taod[1];
 
@@ -139,7 +138,7 @@ void inv_KI(int id, Vect3 epos_h, float *s0, float *s1)
 	
 }
 
-//ÕýÔË¶¯Ñ§
+//æ­£è¿åŠ¨å­¦
 float k_end_v = 1;
 char estimate_end_state_new(VMC *in, float dt)//??????
 {
@@ -252,7 +251,7 @@ char estimate_end_state_new(VMC *in, float dt)//??????
 	float d_x, d_y, d_z;
 	float dr_dt;
 	in->param.spd_est_cnt += dt;
-	//--------------------------Ä©¶ËËÙ¶È-------------------------
+	//--------------------------æœ«ç«¯é€Ÿåº¦-------------------------
 	if (in->param.spd_est_cnt >= vmc_all.param.end_sample_dt) {
 		switch (vmc_all.param.leg_dof) {
 		case 2:
@@ -366,9 +365,9 @@ char inv_end_state(VMC *vmc,float x,float y,float z,float *sita1,float *sita2,fl
 			//temp[0]=180+sita-acosf((r*r+l(2)^2-l(3)^2)/(2*l(2)*r))*RAD_TO_DEG;
 			temp[2]=LIMIT((r*r+vmc_all.l1*vmc_all.l1-vmc_all.l2*vmc_all.l2)/(2*vmc_all.l1*r),-1,1);
 			temp[1]=180+sita+acosf(temp[2])*RAD_TO_DEG;
-			*sita1=-temp[1];//ï¿½ï¿½ï¿½ï¿½
+			*sita1=-temp[1];//é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·
 			temp[2]=LIMIT((vmc_all.l1*vmc_all.l1+vmc_all.l2*vmc_all.l2-r*r)/(2*vmc_all.l1*vmc_all.l2),-1,1);
-			*sita2=180-acosf(temp[2])*RAD_TO_DEG;//Ð¡ï¿½ï¿½
+			*sita2=180-acosf(temp[2])*RAD_TO_DEG;//å°é”Ÿæ–¤æ‹·
 		}else{
 #if 0
 			//printf("ss\n");
@@ -431,11 +430,11 @@ char inv_end_state_new(VMC *vmc,float x,float y,float z,float *sita1,float *sita
 char cal_invjacobi(VMC *in)
 {
 	float det;
-  //arm¼ÓËÙ
+  //armåŠ é€Ÿ
 	char i=0;
 	#if !RUN_WEBOTS
 	arm_status sta;  
-	/****¸¡µãÊýÊý×é******************************************************************/
+	/****æµ®ç‚¹æ•°æ•°ç»„******************************************************************/
 	float32_t pDataB[4];
 	float32_t pDataA[4] = {
 							1.0f,   0.0f,   
@@ -447,7 +446,7 @@ char cal_invjacobi(VMC *in)
 	pDataA[1]=in->jacobi22[1];
 	pDataA[2]=in->jacobi22[2];
 	pDataA[3]=in->jacobi22[3];							
-	/****¸¡µãÊý***********************************************************************/
+	/****æµ®ç‚¹æ•°***********************************************************************/
 	pSrcA.numCols = 2;
 	pSrcA.numRows = 2;
 	pSrcA.pData = pDataA;

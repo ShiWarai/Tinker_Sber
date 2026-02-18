@@ -658,31 +658,6 @@
               <FilePath>.\balance_controller\gait_math.h</FilePath>
             </File>
             <File>
-              <FileName>EKF_AHRS.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\estimator_sr\EKF_AHRS.c</FilePath>
-            </File>
-            <File>
-              <FileName>EKF_UPDATE.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\estimator_sr\EKF_UPDATE.c</FilePath>
-            </File>
-            <File>
-              <FileName>rt_nonfinite.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\estimator_sr\rt_nonfinite.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtGetInf.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\estimator_sr\rtGetInf.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtGetNaN.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\estimator_sr\rtGetNaN.c</FilePath>
-            </File>
-            <File>
               <FileName>rng.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\quadruped_src\rng.c</FilePath>
@@ -706,11 +681,6 @@
               <FileName>fliter_math.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\balance_controller\fliter_math.c</FilePath>
-            </File>
-            <File>
-              <FileName>eso.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\quadruped_src\eso.c</FilePath>
             </File>
             <File>
               <FileName>cycle_cal_oldx.lib</FileName>
@@ -741,11 +711,6 @@
               <FileName>locomotion_header.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\balance_controller\locomotion_header.h</FilePath>
-            </File>
-            <File>
-              <FileName>ecos_link1.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\drivers\ecos_link1.c</FilePath>
             </File>
           </Files>
         </Group>

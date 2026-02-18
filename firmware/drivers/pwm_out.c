@@ -1,11 +1,15 @@
 
-#include "pwm_in.h"
 #include "pwm_out.h"
 #include "include.h"
 #include "gait_math.h"
 #include "usart_fc.h"
 
-//21分频到 84000000/21 = 4M   0.25us
+typedef struct {
+	u32 max, min, T, duty;
+	u8 CALIBRATE, sel, sel_in, cal_cycle;
+	u16 hz;
+} PWMIN;
+
 u32 Rc_Pwm_Inr_mine[8];
 u32 Rc_Pwm_In_mine[8],Rc_Pwm_Out_mine[8]={1500,1500,1500,1500,1500,1500,1500,1500};
 PWMIN pwmin;
@@ -88,7 +92,7 @@ u8 PWM_Out_Init(uint16_t hz)//400hz
   TIM_OC4PreloadConfig(TIM4, TIM_OCPreload_Enable);
 	
   TIM_ARRPreloadConfig(TIM4, ENABLE);
-  TIM_Cmd(TIM4, ENABLE);//--------------------------云台 舵机
+  TIM_Cmd(TIM4, ENABLE);//--------------------------脭脝脤篓 露忙禄煤
 //////////////////////////////////////////////////////////////////////////////
 /* Compute the prescaler value */
   PrescalerValue = (uint16_t) ( ( SystemCoreClock /2 ) / hz_set ) - 1;
@@ -116,7 +120,7 @@ u8 PWM_Out_Init(uint16_t hz)//400hz
   TIM_OC4PreloadConfig(TIM2, TIM_OCPreload_Enable);
 	
   TIM_ARRPreloadConfig(TIM2, ENABLE);
-  TIM_Cmd(TIM2, ENABLE);//--------------------------云台 舵机
+  TIM_Cmd(TIM2, ENABLE);//--------------------------脭脝脤篓 露忙禄煤
 /////////////////////////////////////////////////////////////////////////////
 	/* Compute the prescaler value */
   PrescalerValue = (uint16_t) ( ( SystemCoreClock/2 ) / hz_set ) - 1;
@@ -198,7 +202,7 @@ void Set_DJ_PWM(void)
 //		dj_out[3] =vmc[1].param.PWM_OUT[D_LEG];
 //		dj_out[6] =vmc[1].param.PWM_OUT[T_LEG];
 //		
-//		dj_out[11]=vmc[2].param.PWM_OUT[X_LEG];//D是外面
+//		dj_out[11]=vmc[2].param.PWM_OUT[X_LEG];//D脢脟脥芒脙忙
 //		dj_out[10]=vmc[2].param.PWM_OUT[D_LEG];
 //		dj_out[0] =vmc[2].param.PWM_OUT[T_LEG];
 //		

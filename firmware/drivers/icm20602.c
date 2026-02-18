@@ -2,9 +2,62 @@
 #include "gait_math.h"
 #include "spi.h"
 #include "icm20602.h"
-#include "cycle_cal_oldx.h"
-//PIT向下 y- ROL向右x- ACC
-//PIT向下 x-600  ROL向右  y+300  YAW顺-z
+
+#define ICM_CAL_SAMPLES  50
+
+static int icm_gyro_cal_cnt;
+static int icm_gyro_sum[3];
+static int icm_acc_cal_cnt;
+static int icm_acc_sum[3];
+
+int icm20602_gyro_calibrate_step(s16 gx, s16 gy, s16 gz, float *out_ox, float *out_oy, float *out_oz)
+{
+	icm_gyro_sum[0] += gx;
+	icm_gyro_sum[1] += gy;
+	icm_gyro_sum[2] += gz;
+	icm_gyro_cal_cnt++;
+	if (icm_gyro_cal_cnt >= ICM_CAL_SAMPLES) {
+		if (out_ox) *out_ox = (float)icm_gyro_sum[0] / ICM_CAL_SAMPLES;
+		if (out_oy) *out_oy = (float)icm_gyro_sum[1] / ICM_CAL_SAMPLES;
+		if (out_oz) *out_oz = (float)icm_gyro_sum[2] / ICM_CAL_SAMPLES;
+		icm_gyro_cal_cnt = 0;
+		icm_gyro_sum[0] = icm_gyro_sum[1] = icm_gyro_sum[2] = 0;
+		return 1;
+	}
+	return 0;
+}
+
+void icm20602_gyro_calibrate_start(void)
+{
+	icm_gyro_cal_cnt = 0;
+	icm_gyro_sum[0] = icm_gyro_sum[1] = icm_gyro_sum[2] = 0;
+}
+
+int icm20602_accel_calibrate_step(s16 ax, s16 ay, s16 az, float *out_ox, float *out_oy, float *out_oz)
+{
+	icm_acc_sum[0] += ax;
+	icm_acc_sum[1] += ay;
+	icm_acc_sum[2] += az;
+	icm_acc_cal_cnt++;
+	if (icm_acc_cal_cnt >= ICM_CAL_SAMPLES) {
+		if (out_ox) *out_ox = (float)icm_acc_sum[0] / ICM_CAL_SAMPLES;
+		if (out_oy) *out_oy = (float)icm_acc_sum[1] / ICM_CAL_SAMPLES;
+		if (out_oz) *out_oz = (float)icm_acc_sum[2] / ICM_CAL_SAMPLES;
+		icm_acc_cal_cnt = 0;
+		icm_acc_sum[0] = icm_acc_sum[1] = icm_acc_sum[2] = 0;
+		return 1;
+	}
+	return 0;
+}
+
+void icm20602_accel_calibrate_start(void)
+{
+	icm_acc_cal_cnt = 0;
+	icm_acc_sum[0] = icm_acc_sum[1] = icm_acc_sum[2] = 0;
+}
+
+//PIT???? y- ROL????x- ACC
+//PIT???? x-600  ROL????  y+300  YAW?-z
 LIS3MDL_S lis3mdl;
 LIS3MDL_S lis3mdl_cov;
 #define DS33_WHO_AM_I_ID     0x69  
@@ -239,14 +292,14 @@ static 	float _accel_scale;
 static	float _gyro_scale;
 #define ICM20602_ADDRESS	0xD2		
 
-#define ICM_CS_Enable    SPI_CS(ICM20602,0)//HAL_GPIO_WritePin(GPIOB, ICM_CS_Pin, GPIO_PIN_RESET)  //在SPI总线上选中ICM
-#define ICM_CS_Disable   SPI_CS(ICM20602,1)//HAL_GPIO_WritePin(GPIOB, ICM_CS_Pin, GPIO_PIN_SET)	   //失能ICM的CS
+#define ICM_CS_Enable    SPI_CS(ICM20602,0)//HAL_GPIO_WritePin(GPIOB, ICM_CS_Pin, GPIO_PIN_RESET)  //??SPI?????????ICM
+#define ICM_CS_Disable   SPI_CS(ICM20602,1)//HAL_GPIO_WritePin(GPIOB, ICM_CS_Pin, GPIO_PIN_SET)	   //???ICM??CS
 
 
 /**
-  * @brief  往寄存器写
-  * @param  寄存器/值
-  * @retval 无
+  * @brief  ???????锟斤拷
+  * @param  ?????/?
+  * @retval ??
   */
 uint8_t icm20602_write_reg(uint8_t reg,uint8_t val)
 {
@@ -258,9 +311,9 @@ uint8_t icm20602_write_reg(uint8_t reg,uint8_t val)
 }
 
 /**
-  * @brief  读寄存器
-  * @param  寄存器
-  * @retval 无
+  * @brief  ???????
+  * @param  ?????
+  * @retval ??
   */
 uint8_t icm20602_read_reg(uint8_t reg)
 {
@@ -273,9 +326,9 @@ uint8_t icm20602_read_reg(uint8_t reg)
 }
 
 /**
-  * @brief  读寄存器区域指定长度值
-  * @param  寄存器/
-  * @retval 无
+  * @brief  ???????????????????
+  * @param  ?????/
+  * @retval ??
   */
 uint8_t icm20602_read_buffer(uint8_t reg,void *buffer,uint8_t len)
 {
@@ -287,17 +340,17 @@ uint8_t icm20602_read_buffer(uint8_t reg,void *buffer,uint8_t len)
 }
 
 /**
-  * @brief  ICM20602初始化
-  * @param  无
-  * @retval 无
+  * @brief  ICM20602?????
+  * @param  ??
+  * @retval ??
   */
 uint8_t icm_id;
 uint8_t icm20602_init()
 {
-	icm20602_write_reg(ICM20_PWR_MGMT_1,0x80);	//赂麓位拢卢赂麓位潞髱话x41,睡脽模式拢卢
+	icm20602_write_reg(ICM20_PWR_MGMT_1,0x80);	//??锟斤拷????锟斤拷??x41,??????
 	Delay_ms(1000);
 	
-	icm_id = icm20602_read_reg(ICM20_WHO_AM_I);//露脕取ID
+	icm_id = icm20602_read_reg(ICM20_WHO_AM_I);//???ID
 	//printf("icm_20602 id=0x%x\r\n",id);
 	if(icm_id != 0x12)
 	{
@@ -305,7 +358,7 @@ uint8_t icm20602_init()
 		return 1;	
 	}
 	
-	icm20602_write_reg(ICM20_PWR_MGMT_1,0x01);		//关闭睡眠，自动选择时钟
+	icm20602_write_reg(ICM20_PWR_MGMT_1,0x01);		//????????????????
 	Delay_ms(10);
 
 	module.acc_imu =module.gyro_imu= 1; 
@@ -319,7 +372,7 @@ uint8_t icm20602_init()
 	icm20602_write_reg(ICM20_ACCEL_CONFIG2,ACCEL_AVER_4|ACCEL_DLPF_BW_21);//ACCEL_AVER_4|ACCEL_DLPF_BW_21);	
 	Delay_ms(10);
 	
-	//设置量程
+	//????????
 	icm20602_set_accel_fullscale(ICM20_ACCEL_FS_8G);
 	Delay_ms(10);
 	icm20602_set_gyro_fullscale(ICM20_GYRO_FS_2000);
@@ -398,8 +451,8 @@ uint8_t icm20602_set_gyro_fullscale(uint8_t fs)
 	
 }
 
-//PIT向下 y- ROL向右x- ACC
-//PIT向下 x-600  ROL向右  y+300  YAW顺-z
+//PIT???? y- ROL????x- ACC
+//PIT???? x-600  ROL????  y+300  YAW?-z
 uint8_t icm20602_get_accel_adc(void)
 {
 	uint8_t buf[6];
