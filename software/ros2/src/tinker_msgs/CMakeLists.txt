@@ -15,7 +15,6 @@ endif()
 ################################################################################
 # Find ament packages and libraries for ament and system dependencies
 ################################################################################
-find_package(action_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -27,7 +26,7 @@ find_package(builtin_interfaces REQUIRED)
 ################################################################################
 
 ################################################################################
-# Declare ROS messages, services and actions
+# Declare ROS messages and services
 ################################################################################
 set(msg_files
   "msg/IMUState.msg"
@@ -47,7 +46,7 @@ set(msg_files
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
   #${srv_files}  
-  DEPENDENCIES action_msgs std_msgs geometry_msgs builtin_interfaces
+  DEPENDENCIES std_msgs geometry_msgs builtin_interfaces
   ADD_LINTER_TESTS
 )
 ament_export_dependencies(rosidl_default_runtime)

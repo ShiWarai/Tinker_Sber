@@ -14,7 +14,7 @@ find_package(tinker_msgs REQUIRED)
 
 # Явно указываем исходные файлы для правильной инкрементальной сборки
 add_executable(Motor_control 
-  src/Motor_control_2.cpp 
+  src/Motor_control.cpp 
   src/comm.c 
   src/serial.cpp 
   src/spi.cpp 
