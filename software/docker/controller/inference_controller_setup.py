@@ -8,10 +8,6 @@ from src.gait_controller import GaitController
 
 def main():
     ap = argparse.ArgumentParser()
-    # ap.add_argument("object",
-    #                 type=str,
-    #                 choices=['robot', 'mujoco', 'isaac'],
-    #                 help="define control object: 'robot'/'mujoco'/'isaac' (MANDATORY: default is not declared)")
     ap.add_argument("-d", "--device",
                     type=str,
                     default="keyboard",
@@ -19,8 +15,8 @@ def main():
                     help="set input device: 'keyboard'/'gamepad' (default is keyboard)")
     ap.add_argument("-p", "--path",
                     type=str,
-                    default="./models/model_30000.pt",
-                    help="define inference model path (default is ./models/model_30000.pt)")
+                    default="./src/model/tinker",
+                    help="define inference model path")
     args = ap.parse_args()
 
     rclpy.init()

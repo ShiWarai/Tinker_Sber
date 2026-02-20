@@ -21,10 +21,7 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     torch==2.3.0 \
     torchvision==0.18.0 \
     numpy \
-    pynput \
-    onnxruntime \
-    scipy \
-    pyyaml
+    mujoco
 
 WORKDIR /workspace
 
@@ -37,4 +34,4 @@ RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
 RUN echo "source /workspace/tinker_msgs/install/setup.bash" >> ~/.bashrc && \
     echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
 
-RUN chmod +x /workspace/inference_controller_setup.py
+RUN chmod +x /workspace/sim_mujoco.py

@@ -1,0 +1,17 @@
+---
+string[] active_joint_names
+uint8[] motor_id
+uint8[] motor_group
+float32[] position_max
+float32[] position_min
+float32[] velocity_max
+float32[] torque_max
+float32[] torque_alarm
+int16[] temperature_mosfet_max
+int16[] temperature_rotor_max
+int16[] temperature_mosfet_alarm
+int16[] temperature_rotor_alarm
+int16[] voltage_max
+int16[] voltage_min
+int16[] current_max
+int16[] current_alarm

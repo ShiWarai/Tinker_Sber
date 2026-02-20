@@ -2,18 +2,33 @@
 
 ## About
 
-## Installation and launch
-In **.../Tinker_Sber/software/docker/controller** path:
-- `xhost +local:docker`
-- `docker build -t gait-controller:jazzy .`
-- `docker run -it --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix gait-controller:jazzy`
 
-При изменениях в исполняемых файлах src/, не затрагивая пакеты сообщений:
-- `docker run -it --net=host -v $(pwd)/src:/workspace/src -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix gait-controller:jazzy`
+## Installation and launch
+
+- `xhost +local:docker`
+
+**Build container** from **/software/docker/controller/** path:
+```bash
+docker build -t gait-controller:jazzy .
+```
+
+then **run it**:
+```bash
+docker run -it --net host --ipc host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix gait-controller:jazzy
+```
+
+To add changes from the src/ executable files, without affecting the message packages:
+- `-v $(pwd)/src:/workspace/src`, when *run* the container
+
+**Start the application:**
+```bash
+python3 inference_controller_setup.py
+```
+
+If needs to see arguments, run:
+```bash
+python3 inference_controller_setup.py --help
+```
+
 
 ## ROS2 node
-
-
-### RobotState
-### TargetCommand
-### ControlCommand
