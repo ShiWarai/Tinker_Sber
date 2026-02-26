@@ -735,31 +735,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Servos</GroupName>
-          <Files>
-            <File>
-              <FileName>SCS.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\servos\SCS.c</FilePath>
-            </File>
-            <File>
-              <FileName>SCSCL.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\servos\SCSCL.c</FilePath>
-            </File>
-            <File>
-              <FileName>SCSerail.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\servos\SCSerail.c</FilePath>
-            </File>
-            <File>
-              <FileName>SMS_STS.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\servos\SMS_STS.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
         <Group>

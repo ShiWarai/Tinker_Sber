@@ -150,45 +150,68 @@ int en_over_save3=0;
 float t_check_over=12;
 float err_dead=1.2;
 
-void data_can_mit_anal(motor_measure_t *ptr,uint8_t buf_rx[8])//�����������
+/**
+ * @brief Разбор CAN-пакета обратной связи от мотора (MIT protocol)
+ * 
+ * Формат пакета (8 байт):
+ *   D[0]: ID | ERR<<4
+ *   D[1]: POS[15:8]
+ *   D[2]: POS[7:0]
+ *   D[3]: VEL[11:4]
+ *   D[4]: VEL[3:0] | T[11:8]
+ *   D[5]: T[7:0]
+ *   D[6]: T_MOS (температура привода, °C)
+ *   D[7]: T_Rotor (температура обмоток, °C)
+ * 
+ * Единицы измерения от мотора:
+ *   - Позиция: радианы (16 бит)
+ *   - Скорость: рад/с (12 бит)
+ *   - Момент: Н·м (12 бит)
+ * 
+ * @param ptr    Указатель на структуру мотора
+ * @param buf_rx Буфер с принятым CAN-пакетом
+ */
+void data_can_mit_anal(motor_measure_t *ptr, uint8_t buf_rx[8])
 {
-	char i;	
-	char sum = 0;
-	float dt= Get_Cycle_T(ptr->param.id+50); 	
-	float t_temp=0;
-	uint16_t _cnt=0,cnt_reg;
+	float dt = Get_Cycle_T(ptr->param.id + 50);
 
-	int inv_q_flag=1;
-	if(!ptr->param.q_flag)
-		inv_q_flag=-1;
+	// Флаг инверсии направления мотора
+	int inv_q_flag = 1;
+	if (!ptr->param.q_flag)
+		inv_q_flag = -1;
 
-	ptr->param.connect=1;
-	ptr->param.loss_cnt=0;
-	ptr->param.rx_dt=dt;
+	// Обновление статуса связи
+	ptr->param.connect = 1;
+	ptr->param.loss_cnt = 0;
+	ptr->param.rx_dt = dt;
 
-	uint16_t p_int = (buf_rx[1]<<8)|buf_rx[2];
-	uint16_t v_int = (buf_rx[3]<<4)|(buf_rx[4]>>4);
-	uint16_t i_int = ((buf_rx[4]&0xF)<<8)|buf_rx[5];
-  
-	p_int = (buf_rx[1]<<8)|buf_rx[2];
-	v_int = (buf_rx[3]<<4)|(buf_rx[4]>>4);
-	i_int = ((buf_rx[4]&0xF)<<8)|buf_rx[5];
-	ptr->param.total_angle_out=	 uint_to_float_mit(p_int, P_MIN_CAN_MIT[ptr->param.id], P_MAX_CAN_MIT[ptr->param.id], 16)*57.3;
-	ptr->t_now_flt= uint_to_float_mit(i_int, -T_MAX_CAN_MIT[ptr->param.id], T_MAX_CAN_MIT[ptr->param.id], 12)*ptr->param.t_inv_flag_measure*inv_q_flag;
+	// === Парсинг CAN-пакета ===
+	uint16_t p_int = (buf_rx[1] << 8) | buf_rx[2];              // Позиция (16 бит)
+	uint16_t v_int = (buf_rx[3] << 4) | (buf_rx[4] >> 4);       // Скорость (12 бит)
+	uint16_t i_int = ((buf_rx[4] & 0xF) << 8) | buf_rx[5];      // Момент (12 бит)
 
-	ptr->param.cnt_rotate=(int)(ptr->param.total_angle_out)/180;
-	float total_angle_out_single=fmod(
-	(float)(ptr->param.total_angle_out),360);
-	ptr->param.total_angle_out_single=total_angle_out_single;
+	// === Позиция: рад -> градусы ===
+	ptr->param.total_angle_out = uint_to_float_mit(p_int, P_MIN_CAN_MIT[ptr->param.id], P_MAX_CAN_MIT[ptr->param.id], 16) * 57.3f;
 
-  ptr->q_now=inv_q_flag*To_180_degrees(ptr->param.total_angle_out_single);
-	ptr->q_now_flt=To_180_degrees(ptr->q_now+ptr->param.q_reset_angle);
+	// === Момент: Н·м (с учётом инверсии) ===
+	ptr->t_now_flt = uint_to_float_mit(i_int, -T_MAX_CAN_MIT[ptr->param.id], T_MAX_CAN_MIT[ptr->param.id], 12) * ptr->param.t_inv_flag_measure * inv_q_flag;
 
-	ptr->qd_now=To_180_degrees(ptr->q_now-ptr->param.q_now_reg)/dt;//���ٶ�΢��  ʹ��TD��
-	ptr->qd_now_flt=Moving_Median(ptr->param.id,qd_mid_f_mit,ptr->qd_now);	
+	// === Обработка позиции ===
+	ptr->param.cnt_rotate = (int)(ptr->param.total_angle_out) / 180;
+	float total_angle_out_single = fmod((float)(ptr->param.total_angle_out), 360.0f);
+	ptr->param.total_angle_out_single = total_angle_out_single;
 
-	ptr->param.q_now_reg=ptr->q_now;
-	ptr->param.qd_now_reg=ptr->qd_now;
+	ptr->q_now = inv_q_flag * To_180_degrees(ptr->param.total_angle_out_single);
+	ptr->q_now_flt = To_180_degrees(ptr->q_now + ptr->param.q_reset_angle);
+
+	// === Скорость: рад/с -> град/с ===
+	float v_float = uint_to_float_mit(v_int, V_MIN_CAN_MIT[ptr->param.id], V_MAX_CAN_MIT[ptr->param.id], 12);
+	ptr->qd_now = v_float * 57.3f * inv_q_flag;
+	ptr->qd_now_flt = Moving_Median(ptr->param.id, qd_mid_f_mit, ptr->qd_now);
+
+	// Сохранение значений для следующей итерации
+	ptr->param.q_now_reg = ptr->q_now;
+	ptr->param.qd_now_reg = ptr->qd_now;
 }
 
 float v_des_ff[10];
