@@ -259,7 +259,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\quadruped_src\include.h</PathWithFileName>
+      <PathWithFileName>.\include\include.h</PathWithFileName>
       <FilenameWithoutPath>include.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -271,7 +271,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\applications\main.c</PathWithFileName>
+      <PathWithFileName>.\src\app\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -283,7 +283,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\applications\scheduler.c</PathWithFileName>
+      <PathWithFileName>.\src\app\scheduler.c</PathWithFileName>
       <FilenameWithoutPath>scheduler.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -295,7 +295,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\applications\init.c</PathWithFileName>
+      <PathWithFileName>.\src\app\init.c</PathWithFileName>
       <FilenameWithoutPath>init.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -307,7 +307,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\applications\stm32f4xx_it.c</PathWithFileName>
+      <PathWithFileName>.\src\app\stm32f4xx_it.c</PathWithFileName>
       <FilenameWithoutPath>stm32f4xx_it.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -319,7 +319,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\system_src\sys.c</PathWithFileName>
+      <PathWithFileName>.\src\system\sys.c</PathWithFileName>
       <FilenameWithoutPath>sys.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -331,7 +331,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\system_src\delay.c</PathWithFileName>
+      <PathWithFileName>.\src\system\delay.c</PathWithFileName>
       <FilenameWithoutPath>delay.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -340,7 +340,7 @@
 
   <Group>
     <GroupName>Drivers</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -351,7 +351,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\Custom_SPI_Device.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\Custom_SPI_Device.c</PathWithFileName>
       <FilenameWithoutPath>Custom_SPI_Device.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -363,7 +363,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\spi.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\spi.c</PathWithFileName>
       <FilenameWithoutPath>spi.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -375,7 +375,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\flash.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\flash.c</PathWithFileName>
       <FilenameWithoutPath>flash.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -387,7 +387,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\flash_w25.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\flash_w25.c</PathWithFileName>
       <FilenameWithoutPath>flash_w25.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -399,7 +399,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\time.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\time.c</PathWithFileName>
       <FilenameWithoutPath>time.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -411,7 +411,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\bat.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\bat.c</PathWithFileName>
       <FilenameWithoutPath>bat.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -423,7 +423,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\beep.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\beep.c</PathWithFileName>
       <FilenameWithoutPath>beep.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -435,7 +435,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\dma.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\dma.c</PathWithFileName>
       <FilenameWithoutPath>dma.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -447,7 +447,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\led_fc.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\led_fc.c</PathWithFileName>
       <FilenameWithoutPath>led_fc.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -459,7 +459,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\pwm_out.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\pwm_out.c</PathWithFileName>
       <FilenameWithoutPath>pwm_out.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -471,7 +471,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\watch_dog.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\watch_dog.c</PathWithFileName>
       <FilenameWithoutPath>watch_dog.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -483,7 +483,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\wsled_l.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\wsled_l.c</PathWithFileName>
       <FilenameWithoutPath>wsled_l.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -716,7 +716,7 @@
 
   <Group>
     <GroupName>Math&amp;Fushion</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -727,7 +727,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\balance_controller\gait_math.h</PathWithFileName>
+      <PathWithFileName>.\include\math\gait_math.h</PathWithFileName>
       <FilenameWithoutPath>gait_math.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -739,7 +739,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\quadruped_src\rng.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\rng.c</PathWithFileName>
       <FilenameWithoutPath>rng.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -751,7 +751,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\balance_controller\common_math.c</PathWithFileName>
+      <PathWithFileName>.\src\math\common_math.c</PathWithFileName>
       <FilenameWithoutPath>common_math.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -763,7 +763,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\balance_controller\RT_math.c</PathWithFileName>
+      <PathWithFileName>.\src\math\RT_math.c</PathWithFileName>
       <FilenameWithoutPath>RT_math.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -775,7 +775,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\balance_controller\fliter_math.c</PathWithFileName>
+      <PathWithFileName>.\src\math\fliter_math.c</PathWithFileName>
       <FilenameWithoutPath>fliter_math.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -807,7 +807,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\mit_link.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\mit_link.c</PathWithFileName>
       <FilenameWithoutPath>mit_link.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -819,7 +819,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\balance_controller\base_struct.h</PathWithFileName>
+      <PathWithFileName>.\include\math\base_struct.h</PathWithFileName>
       <FilenameWithoutPath>base_struct.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -839,7 +839,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\usart_fc.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\usart_fc.c</PathWithFileName>
       <FilenameWithoutPath>usart_fc.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -851,7 +851,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\can.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\can.c</PathWithFileName>
       <FilenameWithoutPath>can.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -871,7 +871,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\quadruped_src\imu.c</PathWithFileName>
+      <PathWithFileName>.\src\sensors\imu.c</PathWithFileName>
       <FilenameWithoutPath>imu.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -883,7 +883,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\quadruped_src\mems.c</PathWithFileName>
+      <PathWithFileName>.\src\sensors\mems.c</PathWithFileName>
       <FilenameWithoutPath>mems.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -895,7 +895,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\drivers\icm20602.c</PathWithFileName>
+      <PathWithFileName>.\src\drivers\icm20602.c</PathWithFileName>
       <FilenameWithoutPath>icm20602.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -915,7 +915,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\SCSs\SCS.c</PathWithFileName>
+      <PathWithFileName>.\src\servos\SCS.c</PathWithFileName>
       <FilenameWithoutPath>SCS.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -927,7 +927,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\SCSs\SCSCL.c</PathWithFileName>
+      <PathWithFileName>.\src\servos\SCSCL.c</PathWithFileName>
       <FilenameWithoutPath>SCSCL.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -939,7 +939,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\SCSs\SCSerail.c</PathWithFileName>
+      <PathWithFileName>.\src\servos\SCSerail.c</PathWithFileName>
       <FilenameWithoutPath>SCSerail.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
@@ -951,7 +951,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\SCSs\SMS_STS.c</PathWithFileName>
+      <PathWithFileName>.\src\servos\SMS_STS.c</PathWithFileName>
       <FilenameWithoutPath>SMS_STS.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

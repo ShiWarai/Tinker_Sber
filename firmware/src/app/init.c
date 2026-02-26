@@ -60,7 +60,6 @@ u8 All_Init()
 		USART_DMACmd(USART6,USART_DMAReq_Tx,ENABLE);     
 		MYDMA_Enable(DMA2_Stream6,SEND_BUF_SIZE6+2);     
 	#endif	
-	//test_ws();//PWM LED
   Delay_ms(100);		
 	
  	SPI3_Init();//IMU

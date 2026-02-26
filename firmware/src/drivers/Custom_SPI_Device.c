@@ -124,29 +124,6 @@ void Custom_SPI_DMABufferConfig(void)
 	DMA_InitStructure_Slave.DMA_Channel = DMA_Channel_0 ;
 }
 
-
-void Custom_SPI_DEVICE_TestCommand(void)
-{
-	uint16_t i = 0;
-	#if 1
-		if(DMA_GetFlagStatus(DMA1_Stream3,DMA_FLAG_TCIF3) == RESET)//rx
-		{
-			#if 1	//debug
-			Custom_SPI_DMABufferWait(); 
-
-			if(DMA_GetFlagStatus(DMA1_Stream4,DMA_FLAG_TCIF4)==RESET)
-			{ 
-				for(i=0;i<DataSize;i++)
-					DataTxBuffer[i]=i;
-
-				Custom_SPI_DMABufferStart();
-			}	
-			#endif		
-		}
-
-	#endif
-}
-
 void Custom_SPI_DEVICE_Slave_Config(void)
 {
 //	GPIO_InitTypeDef 	GPIO_InitStructure;

@@ -1,4 +1,4 @@
-#include "math.h"
+#include <math.h>
 #include "gait_math.h"
 #include "spi.h"
 #include "icm20602.h"
@@ -536,15 +536,3 @@ uint8_t icm20602_get_gyro_adc(void)
 	}
 	return 0;
 }
-
-float icm20602_get_temp()
-{
-	int16_t temp_adc;
-	uint8_t buf[2];
-	if(icm20602_read_buffer(ICM20_TEMP_OUT_H,buf,2))return 0.0f;
-
-	temp_adc = (buf[0]<<8)+buf[1];
-
-	return (25.0f + (float)temp_adc/326.8f);
-}
-

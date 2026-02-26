@@ -1,7 +1,7 @@
 #ifndef __GAIT_MATH_H__
 #define __GAIT_MATH_H__
 #include "base_struct.h"
-#include "math.h"
+#include <math.h>
 
 #define TAN_MAP_RES     0.003921569f     /* (smallest non-zero value in table) */
 #define RAD_PER_DEG     0.017453293f
@@ -94,7 +94,6 @@ typedef struct
 	float h0;
 	float v1,v2,r0;
 }ESO_X;
-void OLDX_SMOOTH_IN_ESOX(ESO_X *eso_in,float in);
 
 #define ESO_AngularRate_his_length 4
 
@@ -151,7 +150,6 @@ void init_ESO_AngularRate( ESO_AngularRate* eso , float T , float b , float beta
 void ESO_AngularRate_update_u( ESO_AngularRate* eso , float u );
 float ESO_AngularRate_run( ESO_AngularRate* eso , const float v , const float h );
 float sign(float x);
-void OLDX_SMOOTH_IN_ESOX(ESO_X *eso_in,float in);
 
 #endif
 

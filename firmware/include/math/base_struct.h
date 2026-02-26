@@ -1,6 +1,6 @@
 #ifndef __BASE_STRUCT_H__
 #define __BASE_STRUCT_H__
-#include "math.h"
+#include <math.h>
 typedef unsigned short uint16_t;
 typedef unsigned char  uint8_t;
 typedef signed   char  int8;                    
@@ -15,73 +15,73 @@ typedef signed short int int16_t;
 typedef signed int int32_t;
 typedef int16_t s16;
 typedef int8_t  s8;
-//--------------------------------VMC库宏定义----------------------------------
+//--------------------------------VMC?????----------------------------------
 #define EN_ADRC_ROLL          0
 #define EN_ADRC_PITCH         0
 #define EN_ST_TOUCH           1
 
 #define EN_PLAN_USE_JERK      0
 
-#define FIX_ST_TIME           1   //固定支撑时间  不开好点或者1
-#define MIN_ST_TIME_RATE      1.0 //% 能保证摔倒起来
-#define FORCE_FB_USE_REAL     1   //足底力使用真实IQ轴估计
+#define FIX_ST_TIME           1   //?????????  ??????????1
+#define MIN_ST_TIME_RATE      1.0 //% ???????????
+#define FORCE_FB_USE_REAL     1   //???????????IQ?????
 
-#define EN_ONLINE_SW_PLAN     1   //在线修正X方向落足点
-#define RE_PLAN_DT            0.01//s越短越好
+#define EN_ONLINE_SW_PLAN     1   //????????X?????????
+#define RE_PLAN_DT            0.01//s??????
 #define SW_LOW_RATE						0.52
 #define SW_TD_OVER_TIME       1//s
 #define TD_NO_SHOCK_TIME      0.01//s
 
-#define F_CONTROL_WITH_ROLL   0   //补偿横滚力的输出  仿真里没区别
-#define F_EST_WITH_ROLL       0   //估计力使用横滚补偿  not good
+#define F_CONTROL_WITH_ROLL   0   //??????????????  ???????????
+#define F_EST_WITH_ROLL       0   //????????????????  not good
 #define F_SWING_WITH_ROLL     1   
 #define ROLL_LIMIT_COM				25
 
-#define USE_FORCE_REAL_GROUND 1   //TORT不会抖  0则高度保证但有姿态误差会明显大抖  采用老分配与2腿分配效果差不多仿真  实物2腿横滚没力
+#define USE_FORCE_REAL_GROUND 1   //TORT????  0??????????????????????  ???????????2????????????????  ???2???????
 
 #define KIN_5LINE_FK          1
 #define KIN_5LINE_IK          0  //Bug
-#define KIN_5LINE_J           0  //相比老的不太行 not good
-//新状态机：新规划 使用反馈差于不使用 但是下台阶时不太行    GROUND_AFTER_TRIG=0|| 老规划  不行和实物类似
-//老状态机：：新规划 使用反馈好 GROUND_AFTER_TRIG=0  l||老规划 可以 GROUND_AFTER_TRIG=0
-//->使用老规划和老状态机 不使用反馈   ->新状态机+老规划
-#define GROUND_AFTER_TRIG       1   //TROT 着地就有力控 不等待另一个腿落地   规划和老状态机--使用后估计高度不跳变
-#define EN_TORT_LOAD_FORCE4 		1   //TROT对角等待使用LOAD力 否则着地直接使用力分配
-#define EN_TORT_LOAD_FORCE5     1   //摆动故障等待使用LOAD力
+#define KIN_5LINE_J           0  //?????????? not good
+//???????????? ??????????????? ???????????????    GROUND_AFTER_TRIG=0|| ????  ?????????????
+//?????????????? ????????? GROUND_AFTER_TRIG=0  l||???? ???? GROUND_AFTER_TRIG=0
+//->??????????????? ?????????   ->??????+????
+#define GROUND_AFTER_TRIG       1   //TROT ?????????? ???????????????   ???????????--???????????????
+#define EN_TORT_LOAD_FORCE4 		1   //TROT????????LOAD?? ???????????????????
+#define EN_TORT_LOAD_FORCE5     1   //????????????LOAD??
 
-#define EN_Q_I_MIT_MODE       1   //角度积分
-#define EN_END_SPD_MODE       1   //站立等末端采用速度控制  
+#define EN_Q_I_MIT_MODE       1   //??????
+#define EN_END_SPD_MODE       1   //?????????????????  
 
-#define USB_SW_CAPTURE			  1	//使用MIT Capture Point的落足 前向会发散
-#define ODOM_USE_1     				0	//使用丁博士的加速度里程计
+#define USB_SW_CAPTURE			  1	//???MIT Capture Point?????? ?????
+#define ODOM_USE_1     				0	//?????????????????
 
-#define TEST_TROT_SW 					0 //摆动测试<<------------------------
-#define EN_SW 								1 //TROT能摆动
-#define SW_WITH_REAL_FB       0 //使用反馈容易发散
-#define SWING_USE_SPD_MODE    1    //摆动使用位置微分速度  仿真中不使用比较好 低摆动线程  低摆动线程只能使用SWING_USE_SPD_MODE==0用雅克比直接映射
+#define TEST_TROT_SW 					0 //???????<<------------------------
+#define EN_SW 								1 //TROT????
+#define SW_WITH_REAL_FB       0 //?????????????
+#define SWING_USE_SPD_MODE    1    //????????????????  ?????????????? ???????  ?????????????SWING_USE_SPD_MODE==0????????????
 
 #define G_EST_TIME            0.1 //5Hz
 #define DEAD_G_ATT            0.68 //degree
 #define FLT_GROUND_ATT_EST    5   //Hz
 
-#define TEST_FF_MODE  0 //测试模块前提
-#define TSET_F_IMP  0		//力导纳输出测试
-#define TSET_F_FF   1		//力前馈输出
-#define TSET_F_IF   0		//位力输出
-#define TEST_F_FB_OUT 0 //力导纳位置反馈测试
+#define TEST_FF_MODE  0 //??????????
+#define TSET_F_IMP  0		//?????????????
+#define TSET_F_FF   1		//????????
+#define TSET_F_IF   0		//???????
+#define TEST_F_FB_OUT 0 //??????????????????
 
-#define STAND_GROUND_CHECK_TEST 1   //使能力控站立下的着地测试
-#define SINGLE_LEG_TEST 0						//单腿测试仅支持站立	
-#define SINGLE_LEG_ID   2					//单腿测试ID
+#define STAND_GROUND_CHECK_TEST 1   //???????????????????
+#define SINGLE_LEG_TEST 0						//??????????????	
+#define SINGLE_LEG_ID   2					//???????ID
 
-#define EN_GROUND_CHECK 1  			//使能 步态使用 着地判断
-#define EN_ATT_GROUND_CONTROL 1 //使能 步态使用 地形估计
-#define EN_TORQUE_CONTROL     1 //使能步态力矩输出<<------------------修改这使能机器人
+#define EN_GROUND_CHECK 1  			//??? ?????? ???????
+#define EN_ATT_GROUND_CONTROL 1 //??? ?????? ????????
+#define EN_TORQUE_CONTROL     1 //????????????<<------------------?????????????
 
-#define GROUND_USE_EST 1		 //使用足底力估计Touch状态 或者使用着地传感器
-#define USE_FPOS_CONTROL 1   //使用力控  <<------------------修改这改变空中位置模式
+#define GROUND_USE_EST 1		 //????????????Touch?? ???????????????
+#define USE_FPOS_CONTROL 1   //???????  <<------------------????????????????
 
-#define Q_NOW_USE_SET 0     //使用当前角度作为反馈
+#define Q_NOW_USE_SET 0     //???????????????
 
 #define MIN_SPD_ST 0.003
 #define MIN_SPD_ST_RAD 1
@@ -92,9 +92,9 @@ typedef int8_t  s8;
 
 #define USE_ESO_OBSEVER   		0//			???ESO????????????
 #define ODOM_SPD_MODE         1//			1????????????
-#define END_SPD_USE_POS       1//			1????????λ?????  1WS
+#define END_SPD_USE_POS       1//			1???????????????  1WS
 #define ODOM_SPD_USE_LEG_AV   1//     ???????????????????
-//-------------------------------机器人物理参数----------------------
+//-------------------------------??????????????----------------------
 //#define MOCO_ML_LST
 #define MOCO_ML
 
@@ -104,24 +104,24 @@ typedef int8_t  s8;
 #define L1w          0.1
 #define L2w          0.2
 #define Mw           5.0
-#define I_2_Nm       0.0326 //Nm/A 力矩系数
+#define I_2_Nm       0.0326 //Nm/A ???????
 #else
 #if defined(MOCO_ML_LST)
-	#define Www          0.15	//宽
-	#define Hw           0.264		//长
-	#define L1w          0.055  //1连杆
-	#define L2w          0.11		//2连杆
-	#define L3w          0.02	//3连杆
-	#define Mw           2.85  //kg     总重量
-	#define I_2_Nm       0.035//Nm/A 力矩系数
+	#define Www          0.15	//??
+	#define Hw           0.264		//??
+	#define L1w          0.055  //1????
+	#define L2w          0.11		//2????
+	#define L3w          0.02	//3????
+	#define Mw           2.85  //kg     ??????
+	#define I_2_Nm       0.035//Nm/A ???????
 #else
-	#define Www          0.19	//宽
-	#define Hw           0.365		//长
-	#define L1w          0.075  //1连杆
-	#define L2w          0.144		//2连杆
-	#define L3w          0.027	//3连杆
-	#define Mw           4.8  //kg     总重量
-	#define I_2_Nm       0.055//Nm/A 力矩系数
+	#define Www          0.19	//??
+	#define Hw           0.365		//??
+	#define L1w          0.075  //1????
+	#define L2w          0.144		//2????
+	#define L3w          0.027	//3????
+	#define Mw           4.8  //kg     ??????
+	#define I_2_Nm       0.055//Nm/A ???????
 #endif
 #endif
 
@@ -129,11 +129,11 @@ typedef int8_t  s8;
 #define SAFE_ROLL  20
 #define SAFE_T  	 0.68//s
 #define SAFE_Q     3
-//-----------------------------------------数学参数--------------------
+//-----------------------------------------???????--------------------
 #define gw           9.8
 #define piw          3.1415926
-#define rad(x)      (x*piw/180.0)    //将角度化为弧度
-#define deg(x)      (x*180.0/piw)    //将弧度化为角度
+#define rad(x)      (x*piw/180.0)    //???????????
+#define deg(x)      (x*180.0/piw)    //???????????
 #define RAD_TO_DEGw  57.3
 #define DEG_TO_RADw  0.0173
 
@@ -192,7 +192,7 @@ typedef int8_t  s8;
 #define DEG_TO_RAD PI/180
 
 
-//---------------------------------基头文件--------------------------
+//---------------------------------??????--------------------------
 extern float MAX_SPD,MAX_SPD_RAD,MIN_Z,MAX_Z,MIN_X,MAX_X,MIN_Y,MAX_Y;
 
 typedef struct
@@ -360,7 +360,7 @@ typedef struct
 	char stand_trot_switch_flag;
 	char stand_switch_flag[2];
 	char stand_switch_cnt[2];
-	float ground_force[4][3];//足底传感器
+	float ground_force[4][3];//????????
 	float encoder_spd[2];
 	float cog_off_use[4];
 	END_POS tar_spd_use[2],tar_spd_use_rc;
@@ -423,18 +423,6 @@ typedef struct
 extern VMC vmc[4];
 extern VMC_ALL vmc_all;
 
-//---------------------------------------------------------------------------------------------------
-typedef struct 
-{
-	long mcuID[4];
-	int board_id_test[3];
-	int board_license_test[3];
-	int board_license_check[3],board_ido[3];
-	char key_right;
-}_LISENCE;
-extern _LISENCE lisens_vmc;
-void get_license(void);
-
 typedef struct{
  char en_record;
  char is_touch[4],is_ground[4];
@@ -486,30 +474,12 @@ typedef struct{
 }_OCU;
 extern _OCU ocu;
 
-typedef struct{
-	float high_leg_end;
-	float gait_duty;
-	float max_spd;
-	float max_rad;
-	float cog_off[2];
-	float kp_trig[3];
-}_GAIT_PARM;
-extern _GAIT_PARM tort_p,walk_p,ftort_p,init_p,bound_p,pace_p,climb_p,custom_gait,crawl_p,pronk_p,bound_p;
-
-//-----------------------------------------机器结构体--------------------------------------------
 typedef struct
 {
-  double roll;       //横滚，x轴
-  double pitch;      //俯仰，y轴
-  double yaw;        //偏航，z轴
+  double roll;
+  double pitch;
+  double yaw;
 }eulerAngleTypeDef;
-
-typedef struct
-{
-  double x;   
-  double y;   
-  double z;   
-}robPosTypeDef;   
 
 typedef struct
 {
@@ -531,19 +501,13 @@ typedef struct
 
 typedef struct
 {
-  float kp_pos,ki_pos,kd_pos;
-  float kp_force,ki_force,kd_force;
-}POS_FORCE_P;
-
-typedef struct
-{
   float st_lf,st_td;
   float trot_lf,trot_sw,trot_td;
 	int check_td,check_lf;
 	float check_spd;
 }_TD_CHECK_PARAM;
 
-//单腿信息结构体
+//???????????
 typedef struct 
 {
   int id;
@@ -595,15 +559,15 @@ typedef struct
   
   int flag_fb,flag_rl;
 
-  float pos[2];         //测量得到的当前关节角度            弧度制
-  float taom[2];        //实时测量的扭矩
-  float taom_output[2];        //实时测量的扭矩
-  float taod[2],tao_bias[2];        //期望扭矩
-  float taod_ff[2];        //期望扭矩
+  float pos[2];         //????????????????            ??????
+  float taom[2];        //???????????
+  float taom_output[2];        //???????????
+  float taod[2],tao_bias[2];        //???????
+  float taod_ff[2];        //???????
 	float tao_q_i[2];
   float limit_tao[2];
   char  is_ground;
-  char  is_touch,is_touch_est;       //是否触地 true : 触地 false : 离地
+  char  is_touch,is_touch_est;       //???? true : ???? false : ???
 	_TD_CHECK_PARAM touch_z_param;
 	
   int touch_cnt[5][2];
@@ -657,16 +621,16 @@ typedef struct {
 
 extern VMC_ROBOT_PARM vmc_robot_p;
 
-//机器人结构体 包含整个机器人的所有信息
+//????????? ??????????????????????
 typedef struct 
 {
   char gait_level;
 	char beep_state;
 	LegTypeDef  Leg[4]; 
 	Vect3 vect3_zero;
-  eulerAngleTypeDef   IMU_now;        //机器人当前欧拉角
-  eulerAngleTypeDef   IMU_last;       //机器人上次欧拉角
-  eulerAngleTypeDef   IMU_dot;        //机器人欧拉角速度
+  eulerAngleTypeDef   IMU_now;        //?????????????
+  eulerAngleTypeDef   IMU_last;       //??????????????
+  eulerAngleTypeDef   IMU_dot;        //??????????????
   eulerAngleTypeDef   ground_att;
 	
   eulerAngleTypeDef   exp_att;        

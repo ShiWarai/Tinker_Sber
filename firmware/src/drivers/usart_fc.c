@@ -1426,24 +1426,6 @@ void set_motor_current(char id,float i_set){//
 	Set_motor_cmd( id, cmd,0);
 }
 
-void test_wheel(char id)
-{ char i;	char sum = 0;
-	vs16 _temp;
-  char data_to_send[50];
-	char _cnt=0;
-	char crc=0;
-  data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0x01;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0x64;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0x00;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0xFF;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	SendBuff1[SendBuff1_cnt++]=PY_CRC_8_T(data_to_send,9);
-}
-
 void set_wheel_null(char len)
 {   
   int i;

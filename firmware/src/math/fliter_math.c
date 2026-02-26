@@ -468,9 +468,3 @@ static float fst(float x1,float x2,float w, float h)
 		fhan=-w*a/d;
 	return(fhan);
 }
-
-void OLDX_SMOOTH_IN_ESOX(ESO_X *eso_in,float in)
-{
-eso_in->v1+=eso_in->h0*eso_in->v2;                        //td_x1=v1;
-eso_in->v2+=eso_in->h0*fst(eso_in->v1-in,eso_in->v2,eso_in->r0,eso_in->h0);           //td_x2=v2;
-}

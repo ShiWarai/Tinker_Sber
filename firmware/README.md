@@ -30,8 +30,13 @@
 
 ## Структура (основное)
 
-- `drivers/` — CAN, SPI (IMU), Flash, USART, LED, beep, питание и др.
-- `SCSs/` — драйверы SCS-сервоприводов (SMS_STS, SCSerial и т.д.).
-- `balance_controller/`, `quadruped_src/` — остатки логики походки/баланса; для режима «только мост» не используются.
+- `src/app/` — main, scheduler, init, обработчики прерываний.
+- `src/drivers/` — CAN, SPI (IMU), Flash, USART, LED, beep, RNG, питание и др.
+- `src/math/` — математические функции (common_math, fliter_math, RT_math).
+- `src/sensors/` — IMU, MEMS (обработка данных датчиков).
+- `src/servos/` — драйверы SCS-сервоприводов (SMS_STS, SCSerial и т.д.).
+- `src/system/` — delay, sys.
+- `include/` — заголовочные файлы (app, drivers, math, sensors, servos, system).
+- `lib/` — sbus_oldx.lib и др. библиотеки.
 
 В текущей конфигурации прошивка ориентирована на передачу данных CAN/IMU и управление моторами DM8006/DM6006 и SCS при сохранении работы с памятью, светодиодами и периферией.

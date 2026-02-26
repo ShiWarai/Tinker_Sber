@@ -218,22 +218,6 @@ void Continuous_Set_LED_G1(uint8_t num,uint32_t GRB[5])
 	Reset1();
 }
 
-int test_ws(void)
-{
-	uint32_t GRB1[5]={C_Red,C_Red,C_Red,C_Red,C_Red};
-	uint32_t GRB2[5]={C_Red,C_Red,C_Red,C_Red,C_Red};
-	init_gpio_ws();
-
-	Continuous_Set_LED_G(WS2812_LED_NUM,GRB1);
-	Continuous_Set_LED_G1(WS2812_LED_NUM,GRB2);
-	
-	Continuous_Set_LED_G(WS2812_LED_NUM,GRB1);
-	Continuous_Set_LED_G1(WS2812_LED_NUM,GRB2);
-	//Chose_Zoom_Set_LED(5,C_Red);
-	//Continuous_Set_LED(5,C_Red);
-}
-
-
 void wslled_loop(float dt)
 {
 	static float time[2]={0};
