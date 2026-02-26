@@ -5,15 +5,14 @@
 #include "flash.h"
 #include "led_fc.h"
 #include "rc_mine.h"
-#include "dog.h"
+#include "watch_dog.h"
 #include "usart_fc.h"
 #include "pwm_out.h"
 #include "beep.h"
 #include "spi.h"
 #include "can.h" 
 #include "beep.h" 
-#include "gait_math.h" 
-#include "locomotion_header.h"
+#include "gait_math.h"
 #include "wsled.h"
 #include "Custom_SPI_Device.h"
 
@@ -29,7 +28,6 @@ _OCU ocu,ocu_rx;
 _NAV nav;	
 POS_FORCE_PARM pos_force_p;
 VMC_ROBOT_PARM vmc_robot_p;
-char stand_force_enable_flag[5]={0};
 float MIN_Z=-0.1;
 float MAX_Z=-0.19;
 float MIN_Y=-0.1;
@@ -38,7 +36,6 @@ float MIN_X=-0.15;
 float MAX_X=0.15;
 float MAX_SPD=0;
 float MAX_SPD_RAD=50;
-_SDK sdk;
 
 _SYSTEM_DT system_dt;
 s16 loop_cnt;
@@ -97,7 +94,7 @@ float FLT_ATT_RT=0;//20;//15;//1.68*2;
 char att_fusion_use[2]={1,1};
 Vect3 vect_n_test,vect_b_test;
 float FLT_ATT_RATE=0;//WS
-void subscribe_imu_to_webot(robotTypeDef* rob,float dt)
+static void copy_imu_to_robotwb(float dt)
 {
 	char i,j;
 	robotwb.IMU_now.pitch=vmc_all.att[PITr];
@@ -236,7 +233,7 @@ void Duty_Att_Fushion()//姿态解算 100Hz
 	DigitalLPF(-acc_temp[1]*9.8, &vmc_all.acc[Yr], FLT_ACC, T);
 	DigitalLPF( acc_temp[2]*9.8, &vmc_all.acc[Zr], FLT_ACC, T);
 
-	subscribe_imu_to_webot(&robotwb, T);//赋值给robot结构体
+	copy_imu_to_robotwb(T);
   }				
 }
 

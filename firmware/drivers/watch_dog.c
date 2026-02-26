@@ -1,4 +1,4 @@
-#include "dog.h"
+#include "watch_dog.h"
 #include "stm32f4xx_iwdg.h"
 void IWDG_Init(u8 prer,u16 rlr)
 {

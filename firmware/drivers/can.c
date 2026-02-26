@@ -3,7 +3,6 @@
 #include "led_fc.h"
 #include "include.h"
 #include "gait_math.h"
-#include "locomotion_header.h"
 #include "Custom_SPI_DEVICE.h"
 
 /* ???????? ?????? USB (can_write_flash, can_cmd_usb_disable, ocu_connect, ocu_loss_cnt) */

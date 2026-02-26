@@ -668,11 +668,6 @@
               <FilePath>.\balance_controller\common_math.c</FilePath>
             </File>
             <File>
-              <FileName>kin_math.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\balance_controller\kin_math.c</FilePath>
-            </File>
-            <File>
               <FileName>RT_math.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\balance_controller\RT_math.c</FilePath>
@@ -701,11 +696,6 @@
               <FileName>base_struct.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\balance_controller\base_struct.h</FilePath>
-            </File>
-            <File>
-              <FileName>locomotion_header.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\balance_controller\locomotion_header.h</FilePath>
             </File>
           </Files>
         </Group>
