@@ -280,13 +280,7 @@ void Duty_System()//遥控 保护
 			motor_chassis[i].param.connect=0;
 	}
 	robot.spi_link=spi_master_connect_pi;
-	//robot.extcan_link=palm_dj.connect_link;
 	robot.extcan_link=0;
-	if(palm_dj.connect_link)
-		for(i=0;i<10;i++)
-			robot.extcan_link+=palm_dj.connect[i];
-	else
-		robot.extcan_link=0;
 	robot.can1_link=0;robot.can2_link=0;
 	for(int i=0;i<5;i++){
 		if(leg_motor.connect_motor[i]==1)
@@ -498,10 +492,8 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 			{
 		#endif
 			loop.cnt_20ms = 0;
-			float dt_dj=Get_Cycle_T(14); 	
-			#if !USE_OLED||USE_SERVO1||USE_VR
-				serial_servo(dt_dj);
-			#endif 
+			float dt_dj=Get_Cycle_T(14);
+			(void)dt_dj; // unused 
 			#if EN_DMA_UART3//omnihub-extcan unuse now 目前DMA被SPI占用
 				if(DMA_GetFlagStatus(DMA1_Stream3,DMA_FLAG_TCIF3)!=RESET)
 				{ 	
@@ -515,8 +507,6 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 					USART_DMACmd(USART3,USART_DMAReq_Tx,ENABLE);  
 					MYDMA_Enable(DMA1_Stream3,SendBuff3_cnt+2);
 				}		
-			#else
-				send_cmd1_extcan();
 			#endif
 		}
 		#endif	
@@ -530,14 +520,7 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 		if( loop.cnt_1s >= 500*time_scale )
 		{
 			loop.cnt_1s = 0;
-			can_rx_over[4]=0;		
-			if(ext_send_flag==0){
-				ext_send_flag=1;
-				send_cmd2_extcan();	
-			}else if(ext_send_flag==1){
-				ext_send_flag=0;
-				send_cmd3_extcan();	
-			}
+			can_rx_over[4]=0;
 		}
 		timer_ip+=Get_Cycle_T(25); 	
 		if( timer_ip>2 )

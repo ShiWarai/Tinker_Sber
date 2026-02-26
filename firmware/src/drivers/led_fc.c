@@ -210,7 +210,7 @@ char dj_sel_table2[8]={0,1, 0,1, 0,1 ,0,1};
 	
 	int can_cnt=0;
 	static int cnt_can=0;
-	for(int i=0;i<14;i++){
+	for(int i=0;i<10;i++){
 		if(motor_chassis[i].param.connect)
 			can_cnt++;
 	}

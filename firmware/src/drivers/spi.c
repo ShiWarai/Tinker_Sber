@@ -385,9 +385,6 @@ void slave_send(char sel)//���͵�Odroid
 				setDataFloat_spi(vmc_all.acc_b.y);
 				setDataFloat_spi(vmc_all.acc_b.z);
 			
-//			leg_motor.connect = 1;
-//			leg_motor.connect_motor[10] = 1;
-//			leg_motor.ready[10] = 1;
 				for(id=0;id<10;id++){
 					setDataFloat_spi_int(leg_motor.q_now[id],CAN_POS_DIV);//�ؽڽǶ�
 					setDataFloat_spi_int(leg_motor.qd_now[id],CAN_DPOS_DIV);//�ؽڽ��ٶ�
@@ -395,39 +392,6 @@ void slave_send(char sel)//���͵�Odroid
 					spi_tx_buf[spi_tx_cnt++]=leg_motor.connect*100+leg_motor.connect_motor[id]*10+leg_motor.ready[id];//����״̬
 				}		
 		break;
-//		case 36://STM32�����巢�͵�Odrid  tinker human  ���������Ƕ�
-//				spi_tx_buf[spi_tx_cnt++]=ocu.connect; 
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_st;
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_back;
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_lr;//1
-//		
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_ud;
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_x;
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_a;
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_b;//2
-//	
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_y;
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_ll;
-//				spi_tx_buf[spi_tx_cnt++]=ocu.key_rr;		
-//				
-//				setDataFloat_spi_int(ocu.rc_spd_w[Xr],100);//3
-//				setDataFloat_spi_int(ocu.rc_spd_w[Yr],100);
-//				
-//				setDataFloat_spi_int(ocu.rc_att_w[PITr],100);//4
-//				setDataFloat_spi_int(ocu.rc_att_w[ROLr],100);
-//				
-//				setDataFloat_spi_int(ocu.rate_yaw_w,100);
-//				
-//				for(id=0;id<15;id++)
-//					spi_tx_buf[spi_tx_cnt++]=0;			
-//					
-//				for(id=0;id<12;id++){
-//					setDataFloat_spi_int(servo_s[id].q,CAN_POS_DIV);//��չ�ؽڽǶ�
-//					//setDataFloat_spi_int(servo_s[id].dq,CAN_DPOS_DIV);//�ؽڽ��ٶ�
-//					setDataFloat_spi_int(servo_s[id].t,CAN_T_DIV);//��չ�ؽ�Tau
-//					spi_tx_buf[spi_tx_cnt++]=servo_s[id].connect;//����״̬
-//				}
-//				break;
 	}
 	
 	
@@ -511,112 +475,6 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------��Linux��
 			}
 		//}
 	}
-// if(*(data_buf+2)==55)//���ص��������==============tinker human DJ1 ��չ����ָ�� 50Hz
-//  { 
-//		spi_comm_mess_type=SPI_MESS_TYPE_3BLDC_DIV;
-//		spi_dt[2] = Get_Cycle_T(18); 
-//	  spi_master_loss_pi=0;
-//		spi_master_connect_pi=1;
-//		IWDG_Feed();
-//		spi_rx_cnt_all++;
-//		
-//		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		palm_dj.power=rc_value_temp;//���ʹ��
-
-//		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		mems.Acc_CALIBRATE=rc_value_temp/100;//�궨���ٶȼ�
-//		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//�궨������
-//		mems.Mag_CALIBRATE=rc_value_temp%10;//�궨�ų�
-//		
-//    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//������״̬		
-//		
-//		for(i=0;i<10;i++){
-//			palm_dj.q_exp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//��0�Ƕ�
-//			leg_motor.q_reset[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//��0�Ƕ�
-//			leg_motor.stiff[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_F_DIV);//stiff
-//			leg_motor.cal_div[i]=charFromData_spi(spi_rx_buf,&anal_cnt);//cal divde
-//		}
-//				
-////----------------�������������---------------------
-//		if(ocu_connect==0){
-//			for(i=0;i<10;i++){
-////			  if(motor_chassis[i].param.control_mode==1)	
-////					motor_chassis[i].set_qd=leg_motor.q_set[i]; 
-////				else
-////					motor_chassis[i].set_qd=0;//Ԥ��
-//				motor_chassis[i].set_q=leg_motor.q_set[i];
-//				motor_chassis[i].set_qd=leg_motor.qd_set[i];				
-//				motor_chassis[i].set_t=leg_motor.set_t[i];
-//				motor_chassis[i].param.q_reset_angle=leg_motor.q_reset[i];
-//				motor_chassis[i].kp=leg_motor.kp[i]; 
-//				motor_chassis[i].kd=leg_motor.kd[i]; 	
-//				motor_chassis[i].max_t=leg_motor.max_t[i]; //���Ť����������λ������
-//				motor_chassis[i].stiff=leg_motor.stiff[i]; 
-//				if(leg_motor.reset_q==2&&motor_chassis[i].reset_q==0)
-//					motor_chassis[i].reset_q=1;
-//				motor_chassis[i].param.usb_cmd_mode=1;//����Ϊλ��ģʽ
-//				motor_chassis[i].cal_div=leg_motor.cal_div[i];//�����궨ģʽ
-//			}
-//		}
-//	} 
-//	if(*(data_buf+2)==56)//���ص��������==============tinker human DJ2-extcan ��չ�������ָ�� 50Hz
-//  { 
-//		spi_comm_mess_type=SPI_MESS_TYPE_3BLDC_DIV;
-//		spi_dt[3] = Get_Cycle_T(19); 
-//	  spi_master_loss_pi=0;
-//		spi_master_connect_pi=1;
-//		IWDG_Feed();
-//		spi_rx_cnt_all++;
-//		
-//		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		palm_dj.power=rc_value_temp;//���ʹ��
-
-//		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		mems.Acc_CALIBRATE=rc_value_temp/100;//�궨���ٶȼ�
-//		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;//�궨������
-//		mems.Mag_CALIBRATE=rc_value_temp%10;//�궨�ų�
-//		
-//    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//������״̬		
-//		
-//		for(i=0;i<10;i++){//��չ���PDϵ������ֻ���øն�
-//			palm_dj.t_exp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//����Tau
-//			palm_dj.q_reset[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//��0�Ƕ�
-//			palm_dj.stiff[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_F_DIV);//�ն�
-//			palm_dj.cal_div[i]=charFromData_spi(spi_rx_buf,&anal_cnt);//cal divde
-//		}
-//	}
-//		else if (*(data_buf+2)==50)//OCU mems ����������
-//  {
-//		mems.imu_pos.x=floatFromData_spi_int(spi_rx_buf,&anal_cnt,1000);	
-//		mems.imu_pos.y=floatFromData_spi_int(spi_rx_buf,&anal_cnt,1000);	
-//		mems.imu_pos.z=floatFromData_spi_int(spi_rx_buf,&anal_cnt,1000);	
-//		mems.imu_att.x=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);	
-//		mems.imu_att.y=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);	
-//		mems.imu_att.z=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);	
-//		mems.gps_pos.x=floatFromData_spi_int(spi_rx_buf,&anal_cnt,1000);	
-//		mems.gps_pos.y=floatFromData_spi_int(spi_rx_buf,&anal_cnt,1000);	
-//		mems.gps_pos.z=floatFromData_spi_int(spi_rx_buf,&anal_cnt,1000);	
-//		mems.Acc_CALIBRATE=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		mems.Gyro_CALIBRATE=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		mems.Mag_CALIBRATE=charFromData_spi(spi_rx_buf,&anal_cnt);
-//	}		
-//	if(*(data_buf+2)==51)//���ص��������==============tinker human System state 1Hz
-//  { 
-//		spi_comm_mess_type=SPI_MESS_TYPE_3BLDC_DIV;
-//		spi_dt[3] = Get_Cycle_T(19); 
-//	  spi_master_loss_pi=0;
-//		spi_master_connect_pi=1;
-//		IWDG_Feed();
-//		spi_rx_cnt_all++;
-//		
-//		robot.ip1=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		robot.ip2=charFromData_spi(spi_rx_buf,&anal_cnt);
-//		
-//		for(i=0;i<10;i++){//��չ���PDϵ��
-//			palm_dj.kp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_P_M);//����Tau
-//			palm_dj.kd[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_D_M);//��0�Ƕ�
-//		}
-//	}
 }
 
 u8 SPI2_ReadWriteByte_s(u8 TxData)

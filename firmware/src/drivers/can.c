@@ -229,18 +229,6 @@ void CAN1_RX0_IRQHandler(void)
 				leg_motor.qd_now[4]=motor_chassis[4].qd_now_flt;
 				leg_motor.t_now[4]=motor_chassis[4].t_now_flt;
 			}
-		  else if(RxMessage.Data[0]==5+1||RxMessage.Data[0]==5+1+0x10){
-				data_can_mit_anal(&motor_chassis[5],RxMessage.Data);
-				leg_motor.q_now[5]=motor_chassis[5].q_now_flt;
-				leg_motor.qd_now[5]=motor_chassis[5].qd_now_flt;
-				leg_motor.t_now[5]=motor_chassis[5].t_now_flt;
-			}
-		 else if(RxMessage.Data[0]==6+1||RxMessage.Data[0]==6+1+0x10){
-				data_can_mit_anal(&motor_chassis[6],RxMessage.Data);
-				leg_motor.q_now[6]=motor_chassis[6].q_now_flt;
-				leg_motor.qd_now[6]=motor_chassis[6].qd_now_flt;
-				leg_motor.t_now[6]=motor_chassis[6].t_now_flt;
-			}
 		}	
 		
 	  can1_rx_cnt++;
@@ -421,18 +409,6 @@ void CAN2_RX0_IRQHandler(void)
 				leg_motor.q_now[5+4]=motor_chassis[5+4].q_now_flt;
 				leg_motor.qd_now[5+4]=motor_chassis[5+4].qd_now_flt;
 				leg_motor.t_now[5+4]=motor_chassis[5+4].t_now_flt;
-			}
-		  else if(RxMessage.Data[0]==5+1||RxMessage.Data[0]==5+1+0x10){
-				data_can_mit_anal(&motor_chassis[5+5],RxMessage.Data);
-				leg_motor.q_now[5+5]=motor_chassis[5+5].q_now_flt;
-				leg_motor.qd_now[5+5]=motor_chassis[5+5].qd_now_flt;
-				leg_motor.t_now[5+5]=motor_chassis[5+5].t_now_flt;
-			}
-		 else if(RxMessage.Data[0]==6+1||RxMessage.Data[0]==6+1+0x10){
-				data_can_mit_anal(&motor_chassis[5+6],RxMessage.Data);
-				leg_motor.q_now[5+6]=motor_chassis[5+6].q_now_flt;
-				leg_motor.qd_now[5+6]=motor_chassis[5+6].qd_now_flt;
-				leg_motor.t_now[5+6]=motor_chassis[5+6].t_now_flt;
 			}
 	}	
 	
