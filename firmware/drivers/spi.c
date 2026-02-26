@@ -1,8 +1,8 @@
 
 #include "spi.h"
-#include "locomotion_header.h"
+#include "base_struct.h"
 #include "can.h"
-#include "dog.h"
+#include "watch_dog.h"
 #include "led_fc.h"
 #include "usart_fc.h"
 #include "Custom_SPI_DEVICE.h"

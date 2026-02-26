@@ -45,38 +45,8 @@ float dead(float x,float zoom);
 void invet22(const float A[4], float *dA, float inA[4]);
 void invet33(const float A[9], float *dA, float inA[9]);
 
-//----------------------------------Kin Dof math-------------------------------------
-void espd_to_neg_dq(int id,float dt);
-void force_to_tao(int id,float dt);
-void force_to_tao_input(int id,Vect3 force_h, float dt);
-void inv_KI(int id,Vect3 epos_h,float *s0,float *s1);
-char estimate_end_state_new(VMC *in, float dt);
-char inv_end_state(VMC *vmc,float x,float y,float z,float *sita1,float *sita2,float *sita3);
-char inv_end_state_new(VMC *vmc,float x,float y,float z,float *sita1,float *sita2,float *sita3);
-char cal_invjacobi(VMC *in);
-char cal_jacobi_new(VMC *in);
-
 //----------------------------------RT Matrix math---------------------
-void converV_n_to_bw(Vect3 vn,Vect3* vb);
-void converV_n_to_bw_noroll(Vect3 vn,Vect3* vb);
-void converV_b_to_legw(int id,Vect3 vb,Vect3* vl);
-void converV_b_to_leg_ow(char leg,float xb,float yb,float zb,float *xl,float *yl,float *zl);
-void converV_leg_to_bw(int id,Vect3 vl,Vect3* vb);
-void converV_b_to_nw(Vect3 vb,Vect3* vn);
-void force_n_to_bw(Vect3 fn,Vect3* fb);
-void converV_b_to_n_RTw(float RT[3][3], float yaw, float xb,float yb,float zb,float *xn,float *yn,float *zn);
-void converV_n_to_b_w_yaWww(float yaw,float xn,float yn,float zn,float *xb,float *yb,float *zb);
 void mat_trans(float src[3][3],float dis[3][3]);
-void converV_n_to_b(float xn,float yn,float zn,float *xb,float *yb,float *zb);
-void converV_n_to_b_noroll(float xn,float yn,float zn,float *xb,float *yb,float *zb);
-void converV_n_to_b_RT(float RT[3][3],float yaw,float xn,float yn,float zn,float *xb,float *yb,float *zb);
-void converV_n_to_b_w_yaw(float yaw,float xn,float yn,float zn,float *xb,float *yb,float *zb);
-void converV_b_to_leg(char leg,float xb,float yb,float zb,float *xl,float *yl,float *zl);
-void converV_leg_to_b(char leg,float xl,float yl,float zl,float *xb,float *yb,float *zb);
-void converV_b_to_n(float xb,float yb,float zb,float *xn,float *yn,float *zn);
-void converV_b_to_n_RT(float RT[3][3], float yaw, float xb,float yb,float zb,float *xn,float *yn,float *zn);
-void force_n_to_b(VMC *in);
-void force_n_to_bw_noroll(Vect3 fn,Vect3* fb);
 //------------------------------------Filter math-----------------------------------------------------------
 #define F_PI 3.1415926
 #define LPF_COF_05Hz  1.0f/(2*F_PI*0.5)
@@ -183,39 +153,5 @@ float ESO_AngularRate_run( ESO_AngularRate* eso , const float v , const float h 
 float sign(float x);
 void OLDX_SMOOTH_IN_ESOX(ESO_X *eso_in,float in);
 
-//---------------------------------------------------Traj math-----------------------------------------
-typedef struct
-{
- float pt[3];
- float vt[3];
- float at[3];
- float ps[3];
- float vs[3];
- float as[3];
- float pe[3];
- float ve[3];
- float ae[3];
- float param[10];
- float Time,time_now,Dis;
- float cost,cost_all;
- float traj_pre_d;
- char defined[3];
-	
-}_TRA;
-
-extern _TRA traj[10];
-
-void GenerateTrajectory(float  p0,float v0,float a0,float pf,float vf,float af,float Tf,char defined[3],float*a,float*b,float*g,float *cost);
-void get_trajecotry(float p0,float v0,float a0,float a,float b,float g,float t,float *pos,float *spd,float *acc,float *jerk);
-void plan_tra(_TRA *tra);
-void get_tra(_TRA *tra,float t);
-int swing_jerk_planner_2d_3point(VMC* in,float lift_spd,float td_spd,float mid_spd_w,float T_sw);
-int get_swing_jerk_2d_3point(VMC* in, float time_now);
-//----------------------------------------∂‡œÓ Ω----------------------------------------
-void cal_curve_from_pos_new(VMC *in, END_POS t_pos, float desire_time);
-END_POS cal_pos_tar_from_curve(VMC *in,float desire_time, float dt);
-
-int swing_jerk_planner_5point(VMC* in, float lift_spd, float td_spd, float T_sw);
-int get_swing_jerk_5point(VMC* in, float time_now);
 #endif
 

@@ -4,7 +4,7 @@
 #include "icm20602.h"
 #include "gait_math.h"
 
-#include "dog.h"
+#include "watch_dog.h"
 #define SAVE_FLASH_WATCHDOG 1
 
 u8 acc_3d_step;
