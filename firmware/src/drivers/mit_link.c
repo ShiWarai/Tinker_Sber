@@ -1,7 +1,7 @@
 #include "can.h"
 #include "include.h"
 #include "base_struct.h"
-#include "math.h"
+#include <math.h>
 #include "can.h"
 #include "gait_math.h"
 char state_mit[4]={0};

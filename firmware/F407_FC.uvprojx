@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F40_41xxx,USE_STDPERIPH_DRIVER,ARM_MATH_CM4,__CC_ARM,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING,ARM_MATH_CM4,__FPU_USED=1U,__FPU_PRESENT=1U,__CC_ARM,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING</Define>
               <Undefine></Undefine>
-              <IncludePath>.\quadruped_src;.\drivers;.\applications;.\build;.\Libraries\STM32F4xx_StdPeriph_Driver\inc;.\DSP_LIB\Include;.\Libraries\CMSIS\ST\STM32F4xx\Include;.\Libraries\FatFS\src;.\Libraries\CMSIS\Include;.\DSP_LIB\Include;.\DSP_LIB\;.\CMSIS\Include;.\SCSs;.\system_src;.\balance_controller</IncludePath>
+              <IncludePath>.\include;.\include\app;.\include\drivers;.\include\math;.\include\sensors;.\include\servos;.\include\system;.\build;.\Libraries\STM32F4xx_StdPeriph_Driver\inc;.\DSP_LIB\Include;.\Libraries\CMSIS\ST\STM32F4xx\Include;.\Libraries\FatFS\src;.\Libraries\CMSIS\Include;.\DSP_LIB\Include;.\DSP_LIB\;.\CMSIS\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -455,37 +455,37 @@
             <File>
               <FileName>include.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\quadruped_src\include.h</FilePath>
+              <FilePath>.\include\include.h</FilePath>
             </File>
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\main.c</FilePath>
+              <FilePath>.\src\app\main.c</FilePath>
             </File>
             <File>
               <FileName>scheduler.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\scheduler.c</FilePath>
+              <FilePath>.\src\app\scheduler.c</FilePath>
             </File>
             <File>
               <FileName>init.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\init.c</FilePath>
+              <FilePath>.\src\app\init.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_it.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\stm32f4xx_it.c</FilePath>
+              <FilePath>.\src\app\stm32f4xx_it.c</FilePath>
             </File>
             <File>
               <FileName>sys.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\system_src\sys.c</FilePath>
+              <FilePath>.\src\system\sys.c</FilePath>
             </File>
             <File>
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\system_src\delay.c</FilePath>
+              <FilePath>.\src\system\delay.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -495,62 +495,62 @@
             <File>
               <FileName>Custom_SPI_Device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\Custom_SPI_Device.c</FilePath>
+              <FilePath>.\src\drivers\Custom_SPI_Device.c</FilePath>
             </File>
             <File>
               <FileName>spi.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\spi.c</FilePath>
+              <FilePath>.\src\drivers\spi.c</FilePath>
             </File>
             <File>
               <FileName>flash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\flash.c</FilePath>
+              <FilePath>.\src\drivers\flash.c</FilePath>
             </File>
             <File>
               <FileName>flash_w25.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\flash_w25.c</FilePath>
+              <FilePath>.\src\drivers\flash_w25.c</FilePath>
             </File>
             <File>
               <FileName>time.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\time.c</FilePath>
+              <FilePath>.\src\drivers\time.c</FilePath>
             </File>
             <File>
               <FileName>bat.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\bat.c</FilePath>
+              <FilePath>.\src\drivers\bat.c</FilePath>
             </File>
             <File>
               <FileName>beep.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\beep.c</FilePath>
+              <FilePath>.\src\drivers\beep.c</FilePath>
             </File>
             <File>
               <FileName>dma.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\dma.c</FilePath>
+              <FilePath>.\src\drivers\dma.c</FilePath>
             </File>
             <File>
               <FileName>led_fc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\led_fc.c</FilePath>
+              <FilePath>.\src\drivers\led_fc.c</FilePath>
             </File>
             <File>
               <FileName>pwm_out.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\pwm_out.c</FilePath>
+              <FilePath>.\src\drivers\pwm_out.c</FilePath>
             </File>
             <File>
               <FileName>watch_dog.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\watch_dog.c</FilePath>
+              <FilePath>.\src\drivers\watch_dog.c</FilePath>
             </File>
             <File>
               <FileName>wsled_l.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\wsled_l.c</FilePath>
+              <FilePath>.\src\drivers\wsled_l.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -655,27 +655,27 @@
             <File>
               <FileName>gait_math.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\balance_controller\gait_math.h</FilePath>
+              <FilePath>.\include\math\gait_math.h</FilePath>
             </File>
             <File>
               <FileName>rng.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\quadruped_src\rng.c</FilePath>
+              <FilePath>.\src\drivers\rng.c</FilePath>
             </File>
             <File>
               <FileName>common_math.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\balance_controller\common_math.c</FilePath>
+              <FilePath>.\src\math\common_math.c</FilePath>
             </File>
             <File>
               <FileName>RT_math.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\balance_controller\RT_math.c</FilePath>
+              <FilePath>.\src\math\RT_math.c</FilePath>
             </File>
             <File>
               <FileName>fliter_math.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\balance_controller\fliter_math.c</FilePath>
+              <FilePath>.\src\math\fliter_math.c</FilePath>
             </File>
             <File>
               <FileName>arm_cortexM4lf_math.lib</FileName>
@@ -690,12 +690,12 @@
             <File>
               <FileName>mit_link.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\mit_link.c</FilePath>
+              <FilePath>.\src\drivers\mit_link.c</FilePath>
             </File>
             <File>
               <FileName>base_struct.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\balance_controller\base_struct.h</FilePath>
+              <FilePath>.\include\math\base_struct.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -705,12 +705,12 @@
             <File>
               <FileName>usart_fc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\usart_fc.c</FilePath>
+              <FilePath>.\src\drivers\usart_fc.c</FilePath>
             </File>
             <File>
               <FileName>can.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\can.c</FilePath>
+              <FilePath>.\src\drivers\can.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -720,17 +720,17 @@
             <File>
               <FileName>imu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\quadruped_src\imu.c</FilePath>
+              <FilePath>.\src\sensors\imu.c</FilePath>
             </File>
             <File>
               <FileName>mems.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\quadruped_src\mems.c</FilePath>
+              <FilePath>.\src\sensors\mems.c</FilePath>
             </File>
             <File>
               <FileName>icm20602.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\drivers\icm20602.c</FilePath>
+              <FilePath>.\src\drivers\icm20602.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -740,22 +740,22 @@
             <File>
               <FileName>SCS.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\SCSs\SCS.c</FilePath>
+              <FilePath>.\src\servos\SCS.c</FilePath>
             </File>
             <File>
               <FileName>SCSCL.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\SCSs\SCSCL.c</FilePath>
+              <FilePath>.\src\servos\SCSCL.c</FilePath>
             </File>
             <File>
               <FileName>SCSerail.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\SCSs\SCSerail.c</FilePath>
+              <FilePath>.\src\servos\SCSerail.c</FilePath>
             </File>
             <File>
               <FileName>SMS_STS.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\SCSs\SMS_STS.c</FilePath>
+              <FilePath>.\src\servos\SMS_STS.c</FilePath>
             </File>
           </Files>
         </Group>
