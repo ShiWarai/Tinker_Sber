@@ -39,52 +39,19 @@ class InferenceController:
         self.loop_count = 0
         self.gait_command = np.array([2.0, 0.5, 0.5])  # freq, offset, contact_duration
         
+        self.obs_queue = deque(maxlen=self.history_length)
+
         self.base_ang_vel_queue = deque(maxlen=self.history_length)
         self.projected_gravity_queue = deque(maxlen=self.history_length)
         self.joint_positions_queue = deque(maxlen=self.history_length)
         self.joint_velocities_queue = deque(maxlen=self.history_length)
-        self.last_actions_queue = deque(maxlen=self.history_length)
+        self.actions_queue = deque(maxlen=self.history_length)
         self.scaled_commands_queue = deque(maxlen=self.history_length)
         self.gait_phase_queue = deque(maxlen=self.history_length)
         self.gait_command_queue = deque(maxlen=self.history_length)
 
         self.node.get_logger().info('Inference model initialized')
 
-        '''# Prepare robot command structure with default values for mode, q, dq, tau, Kp, Kd
-        self.robot_cmd = datatypes.RobotCmd()
-        self.robot_cmd.mode = [0. for x in range(0, self.joint_num)]
-        self.robot_cmd.q = [0. for x in range(0, self.joint_num)]
-        self.robot_cmd.dq = [0. for x in range(0, self.joint_num)]
-        self.robot_cmd.tau = [0. for x in range(0, self.joint_num)]
-        self.robot_cmd.Kp = [self.control_cfg['stiffness'] for x in range(0, self.joint_num)]
-        self.robot_cmd.Kd = [self.control_cfg['damping'] for x in range(0, self.joint_num)]'''
-
-        '''# Prepare robot state structure
-        self.robot_state = datatypes.RobotState()
-        self.robot_state.tau = [0. for x in range(0, self.joint_num)]
-        self.robot_state.q = [0. for x in range(0, self.joint_num)]
-        self.robot_state.dq = [0. for x in range(0, self.joint_num)]
-        self.robot_state_tmp = copy.deepcopy(self.robot_state)
-
-        # Initialize IMU (Inertial Measurement Unit) data structure
-        self.imu_data = datatypes.ImuData()
-        self.imu_data.quat[0] = 0
-        self.imu_data.quat[1] = 0
-        self.imu_data.quat[2] = 0
-        self.imu_data.quat[3] = 1
-        self.imu_data_tmp = copy.deepcopy(self.imu_data)'''
-
-        '''# Set up a callback to receive updated robot state data
-        self.robot_state_callback_partial = partial(self.robot_state_callback)
-        self.robot.subscribeRobotState(self.robot_state_callback_partial)
-
-        # Set up a callback to receive updated IMU data
-        self.imu_data_callback_partial = partial(self.imu_data_callback)
-        self.robot.subscribeImuData(self.imu_data_callback_partial)
-
-        # Set up a callback to receive updated SensorJoy
-        self.sensor_joy_callback_partial = partial(self.sensor_joy_callback)
-        self.robot.subscribeSensorJoy(self.sensor_joy_callback_partial)'''
 
     # Load the configuration from a YAML file
     def load_config(self, config_file):
@@ -127,97 +94,10 @@ class InferenceController:
         # self.mode = "STAND"
         self.node.get_logger().info('Inference config loaded')
         
-
-    # Main control loop
-    '''def run(self):
-        # Initialize default joint angles for standing
-        self.default_joint_angles = np.array([0.0] * len(self.joint_names))
-        self.stand_percent += 1 / (self.stand_duration * self.loop_frequency)
-        self.mode = "STAND"
-        self.loop_count = 0
-
-        # Set the loop rate based on the frequency in the configuration
-        rate = Rate(self.loop_frequency)
-        while True:
-            self.update()
-            rate.sleep()'''
-        
-
-    # Handle the stand mode for smoothly transitioning the robot into standing
-    '''def handle_stand_mode(self):
-        if self.stand_percent < 1:
-            for j in range(len(self.joint_names)):
-                # Interpolate between initial and default joint angles during stand mode
-                pos_des = self.default_joint_angles[j] * (1 - self.stand_percent) + self.init_state[self.joint_names[j]] * self.stand_percent
-                self.set_joint_command_aligned(j, pos_des)
-            # Increment the stand percentage over time
-            self.stand_percent += 1 / (self.stand_duration * self.loop_frequency)
-        else:
-            # Switch to walk mode after standing
-            self.mode = "WALK"'''
-
-    '''def align_robot_state(self, robot_state: datatypes.RobotState):
-        aligned_robot_state = copy.deepcopy(robot_state)
-        aligned_robot_state.q[1] = robot_state.q[3]
-        aligned_robot_state.dq[1] = robot_state.dq[3]
-        aligned_robot_state.tau[1] = robot_state.tau[3]
-        
-        aligned_robot_state.q[2] = robot_state.q[1]
-        aligned_robot_state.dq[2] = robot_state.dq[1]
-        aligned_robot_state.tau[2] = robot_state.tau[1]
-        
-        aligned_robot_state.q[3] = robot_state.q[4]
-        aligned_robot_state.dq[3] = robot_state.dq[4]
-        aligned_robot_state.tau[3] = robot_state.tau[4]
-        
-        aligned_robot_state.q[4] = robot_state.q[2]
-        aligned_robot_state.dq[4] = robot_state.dq[2]
-        aligned_robot_state.tau[4] = robot_state.tau[2]
-        
-        return aligned_robot_state'''
-    
-    # Handle the walk mode where the robot moves based on computed actions
-    '''def handle_walk_mode(self):
-        # Update the temporary robot state and IMU data
-        self.robot_state_tmp = self.align_robot_state(copy.deepcopy(self.robot_state))
-        self.imu_data_tmp = copy.deepcopy(self.imu_data)
-
-        # Execute actions every 'decimation' iterations
-        if self.loop_count % self.control_cfg['decimation'] == 0:
-            self.compute_observation()
-            self.compute_actions()
-            # Clip the actions within predefined limits
-            action_min = -self.rl_cfg['clip_scales']['clip_actions']
-            action_max = self.rl_cfg['clip_scales']['clip_actions']
-            self.actions = np.clip(self.actions, action_min, action_max)
-
-        # Iterate over the joints and set commands based on actions
-        joint_pos = np.array(self.robot_state_tmp.q)
-        joint_vel = np.array(self.robot_state_tmp.dq)
-
-        for i in range(len(joint_pos)):
-            # Compute the limits for the action based on joint position and velocity
-            action_min = (joint_pos[i] - self.init_joint_angles[i] +
-                          (self.control_cfg['damping'] * joint_vel[i] - self.control_cfg['user_torque_limit']) /
-                          self.control_cfg['stiffness'])
-            action_max = (joint_pos[i] - self.init_joint_angles[i] +
-                          (self.control_cfg['damping'] * joint_vel[i] + self.control_cfg['user_torque_limit']) /
-                          self.control_cfg['stiffness'])
-
-            # Clip action within limits
-            self.actions[i] = max(action_min / self.control_cfg['action_scale_pos'],
-                                  min(action_max / self.control_cfg['action_scale_pos'], self.actions[i]))
-
-            # Compute the desired joint position and set it
-            pos_des = self.actions[i] * self.control_cfg['action_scale_pos'] + self.init_joint_angles[i]
-            self.set_joint_command_aligned(i, pos_des)
-
-            # Save the last action for reference
-            self.last_actions[i] = self.actions[i]'''
     
     def compute_gait_phase(self):
         loop_count = self.loop_count
-        gait_indices = (loop_count / 100.0) * self.gait_command[0] % 1.0
+        gait_indices = (loop_count / self.loop_frequency) * self.gait_command[0]
 
         sin_phase = np.sin(2 * np.pi * gait_indices)
         cos_phase = np.cos(2 * np.pi * gait_indices)
@@ -238,7 +118,12 @@ class InferenceController:
         try:
             # Convert IMU orientation from quaternion to Euler angles (ZYX convention)
             '''imu_orientation = np.array(self.imu_data_tmp.quat)'''
-            q_wi = R.from_quat(imu_quat).as_euler('zyx')  # Quaternion to Euler ZYX conversion
+
+            imu_quat = np.asarray(imu_quat, dtype=np.float32)
+            imu_quat_xyzw = np.array([imu_quat[1], imu_quat[2], imu_quat[3], imu_quat[0]], dtype=np.float32)
+            q_wi = R.from_quat(imu_quat_xyzw).as_euler("zyx")
+
+            # q_wi = R.from_quat(imu_quat).as_euler('zyx')  # Quaternion to Euler ZYX conversion
             inverse_rot = R.from_euler('zyx', q_wi).inv().as_matrix()  # Get the inverse rotation matrix
 
             # Project the gravity vector (pointing downwards) into the body frame
@@ -260,64 +145,99 @@ class InferenceController:
             gait_command = self.gait_command
 
             # Scale current values
-            scaled_base_ang_vel = base_ang_vel * self.obs_scales['ang_vel']
-            scaled_joint_pos = (joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos']
+            # scaled_base_ang_vel = base_ang_vel * self.obs_scales['ang_vel']
+            # rot = R.from_euler("zyx", self.imu_orientation_offset).as_matrix().astype(np.float32)
+            # scaled_base_ang_vel = (rot @ base_ang_vel) * self.obs_scales["ang_vel"]
+            scaled_base_ang_vel = base_ang_vel * self.obs_scales["ang_vel"]
+
+            scaled_joint_pos = self.init_joint_angles * self.obs_scales['dof_pos']
             scaled_joint_vel = joint_velocities * self.obs_scales['dof_vel']
 
-            # Initialize queues if empty
-            if len(self.base_ang_vel_queue) == 0:
+            obs = np.concatenate([scaled_base_ang_vel,
+                                  projected_gravity,
+                                  scaled_joint_pos, 
+                                  scaled_joint_vel, 
+                                  last_actions, 
+                                  scaled_commands, 
+                                  gait_phase,
+                                  gait_command], 
+                                axis=0).astype(np.float32)
+
+            if len(self.obs_queue) == 0:
                 for _ in range(self.history_length):
-                    self.base_ang_vel_queue.append(scaled_base_ang_vel)
+                    self.obs_queue.appendleft(np.zeros(44))
+
+            self.obs_queue.appendleft(obs)
+            
+            # Fill the history queue with the current observation if it is empty
+            '''if len(self.obs_queue) == 0:
+                for _ in range(self.history_length):
+                    self.base_ang_vel_queue.append(base_ang_vel * self.obs_scales['ang_vel'])
                     self.projected_gravity_queue.append(projected_gravity)
-                    self.joint_positions_queue.append(scaled_joint_pos)
-                    self.joint_velocities_queue.append(scaled_joint_vel)
-                    self.last_actions_queue.append(last_actions)
+                    self.joint_positions_queue.append((joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos'])
+                    self.joint_velocities_queue.append(joint_velocities * self.obs_scales['dof_vel'])
+                    self.actions_queue.append(last_actions)
                     self.scaled_commands_queue.append(scaled_commands)
                     self.gait_phase_queue.append(gait_phase)
                     self.gait_command_queue.append(gait_command)
 
-            # Add current values to queues
-            self.base_ang_vel_queue.append(scaled_base_ang_vel)
+            # Append the current observation to the history queue
+            self.base_ang_vel_queue.append(base_ang_vel * self.obs_scales['ang_vel'])
             self.projected_gravity_queue.append(projected_gravity)
-            self.joint_positions_queue.append(scaled_joint_pos)
-            self.joint_velocities_queue.append(scaled_joint_vel)
-            self.last_actions_queue.append(last_actions)
+            self.joint_positions_queue.append((joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos'])
+            self.joint_velocities_queue.append(joint_velocities * self.obs_scales['dof_vel'])
+            self.actions_queue.append(last_actions)
             self.scaled_commands_queue.append(scaled_commands)
             self.gait_phase_queue.append(gait_phase)
             self.gait_command_queue.append(gait_command)
-
-            # Create observation from entire history
+            
             history_obs = np.concatenate([
                 np.array(self.base_ang_vel_queue).flatten(),
                 np.array(self.projected_gravity_queue).flatten(),
                 np.array(self.joint_positions_queue).flatten(),
                 np.array(self.joint_velocities_queue).flatten(),
-                np.array(self.last_actions_queue).flatten(),
+                np.array(self.actions_queue).flatten(),
                 np.array(self.scaled_commands_queue).flatten(),
                 np.array(self.gait_phase_queue).flatten(),
                 np.array(self.gait_command_queue).flatten()
             ])
-
-            self.observations = np.clip(
+            
+            self.obs_queue = np.clip(
                 history_obs,
                 -self.rl_cfg['clip_scales']['clip_observations'],
                 self.rl_cfg['clip_scales']['clip_observations']
-            )
+            )'''
+
+            # self.node.get_logger().info(f"[Inference] obs_queue: {self.obs_queue}")
 
             self.loop_count += 1
+            
         
         except Exception as e:
-            self.node.get_logger().error(f"[Inference] Error in compute_observation: {e}")
+            self.node.get_logger().error(f"\n[Inference] Error in compute_observation: {e}")
 
     def compute_actions(self):
         """
         Computes the actions based on the current observations using the policy session.
         """
         try:
-            input_tensor = self.observations.astype(np.float32).reshape(1, -1)
+            history_obs = np.concatenate(list(self.obs_queue), axis=0).astype(np.float32)
+            # history_obs = self.obs_queue.astype(np.float32)
+
+            clip = float(self.rl_cfg["clip_scales"]["clip_observations"])
+            history_obs = np.clip(history_obs, -clip, clip).astype(np.float32)
+
+            input_tensor = history_obs.reshape(1, -1)
+
+            # self.node.get_logger().info(f"[Inference] input_tensor::\n{np.round(input_tensor, 2)}")
+
             inputs = {self.policy_input_names[0]: input_tensor}
             output = self.policy_session.run(self.policy_output_names, inputs)
-            self.actions = np.array(output).flatten()
+
+            # self.actions = np.array(output).flatten()
+            self.actions = np.asarray(output[0], dtype=np.float32).flatten()
+            # print(self.actions)
+            
             
         except Exception as e:
             self.node.get_logger().error(f"[Inference] Error in compute_actions: {e}")

@@ -44,7 +44,7 @@ class MujocoSim(Node):
         self.actions = np.zeros(10)
         for i in range(10):
             self.actions[i] = msg.motor_cmd[i].position
-        print(self.actions)
+        # print(self.actions, '\n')
 
 
     def publish_state(self):
@@ -65,10 +65,11 @@ class MujocoSim(Node):
             # self.data.qpos[0:3] = [0, 0, 0.4]
             # self.data.qpos[3:7] = [1, 0, 0, 0]
             # self.data.qvel[0:6] = 0
+
             
             ctrl = self.actions.copy()
 
-            # self.ctrl[2] = 0.5 * np.sin(time.time())
+            # ctrl[0] = 0.5 * np.sin(time.time())
             # dt = 0.01
             # t_disc = dt * np.floor(time.time() / dt)
             # self.ctrl[2] = 0.55 * np.sin(t_disc)
@@ -83,12 +84,22 @@ class MujocoSim(Node):
 
             self.data.ctrl[:] = self.ctrl
             # self.data.ctrl[:] = actions
-            
+            # print(f'qpos:\n{self.data.qpos}\nqvel:\n{self.data.qvel}')
+
+            if self.data.qpos[2] < -0.35:
+                mujoco.mj_resetData(self.model, self.data)
+                self.data.qpos[7:17] = np.array([0.0, 0.08, 0.56, -1.12, -0.57, 
+                                                0.0, -0.08, -0.56, 1.12, 0.57])
+                mujoco.mj_forward(self.model, self.data)
+                self.actions = np.zeros(10)
+                self.ctrl = np.zeros(10)
 
             mujoco.mj_step(self.model, self.data)
 
             self.ang_vel = self.data.qvel[3:6]
             self.imu_quat = self.data.qpos[3:7]
+            
+            
 
             w, x, y, z = self.imu_quat
             self.rpy = np.array([
@@ -119,16 +130,22 @@ if __name__ == "__main__":
         # data = mujoco.MjData(model)
 
         mujoco_sim = MujocoSim(xml_path)
+        mujoco_sim.data.qpos[7:17] = np.array([0.0, 0.08, 0.56, -1.12, -0.57, 
+                                               0.0, -0.08, -0.56, 1.12, 0.57])
+        mujoco.mj_forward(mujoco_sim.model, mujoco_sim.data)
 
         executor = MultiThreadedExecutor()
         executor.add_node(mujoco_sim)
         print('executor started')
         # with mujoco.viewer.launch(mujoco_sim.model, mujoco_sim.data) as viewer:
         viewer = mujoco.viewer.launch_passive(mujoco_sim.model, mujoco_sim.data)
-        viewer.cam.lookat[:] = [0, 0, 0.5]
+
+        viewer.cam.lookat[:] = [0, 0, 0]
         viewer.cam.distance = 2.0
-        viewer.cam.azimuth = 45
+        viewer.cam.azimuth = 135
+
         print('viewer started')
+
         last_print_time = time.time()
 
         while viewer.is_running():
@@ -136,13 +153,13 @@ if __name__ == "__main__":
             executor.spin_once(timeout_sec=0)
             viewer.sync()
             # time.sleep(0.01)
-            current_time = time.time()
+            # current_time = time.time()
 
-            if current_time - last_print_time >= 3.0:
-                print("Positions:", mujoco_sim.positions[2])
-                print("Velocities:", mujoco_sim.velocities[2])
-                print("Ctrl:", mujoco_sim.data.ctrl[2])
-                last_print_time = current_time
+            # if current_time - last_print_time >= 3.0:
+            #     print("Positions:", mujoco_sim.positions[2])
+            #     print("Velocities:", mujoco_sim.velocities[2])
+            #     print("Ctrl:", mujoco_sim.data.ctrl[2])
+            #     last_print_time = current_time
 
     except Exception as e:
         print(f"Simulator script error: {e}")

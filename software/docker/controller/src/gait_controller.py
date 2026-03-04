@@ -89,6 +89,7 @@ class GaitController(Node):
             #     return
             
             self.commands = self.device.get_commands()
+            self.commands = np.array([1, 0, 0])
             
             self.inference_controller.compute_observation(imu_quat=self.imu_quat,
                                                           base_ang_vel=self.ang_vel,
@@ -98,7 +99,9 @@ class GaitController(Node):
                                                           commands=self.commands)
             self.inference_controller.compute_actions()
             actions = self.inference_controller.actions
-            print(f'controller ouput actions: {actions}')
+            # print(f'controller ouput actions: {actions}')
+            # q_des = actions * self.inference_controller.control_cfg["action_scale_pos"] + self.inference_controller.init_joint_angles
+            # actions = np.clip(actions, -1., 1.)
             self.publish_lowcmd_action(actions)
             self.prev_action = actions
 
