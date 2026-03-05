@@ -43,7 +43,7 @@ echo ""
 
 # Используем --symlink-install для оптимизации (создает симлинки вместо копирования, быстрее для Python скриптов)
 # Используем --base-paths src для сборки только пакетов из папки src (игнорируя old_packages)
-if colcon build --packages-ignore stress_test --symlink-install --base-paths src; then
+if colcon build --symlink-install --base-paths src; then
     echo ""
     echo -e "${GREEN}========================================${NC}"
     echo -e "${GREEN}Сборка успешно завершена!${NC}"

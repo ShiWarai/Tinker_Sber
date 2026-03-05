@@ -621,8 +621,47 @@ private:
         static uint8_t state = 0;
         static uint8_t _data_len2 = 0, _data_cnt2 = 0;
         static int parser_timeout = 0;
+        static int log_counter = 0;
         int ret;
         uint8_t data = 0;
+
+        // Периодический компактный вывод команд, уходящих на SPI
+        // СТАРАЯ ВЕРСИЯ
+        // if (log_counter % 1000 == 0)
+        // {
+        //     for (int i = 0; i < 10; ++i)
+        //     {
+        //         RCLCPP_INFO(
+        //             this->get_logger(),
+        //             "SPI TX motor=%d pos=%.2fdeg vel=%.2fdeg/s tau=%.2f kp=%.2f kd=%.2f",
+        //             i + 1,
+        //             tx_data.q_set[i],
+        //             tx_data.dq_set[i],
+        //             tx_data.tau_ff[i],
+        //             tx_data.kp,
+        //             tx_data.kd);
+        //     }
+        // }
+
+        // НОВАЯ ВЕРСИЯ: вывод в радианах (пересчитываем из градусов обратно в рад)
+        log_counter++;
+        if (log_counter % 1000 == 0)
+        {
+            for (int i = 0; i < 10; ++i)
+            {
+                const double pos_rad = static_cast<double>(tx_data.q_set[i]) * DEG_TO_RAD;
+                const double vel_rad = static_cast<double>(tx_data.dq_set[i]) * DEG_TO_RAD;
+                RCLCPP_INFO(
+                    this->get_logger(),
+                    "SPI TX motor=%d pos=%.3frad vel=%.3frad/s tau=%.3f kp=%.3f kd=%.3f",
+                    i + 1,
+                    pos_rad,
+                    vel_rad,
+                    static_cast<double>(tx_data.tau_ff[i]),
+                    static_cast<double>(tx_data.kp),
+                    static_cast<double>(tx_data.kd));
+            }
+        }
 
         can_board_send(sel, tx_data, mems_data);
 
@@ -768,10 +807,24 @@ private:
             RCLCPP_INFO(this->get_logger(), "SPI frequency: %.1f Hz", 1000.0 / dt);
             last_time = now;
 
-            RCLCPP_INFO(this->get_logger(), "Motor 4 rx: pos=%.3f, vel=%.3f, trq=%.3f",
-                        spi_rx_.q[3], spi_rx_.dq[3], spi_rx_.tau[3]);
-            RCLCPP_INFO(this->get_logger(), "Motor 5 rx: pos=%.3f, vel=%.3f, trq=%.3f",
-                        spi_rx_.q[4], spi_rx_.dq[4], spi_rx_.tau[4]);
+            // СТАРАЯ ВЕРСИЯ
+            // for (int i = 0; i < 10; ++i)
+            // {
+            //     RCLCPP_INFO(this->get_logger(), "Motor %d rx: pos=%.3f deg, vel=%.3f deg/s, trq=%.3f",
+            //                 i + 1, spi_rx_.q[i], spi_rx_.dq[i], spi_rx_.tau[i]);
+            // }
+
+            for (int i = 0; i < 10; ++i)
+            {
+                const double pos_rad = static_cast<double>(spi_rx_.q[i]) * DEG_TO_RAD;
+                const double vel_rad = static_cast<double>(spi_rx_.dq[i]) * DEG_TO_RAD;
+                RCLCPP_INFO(this->get_logger(),
+                            "Motor %d rx: pos=%.3frad vel=%.3frad/s trq=%.3f",
+                            i + 1,
+                            pos_rad,
+                            vel_rad,
+                            static_cast<double>(spi_rx_.tau[i]));
+            }
         }
 
         // Формируем LowState, включаем внутрь IMU и состояния моторов (GUI ожидает LowState на /low_level_state)
