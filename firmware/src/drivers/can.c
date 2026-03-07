@@ -50,16 +50,6 @@ void CAN_motor_init(void)
 	}
 }
 
-static float fmaxf(float x, float y){
-    /// Returns maximum of x, y ///
-    return (((x)>(y))?(x):(y));
-    }
-
-static float fminf(float x, float y){
-    /// Returns minimum of x, y ///
-    return (((x)<(y))?(x):(y));
-    }
-
 static float Bytes2Float(unsigned char *bytes,int num)
 {
     unsigned char cByte[24];

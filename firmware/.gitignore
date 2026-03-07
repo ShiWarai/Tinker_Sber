@@ -1,6 +1,25 @@
 build/
+out/
+tmp/
+.cmsis/
+.vscode/
+.clangd
+DebugConfig/
+
+# CMSIS-Toolbox generated metadata (пересоздаётся командой cbuild)
+F407_FC.cbuild-idx.yml
+F407_FC.cbuild-pack.yml
+
 *.log
 build_log.txt
+JLinkLog.txt
+JLinkSettings.ini
+EventRecorderStub.scvd
+
+# Временные/кэш-файлы инструментов
+*.bak
+*.tmp
+*.cache
 
 # Артефакт сборки (создаётся post-build: fromelf --bin)
 *.bin
