@@ -378,6 +378,17 @@ float To_180_degrees(float x)
 	return (x>180?(x-360):(x<-180?(x+360):x));
 }
 
+/** Нормализация угла в диапазон [-PI, PI] (радианы) */
+float To_PI(float x)
+{
+	if (x > M_PI) {
+		do { x -= (2.0f * M_PI); } while (x > M_PI);
+	} else if (x < -M_PI) {
+		do { x += (2.0f * M_PI); } while (x < -M_PI);
+	}
+	return x;
+}
+
 float my_pow_2_curve(float in,float a,float max)
 {
 	if( a > 1 || a < 0 )
