@@ -1,0 +1,14 @@
+solution:
+  created-by: uv2csolution@1.6.0
+  created-for: CMSIS-Toolbox@2.12.0
+  compiler: AC6
+  target-types:
+    - type: TinkerFirmware
+      device: STM32F405RGTx
+      optimize: debug
+      target-set:
+        - set:
+          images:
+            - project-context: F407_FC
+  projects:
+    - project: F407_FC.cproject.yml

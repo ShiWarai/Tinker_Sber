@@ -51,9 +51,9 @@ void LED_DELAY(float delay)
  int num=delay*3000000;
  for(i=0;i<num;i++)
 	{
-		__nop();__nop();__nop();
-		__nop();__nop();__nop();
-		__nop();__nop();__nop();
+		__NOP();__NOP();__NOP();
+		__NOP();__NOP();__NOP();
+		__NOP();__NOP();__NOP();
 	
 	}
 }
