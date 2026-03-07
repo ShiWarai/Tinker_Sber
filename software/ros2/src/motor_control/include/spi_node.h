@@ -169,12 +169,12 @@ typedef struct
     xyz_f_t Gain_3d;
     xyz_f_t Off_3d;
     char Mag_CALIBRATE,Mag_Have_Param,Mag_ERR,Mag_update;
-    xyz_s16_t Mag_Adc,Mag_Adc_o;			//采样值
-    xyz_f_t   Mag_Offset,Mag_Offseto;		//偏移值
-    xyz_f_t   Mag_Offset_c,Mag_Offset_co;		//偏移值
-    xyz_f_t   Mag_Gain,Mag_Gaino;		//偏移值
-    xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			//比例缩放
-    xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			//纠正后的值
+    xyz_s16_t Mag_Adc,Mag_Adc_o;			/* отсчёт АЦП */
+    xyz_f_t   Mag_Offset,Mag_Offseto;		/* смещение */
+    xyz_f_t   Mag_Offset_c,Mag_Offset_co;		/* смещение */
+    xyz_f_t   Mag_Gain,Mag_Gaino;		/* смещение */
+    xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			/* масштабный коэффициент */
+    xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			/* скорректированное значение */
     float hmlOneMAG,hmlOneACC;
   float Yaw_Mag;
     float Ftempreature;
@@ -183,21 +183,21 @@ typedef struct
 extern _MEMS mems;
 
 
-//FDlink candata
+/* Данные FDlink CAN */
 #define FRAME_HEAD 0xfc
 #define FRAME_END 0xfd
 #define TYPE_IMU 0x40
 #define TYPE_AHRS 0x41
 #define TYPE_INSGPS 0x42
 #define TYPE_GROUND 0xf0
-#define IMU_LEN  0x38   //56+8  8组数据
-#define AHRS_LEN 0x30   //48+8  7组数据
-#define INSGPS_LEN 0x42 //72+8  10组数据
+#define IMU_LEN  0x38   /* 56+8 байт, 8 групп данных */
+#define AHRS_LEN 0x30   /* 48+8 байт, 7 групп данных */
+#define INSGPS_LEN 0x42 /* 72+8 байт, 10 групп данных */
 #define IMU_CAN 9
 #define AHRS_CAN 8
 #define INSGPS_CAN 11
-#define FRAME_HEADER      0X7B //Frame_header //֡ͷ
-#define FRAME_TAIL        0X7D //Frame_tail   //֡β
+#define FRAME_HEADER      0X7B /* заголовок кадра */
+#define FRAME_TAIL        0X7D /* конец кадра */
 #define SEND_DATA_SIZE    24
 #define RECEIVE_DATA_SIZE 11
 #define IMU_RS 64
@@ -205,34 +205,34 @@ extern _MEMS mems;
 #define INSGPS_RS 80
 
 typedef struct IMUData_Packet_t{
-        float gyroscope_x;          //unit: rad/s
-        float gyroscope_y;          //unit: rad/s
-        float gyroscope_z;          //unit: rad/s
-        float accelerometer_x;      //m/s^2
-        float accelerometer_y;      //m/s^2
-        float accelerometer_z;      //m/s^2
-        float magnetometer_x;       //mG
-        float magnetometer_y;       //mG
-        float magnetometer_z;       //mG
-        float imu_temperature;      //C
-        float Pressure;             //Pa
-        float pressure_temperature; //C
-        long Timestamp;          //us
+        float gyroscope_x;          /* ед.: рад/с */
+        float gyroscope_y;          /* ед.: рад/с */
+        float gyroscope_z;          /* ед.: рад/с */
+        float accelerometer_x;      /* м/с² */
+        float accelerometer_y;     /* м/с² */
+        float accelerometer_z;     /* м/с² */
+        float magnetometer_x;       /* мГс */
+        float magnetometer_y;       /* мГс */
+        float magnetometer_z;       /* мГс */
+        float imu_temperature;       /* °C */
+        float Pressure;             /* Па */
+        float pressure_temperature; /* °C */
+        long Timestamp;             /* мкс */
 } IMUData_Packet_t;
 
 typedef struct AHRSData_Packet_t
 {
-    float RollSpeed;   //unit: rad/s
-    float PitchSpeed;  //unit: rad/s
-    float HeadingSpeed;//unit: rad/s
-    float Roll;        //unit: rad
-    float Pitch;       //unit: rad
-    float Heading;     //unit: rad
-    float Qw;//w          //Quaternion
-    float Qx;//x
-    float Qy;//y
-    float Qz;//z
-    long Timestamp; //unit: us
+    float RollSpeed;   /* ед.: рад/с */
+    float PitchSpeed;  /* ед.: рад/с */
+    float HeadingSpeed;/* ед.: рад/с */
+    float Roll;        /* ед.: рад */
+    float Pitch;       /* ед.: рад */
+    float Heading;     /* ед.: рад */
+    float Qw;          /* кватернион w */
+    float Qx;          /* x */
+    float Qy;          /* y */
+    float Qz;          /* z */
+    long Timestamp;    /* ед.: мкс */
 }AHRSData_Packet_t;
 
 extern IMUData_Packet_t IMUData_Packet;

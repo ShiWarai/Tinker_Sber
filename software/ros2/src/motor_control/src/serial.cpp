@@ -1,10 +1,10 @@
 /*************************************************************
     FileName : serialport.c
-    FileFunc : 定义实现文件
+    FileFunc : Файл реализации
     Version  : V0.1
     Author   : Sunrier
     Date     : 2012-06-13
-    Descp    : Linux下实现串口库
+    Descp    : Реализация работы с последовательным портом в Linux
 *************************************************************/
 /*#include "serialport.h"*/
 #include <stdio.h>
@@ -46,12 +46,12 @@ int open_port(int iPortNumber)
         }
         break;
         default:
-                        /*perror("Don't exist iPortNumber !");*/
+                        /* perror("Недопустимый номер порта !"); */
                         printf("Don't exist iPortNumber%d under /dev/? !\n",iPortNumber);
                         return (-1);
     }
 
-    if( fcntl(fd,F_SETFL,0)<0 )/*恢复串口的状态为阻塞状态，用于等待串口数据的读入*/
+    if( fcntl(fd,F_SETFL,0)<0 )/* Восстановить блокирующий режим порта для ожидания данных */
     {
         printf("fcntl failed !\n");
         return (-1);
@@ -61,7 +61,7 @@ int open_port(int iPortNumber)
         printf("fcntl = %d !\n",fcntl(fd,F_SETFL,0));
     }
 
-    /*测试打开的文件描述符是否应用一个终端设备，以进一步确认串口是否正确打开*/
+    /* Проверить, что дескриптор ссылается на терминал (подтверждение открытия порта) */
     if( !isatty(STDIN_FILENO) )
     {
         printf("Standard input isn't a terminal device !\n");
@@ -84,7 +84,7 @@ int set_port(int fd,int iBaudRate,int iDataSize,char cParity,int iStopBit)
     struct termios oldtio,newtio;
 
 
-    iResult = tcgetattr(fd,&oldtio);/*保存原先串口配置*/
+    iResult = tcgetattr(fd,&oldtio);/* Сохранить прежнюю конфигурацию порта */
     if( iResult )
     {
         perror("Can't get old terminal description !");
@@ -93,9 +93,9 @@ int set_port(int fd,int iBaudRate,int iDataSize,char cParity,int iStopBit)
 
 
     bzero(&newtio,sizeof(newtio));
-    newtio.c_cflag |= CLOCAL | CREAD;/*设置本地连接和接收使用*/
+    newtio.c_cflag |= CLOCAL | CREAD;/* Включить локальное подключение и приём */
 
-    /*设置输入输出波特率*/
+    /* Установить скорость приёма и передачи */
     switch( iBaudRate )
     {
         case 2400:
@@ -139,12 +139,12 @@ int set_port(int fd,int iBaudRate,int iDataSize,char cParity,int iStopBit)
                             cfsetospeed(&newtio,B4000000);
                             break;
         default		:
-                            /*perror("Don't exist iBaudRate !");*/
+                            /* perror("Недопустимая скорость !"); */
                             printf("Don't exist iBaudRate %d !\n",iBaudRate);
                             return (-1);
     }
 
-    /*设置数据位*/
+    /* Установить разрядность данных */
     newtio.c_cflag &= (~CSIZE);
     switch( iDataSize )
     {
@@ -155,34 +155,34 @@ int set_port(int fd,int iBaudRate,int iDataSize,char cParity,int iStopBit)
                         newtio.c_cflag |= CS8;
                         break;
         default:
-                        /*perror("Don't exist iDataSize !");*/
+                        /* perror("Недопустимая разрядность !"); */
                         printf("Don't exist iDataSize %d !\n",iDataSize);
                         return (-1);
     }
 
-    /*设置校验位*/
+    /* Установить контроль чётности */
     switch( cParity )
     {
-        case	'N':					/*无校验*/
+        case	'N':					/* Без контроля чётности */
                             newtio.c_cflag &= (~PARENB);
                             break;
-        case	'O':					/*奇校验*/
+        case	'O':					/* Нечётная чётность */
                             newtio.c_cflag |= PARENB;
                             newtio.c_cflag |= PARODD;
                             newtio.c_iflag |= (INPCK | ISTRIP);
                             break;
-        case	'E':					/*偶校验*/
+        case	'E':					/* Чётная чётность */
                             newtio.c_cflag |= PARENB;
                             newtio.c_cflag &= (~PARODD);
                             newtio.c_iflag |= (INPCK | ISTRIP);
                             break;
         default:
-                            /*perror("Don't exist cParity  !");*/
+                            /* perror("Недопустимый контроль чётности !"); */
                             printf("Don't exist cParity %c !\n",cParity);
                             return (-1);
     }
 
-    /*设置停止位*/
+    /* Установить стоп-биты */
     switch( iStopBit )
     {
         case	1:
@@ -192,15 +192,15 @@ int set_port(int fd,int iBaudRate,int iDataSize,char cParity,int iStopBit)
                         newtio.c_cflag |= CSTOPB;
                         break;
         default:
-                        /*perror("Don't exist iStopBit !");*/
+                        /* perror("Недопустимое число стоп-бит !"); */
                         printf("Don't exist iStopBit %d !\n",iStopBit);
                         return (-1);
     }
 
-    newtio.c_cc[VTIME] = 1;	/*设置等待时间*/
-    newtio.c_cc[VMIN] = 1;	/*设置最小字符*/
-    tcflush(fd,TCIFLUSH);		/*刷新输入队列(TCIOFLUSH为刷新输入输出队列)*/
-    iResult = tcsetattr(fd,TCSANOW,&newtio);	/*激活新的设置使之生效,参数TCSANOW表示更改立即发生*/
+    newtio.c_cc[VTIME] = 1;	/* Установить время ожидания */
+    newtio.c_cc[VMIN] = 1;	/* Установить минимум символов для чтения */
+    tcflush(fd,TCIFLUSH);		/* Сбросить входную очередь */
+    iResult = tcsetattr(fd,TCSANOW,&newtio);	/* Применить новые настройки (TCSANOW — изменения сразу) */
 
     if( iResult )
     {

@@ -7,7 +7,7 @@
  #define PATHNAME "."
  #define PROJ_ID 0X6666
  
- int createshm(int sz);//创建
- int destroyshm(int shmid);//销毁
- int getshm(int sz);//获得
- #endif// __COMM_H_  
+ int createshm(int sz);   /* создать сегмент */
+ int destroyshm(int shmid); /* уничтожить сегмент */
+ int getshm(int sz);      /* получить сегмент */
+ #endif /* __COMM_H_ */  

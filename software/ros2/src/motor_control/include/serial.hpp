@@ -1,10 +1,10 @@
 /*************************************************************
     FileName : serialport.h
-    FileFunc : 定义头文件
+    FileFunc : Определение заголовочного файла
     Version  : V0.1
     Author   : Sunrier
     Date     : 2012-06-13
-    Descp    : Linux下实现串口库
+    Descp    : Реализация работы с последовательным портом в Linux
 *************************************************************/
 #ifndef   _SERIALPORT_H_
 #define   _SERIALPORT_H_

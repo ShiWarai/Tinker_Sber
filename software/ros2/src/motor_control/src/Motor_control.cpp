@@ -67,7 +67,7 @@
 #if CAN_LINK_COMM_VER1
 #define SPI_SEND_MAX 85
 #else
-#define SPI_SEND_MAX 160 // 120 + 20 + 20
+#define SPI_SEND_MAX 160  // 120 + 20 + 20 байт
 #endif
 #else
 #define SPI_SEND_MAX 40
@@ -224,7 +224,6 @@ int slave_rx(uint8_t *data_buf, int num, _SPI_RX &rx_out)
         spi_loss_cnt = 0;
         if (spi_connect == 0)
         {
-            printf("Hardware::Hardware SPI-STM32 Link3-Sbus Yunzhuo!!!=%d!!!\n", spi_connect);
             spi_connect = 1;
         }
 
@@ -533,12 +532,12 @@ private:
     void on_board_parameters(const tinker_msgs::msg::ControlCmd::SharedPtr msg)
     {
         std::lock_guard<std::mutex> lock(board_params_mutex_);
-        // ControlCmd: cmd codes:
-        // ENABLE = 252
-        // DISABLE = 253
-        // SET_ZERRO_POSITION = 254
-        // CLEAR_ERROR = 251
-        // IMU_CALIBRATE = 250
+        // Коды команд ControlCmd:
+        // ENABLE = 252 (включить моторы)
+        // DISABLE = 253 (выключить моторы)
+        // SET_ZERO_POSITION = 254 (обнулить позицию)
+        // CLEAR_ERROR = 251 (сбросить ошибки)
+        // IMU_CALIBRATE = 250 (калибровка IMU)
         // Если необходимо применить команду к конкретному мотору — можно проверять msg->motor_id
         if (msg->cmd == tinker_msgs::msg::ControlCmd::ENABLE)
             en_motor_atomic.store(1);
