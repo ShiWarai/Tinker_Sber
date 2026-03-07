@@ -19,8 +19,8 @@ project:
         - include/servos
         - include/system
         - build
-        - Libraries/STM32F4xx_StdPeriph_Driver/inc
-        - Libraries/CMSIS/ST/STM32F4xx/Include
+        - lib/STM32F4xx_StdPeriph_Driver/inc
+        - lib/CMSIS/ST/STM32F4xx/Include
         - CMSIS/Include
       debug: "on"
       define:
@@ -96,22 +96,22 @@ project:
         - file: src/drivers/wsled_l.c
     - group: Libraries
       files:
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/misc.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/misc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c
     - group: Math&Fushion
       files:
         - file: include/math/gait_math.h
