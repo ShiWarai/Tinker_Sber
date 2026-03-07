@@ -5,6 +5,7 @@ project:
     - pack: Keil::STM32F4xx_DFP@^2.15.0
     - pack: ARM::CMSIS-NN@^4.0.0
     - pack: ARM::CMSIS-DSP@^1.10.1
+    - pack: ARM::CMSIS-FreeRTOS@11.2.0
   setups:
     - setup: Options for TinkerFirmware
       processor:
@@ -19,11 +20,7 @@ project:
         - include/system
         - build
         - Libraries/STM32F4xx_StdPeriph_Driver/inc
-        - DSP_LIB/Include
         - Libraries/CMSIS/ST/STM32F4xx/Include
-        - Libraries/FatFS/src
-        - Libraries/CMSIS/Include
-        - DSP_LIB
         - CMSIS/Include
       debug: "on"
       define:
@@ -111,17 +108,10 @@ project:
         - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c
         - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c
         - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c
-        - file: Libraries/CMSIS/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
         - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c
         - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c
         - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c
         - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c
-        - file: Libraries/CMSIS/ST/STM32F4xx/Source/Templates/arm/startup_stm32f4xx.s
-          misc:
-            - ASM:
-                - -masm=auto
-                - -x
-                - assembler
     - group: Math&Fushion
       files:
         - file: include/math/gait_math.h
@@ -129,7 +119,6 @@ project:
         - file: src/math/common_math.c
         - file: src/math/RT_math.c
         - file: src/math/fliter_math.c
-        - file: DSP_LIB/arm_cortexM4lf_math.lib
     - group: Motor_Link
       files:
         - file: src/drivers/mit_link.c
@@ -145,5 +134,7 @@ project:
         - file: src/drivers/icm20602.c
   components:
     - component: ARM::CMSIS:CORE
+    - component: ARM::CMSIS:DSP&Source
+    - component: Keil::Device:Startup
     - component: Keil::Compiler&ARM Compiler:I/O:STDOUT&ITM
 

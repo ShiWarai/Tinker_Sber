@@ -24,6 +24,12 @@
 cbuild F407_FC.csolution.yml --context F407_FC+TinkerFirmware
 ```
 
+Если каталог `RTE/` не хранится в репозитории, используйте команду с регенерацией:
+
+```powershell
+cbuild F407_FC.csolution.yml --context F407_FC+TinkerFirmware --packs --update-rte
+```
+
 Результат:
 - `out/F407_FC/TinkerFirmware/F407_FC.axf`
 
@@ -53,7 +59,7 @@ pyocd gdbserver --probe stlink: --connect attach --persist --reset-run --cbuild-
 - `src/sensors/` — IMU, MEMS.
 - `src/system/` — системные модули (`sys`, `delay`).
 - `include/` — заголовки по подсистемам.
-- `Libraries/`, `DSP_LIB/`, `lib/` — сторонние/вендорные библиотеки.
+- `Libraries/`, `lib/` — сторонние/вендорные библиотеки.
 
 ## Примечание по CAN ID
 

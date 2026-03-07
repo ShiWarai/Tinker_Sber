@@ -5,6 +5,7 @@ tmp/
 .vscode/
 .clangd
 DebugConfig/
+RTE/
 
 # CMSIS-Toolbox generated metadata (пересоздаётся командой cbuild)
 F407_FC.cbuild-idx.yml
