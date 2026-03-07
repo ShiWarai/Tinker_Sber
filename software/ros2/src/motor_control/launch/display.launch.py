@@ -29,7 +29,7 @@ def generate_launch_description() -> LaunchDescription:
 
   motor_control_node = Node(
     package='motor_control',
-    executable='Motor_control',
+    executable='motor_control',
     name='motor_control',
     output='screen',
     parameters=[{

@@ -12,19 +12,16 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tinker_msgs REQUIRED)
 
-# Явно указываем исходные файлы для правильной инкрементальной сборки
-add_executable(Motor_control 
-  src/Motor_control.cpp 
+# Исполняемый файл: ROS-узел (motor_control_node.cpp) + протокол SPI (motor_control.cpp) + драйвер SPI (spi.cpp)
+add_executable(motor_control
+  src/motor_control_node.cpp
+  src/motor_control.cpp
   src/spi.cpp
 )
-ament_target_dependencies(Motor_control rclcpp std_msgs sensor_msgs tinker_msgs)
+ament_target_dependencies(motor_control rclcpp std_msgs sensor_msgs tinker_msgs)
 include_directories(./include)
-# Reduce compile/link memory usage and output size on constrained devices
-# target_compile_options(Motor_control PRIVATE -Os -g0 -ffunction-sections -fdata-sections)
-# target_link_options(Motor_control PRIVATE -Wl,--gc-sections -Wl,--no-keep-memory -Wl,--reduce-memory-overheads)
 
-
-install(TARGETS Motor_control
+install(TARGETS motor_control
   DESTINATION lib/${PROJECT_NAME}
 )
 

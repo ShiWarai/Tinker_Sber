@@ -17,7 +17,7 @@
 #include <sys/ioctl.h>
 #include <asm/ioctl.h>
 #include <linux/spi/spidev.h>
-#include "spi.h"
+#include "spi.hpp"
 
 /** @brief Путь к первому SPI устройству */
 static const char *spiDev0 = "/dev/spidev0.0";
