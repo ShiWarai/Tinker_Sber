@@ -2,10 +2,15 @@ build/
 out/
 tmp/
 .cmsis/
-.vscode/
+# .vscode/ — в репозитории только настройки Run/Debug (остальное — локальное или генерируется)
+.vscode/*
+!.vscode/
+!.vscode/tasks.json.d/
+!.vscode/tasks.json.d/*
+!.vscode/launch.json
 .clangd
 DebugConfig/
-RTE/
+RTE/*
 
 # CMSIS-Toolbox generated metadata (пересоздаётся командой cbuild)
 F407_FC.cbuild-idx.yml

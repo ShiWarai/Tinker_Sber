@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMSIS Run",
+      "type": "shell",
+      "command": "echo",
+      "args": [ "Flashed. (Use Debug for gdbserver.)" ],
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "panel": "shared" }
+    }
+  ]
+}
