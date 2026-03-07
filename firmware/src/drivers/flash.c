@@ -216,9 +216,6 @@ vmc_all.your_key[2]=(temp-vmc_all.your_key[0]*10000-vmc_all.your_key[1]*100);
 //------------
 for(i=0;i<10;i++){
 	motor_chassis[i].param.q_reset_angle=floatFromDataf(FLASH_Buffer,&anal_cnt);
-	/* legacy: в flash могло быть сохранено 180 (градусы) — приводим к рад */
-	if(motor_chassis[i].param.q_reset_angle > 10.0f)
-		motor_chassis[i].param.q_reset_angle = M_PI;
 	motor_chassis[i].param.t_inv_flag_cmd=intFromDataf(FLASH_Buffer,&anal_cnt);
 	motor_chassis[i].param.t_inv_flag_measure=intFromDataf(FLASH_Buffer,&anal_cnt);
 	motor_chassis[i].param.q_flag=intFromDataf(FLASH_Buffer,&anal_cnt);	
