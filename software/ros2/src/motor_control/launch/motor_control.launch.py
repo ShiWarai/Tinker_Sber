@@ -16,7 +16,7 @@ def generate_launch_description() -> LaunchDescription:
             'limits.torque.min': -12.0,
             'limits.torque.max': 12.0,
             'limits.kp.min': 0.0,
-            'limits.kp.max': 15.0,
+            'limits.kp.max': 500.0,
             'limits.kd.min': 0.0,
             'limits.kd.max': 5.0,
         }]

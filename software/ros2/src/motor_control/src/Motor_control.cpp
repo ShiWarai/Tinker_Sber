@@ -48,17 +48,13 @@
 #include <sys/time.h>
 #include <math.h>
 #include <time.h>
-#include "comm.h"
 #include "spi_node.h"
 #include "spi.h"
-#include "sys_time.h"
 #include <pthread.h>
 #include <signal.h>
 #include <errno.h>
 
 #define SPI_TEST 0
-#define USE_USB 0
-#define USE_SERIAL 0
 #define EN_SPI_BIG 1
 #define CAN_LINK_COMM_VER1 0
 #define CAN_LINK_COMM_VER2 1
@@ -288,8 +284,8 @@ void can_board_send(char sel, const _SPI_TX &tx_data, const _MEMS &mems_data)
             setDataFloat_spi_int(tx_data.q_set[id], CAN_POS_DIV);
             setDataFloat_spi_int(tx_data.dq_set[id], CAN_DPOS_DIV);
             setDataFloat_spi_int(tx_data.tau_ff[id], CAN_T_DIV);
-            setDataFloat_spi_int(tx_data.kp, CAN_GAIN_DIV_P);
-            setDataFloat_spi_int(tx_data.kd, CAN_GAIN_DIV_D);
+            setDataFloat_spi_int(tx_data.kp[id], CAN_GAIN_DIV_P);
+            setDataFloat_spi_int(tx_data.kd[id], CAN_GAIN_DIV_D);
         }
         break;
 
@@ -333,9 +329,9 @@ public:
         this->declare_parameter<double>("limits.torque.min", -12.0);
         this->declare_parameter<double>("limits.torque.max", 12.0);
         this->declare_parameter<double>("limits.kp.min", 0.0);
-        this->declare_parameter<double>("limits.kp.max", 1000.0);
+        this->declare_parameter<double>("limits.kp.max", 500.0);
         this->declare_parameter<double>("limits.kd.min", 0.0);
-        this->declare_parameter<double>("limits.kd.max", 100.0);
+        this->declare_parameter<double>("limits.kd.max", 5.0);
 
         // Чтение параметров из launch файла
         limits_.min_position = this->get_parameter("limits.position.min").as_double();
@@ -354,7 +350,6 @@ public:
                     limits_.min_torque, limits_.max_torque, limits_.min_kp, limits_.max_kp,
                     limits_.min_kd, limits_.max_kd);
 
-        Cycle_Time_Init();
         fd = SPISetup(0, speed);
 
         if (fd == -1)
@@ -390,8 +385,8 @@ public:
         std::fill_n(spi_tx_.q_set, 10, 0.0f);
         std::fill_n(spi_tx_.dq_set, 10, 0.0f);
         std::fill_n(spi_tx_.tau_ff, 10, 0.0f);
-        std::fill_n(kp_cmd_, 10, 0.0f);
-        std::fill_n(kd_cmd_, 10, 0.0f);
+        std::fill_n(spi_tx_.kp, 10, 0.0f);
+        std::fill_n(spi_tx_.kd, 10, 0.0f);
     }
 
 private:
@@ -410,10 +405,6 @@ private:
     _SPI_TX spi_tx_;
     _SPI_RX spi_rx_;
     _MEMS mems_;
-
-    // Добавляем хранение per-motor kp/kd
-    float kp_cmd_[10];
-    float kd_cmd_[10];
 
     // Лимиты параметров моторов
     MotorLimits limits_;
@@ -520,13 +511,10 @@ private:
             spi_tx_.q_set[i] = static_cast<float>(limited.position * RAD_TO_DEG);
             spi_tx_.dq_set[i] = static_cast<float>(limited.velocity * RAD_TO_DEG);
             spi_tx_.tau_ff[i] = limited.torque;
-            kp_cmd_[i] = limited.kp;
-            kd_cmd_[i] = limited.kd;
+            spi_tx_.kp[i] = limited.kp;
+            spi_tx_.kd[i] = limited.kd;
         }
-
-        spi_tx_.kp = kp_cmd_[0];
-        spi_tx_.kd = kd_cmd_[0];
-        RCLCPP_DEBUG(this->get_logger(), "Updated LowCmd -> SPI motor commands (kp/kd from motor 0)");
+        RCLCPP_DEBUG(this->get_logger(), "Updated LowCmd -> SPI motor commands (per-motor kp/kd)");
     }
 
     void on_board_parameters(const tinker_msgs::msg::ControlCmd::SharedPtr msg)
@@ -563,11 +551,9 @@ private:
                     spi_tx_.q_set[i] = 0.0f;
                     spi_tx_.dq_set[i] = 0.0f;
                     spi_tx_.tau_ff[i] = 0.0f;
-                    kp_cmd_[i] = 0.0f;
-                    kd_cmd_[i] = 0.0f;
+                    spi_tx_.kp[i] = 0.0f;
+                    spi_tx_.kd[i] = 0.0f;
                 }
-                spi_tx_.kp = 0.0f;
-                spi_tx_.kd = 0.0f;
             }
         }
         else if (msg->cmd == tinker_msgs::msg::ControlCmd::CLEAR_ERROR)
@@ -606,12 +592,8 @@ private:
         spi_tx_.q_set[id] = static_cast<float>(limited.position * RAD_TO_DEG);
         spi_tx_.dq_set[id] = static_cast<float>(limited.velocity * RAD_TO_DEG);
         spi_tx_.tau_ff[id] = limited.torque;
-        kp_cmd_[id] = limited.kp;
-        kd_cmd_[id] = limited.kd;
-        
-        // Обновляем глобальные kp/kd, которые отправляются по SPI (протокол поддерживает одну пару)
-        spi_tx_.kp = limited.kp;
-        spi_tx_.kd = limited.kd;
+        spi_tx_.kp[id] = limited.kp;
+        spi_tx_.kd[id] = limited.kd;
         RCLCPP_DEBUG(this->get_logger(), "OneMotorCmd applied to motor %d", id);
     }
 
@@ -657,8 +639,8 @@ private:
                     pos_rad,
                     vel_rad,
                     static_cast<double>(tx_data.tau_ff[i]),
-                    static_cast<double>(tx_data.kp),
-                    static_cast<double>(tx_data.kd));
+                    static_cast<double>(tx_data.kp[i]),
+                    static_cast<double>(tx_data.kd[i]));
             }
         }
 

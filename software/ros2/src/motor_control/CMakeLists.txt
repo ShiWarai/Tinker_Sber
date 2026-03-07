@@ -15,10 +15,7 @@ find_package(tinker_msgs REQUIRED)
 # Явно указываем исходные файлы для правильной инкрементальной сборки
 add_executable(Motor_control 
   src/Motor_control.cpp 
-  src/comm.c 
-  src/serial.cpp 
-  src/spi.cpp 
-  src/sys_timer.cpp
+  src/spi.cpp
 )
 ament_target_dependencies(Motor_control rclcpp std_msgs sensor_msgs tinker_msgs)
 include_directories(./include)
