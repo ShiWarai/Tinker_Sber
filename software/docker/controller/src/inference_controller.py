@@ -150,7 +150,8 @@ class InferenceController:
             # scaled_base_ang_vel = (rot @ base_ang_vel) * self.obs_scales["ang_vel"]
             scaled_base_ang_vel = base_ang_vel * self.obs_scales["ang_vel"]
 
-            scaled_joint_pos = self.init_joint_angles * self.obs_scales['dof_pos']
+            # scaled_joint_pos = self.init_joint_angles * self.obs_scales['dof_pos']
+            scaled_joint_pos = (joint_positions - self.init_joint_angles) * self.obs_scales["dof_pos"]
             scaled_joint_vel = joint_velocities * self.obs_scales['dof_vel']
 
             obs = np.concatenate([scaled_base_ang_vel,

@@ -1,5 +1,5 @@
 <mujocoinclude>
-    <option timestep='0.001' iterations="50" tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/>
+    <option timestep='0.005' iterations="50" tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/>
     
     <asset>
         <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="512" height="512"/>

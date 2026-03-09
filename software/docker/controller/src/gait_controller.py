@@ -54,7 +54,9 @@ class GaitController(Node):
             10
         )
 
-        self.control_timer = self.create_timer(0.01, self.control_loop)
+        # self.control_timer = self.create_timer(0.01, self.control_loop)
+        control_dt = 1.0 / float(self.inference_controller.loop_frequency)
+        self.control_timer = self.create_timer(control_dt, self.control_loop)
         
         self.get_logger().info(
             f"Gait controller initialized with {device_type} input"
@@ -77,17 +79,22 @@ class GaitController(Node):
         msg = LowCmd()
         msg.motor_cmd = [MotorCmd() for _ in range(10)]
     
-        for i, pos in enumerate(action):
-            msg.motor_cmd[i].position = float(pos)
+        for i in range(5):
+            msg.motor_cmd[i].position = float(action[2*i])
+            msg.motor_cmd[i+5].position = float(action[2*i+1])
+
+        # for i, pos in enumerate(action):
+        #     msg.motor_cmd[i].position = float(pos)
+
 
         self.lowcmd_publisher.publish(msg)
     
     def control_loop(self):
         try:
-            # if not self.first_state_received:
-            #     self.get_logger().debug("Gait controller is waiting for first LowState message...")
-            #     return
             
+            if not self.first_state_received:
+                return
+
             self.commands = self.device.get_commands()
             self.commands = np.array([1, 0, 0])
             
@@ -99,10 +106,15 @@ class GaitController(Node):
                                                           commands=self.commands)
             self.inference_controller.compute_actions()
             actions = self.inference_controller.actions
-            # print(f'controller ouput actions: {actions}')
-            # q_des = actions * self.inference_controller.control_cfg["action_scale_pos"] + self.inference_controller.init_joint_angles
-            # actions = np.clip(actions, -1., 1.)
-            self.publish_lowcmd_action(actions)
+
+            clip_actions = float(self.inference_controller.rl_cfg["clip_scales"]["clip_actions"])
+            actions = np.clip(actions, -clip_actions, clip_actions)
+            q_des = (
+                actions * self.inference_controller.control_cfg["action_scale_pos"]
+                + self.inference_controller.init_joint_angles
+            )
+
+            self.publish_lowcmd_action(q_des)
             self.prev_action = actions
 
         except Exception as e:
