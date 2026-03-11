@@ -35,6 +35,8 @@ float my_deathzoom_rc(float x,float zoom);
 float limit_mine(float x,float zoom);
 float limit_mine2(float x,float min,float max);
 float To_180_degrees(float x);
+/** Нормализация угла в диапазон [-PI, PI] (радианы) */
+float To_PI(float x);
 float my_pow_2_curve(float in,float a,float max);
 float fast_sqrt(float number);
 float cosd(double in);

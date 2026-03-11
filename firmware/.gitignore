@@ -2,9 +2,14 @@ build/
 out/
 tmp/
 .cmsis/
-.vscode/
 .clangd
 DebugConfig/
+
+# VS Code: по умолчанию игнорируем всё, кроме файлов сборки/отладки
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/tasks.json.d/
 
 # CMSIS-Toolbox generated metadata (пересоздаётся командой cbuild)
 F407_FC.cbuild-idx.yml

@@ -150,27 +150,6 @@ int en_over_save3=0;
 float t_check_over=12;
 float err_dead=1.2;
 
-/**
- * @brief Разбор CAN-пакета обратной связи от мотора (MIT protocol)
- * 
- * Формат пакета (8 байт):
- *   D[0]: ID | ERR<<4
- *   D[1]: POS[15:8]
- *   D[2]: POS[7:0]
- *   D[3]: VEL[11:4]
- *   D[4]: VEL[3:0] | T[11:8]
- *   D[5]: T[7:0]
- *   D[6]: T_MOS (температура привода, °C)
- *   D[7]: T_Rotor (температура обмоток, °C)
- * 
- * Единицы измерения от мотора:
- *   - Позиция: радианы (16 бит)
- *   - Скорость: рад/с (12 бит)
- *   - Момент: Н·м (12 бит)
- * 
- * @param ptr    Указатель на структуру мотора
- * @param buf_rx Буфер с принятым CAN-пакетом
- */
 void data_can_mit_anal(motor_measure_t *ptr, uint8_t buf_rx[8])
 {
 	float dt = Get_Cycle_T(ptr->param.id + 50);
@@ -190,23 +169,23 @@ void data_can_mit_anal(motor_measure_t *ptr, uint8_t buf_rx[8])
 	uint16_t v_int = (buf_rx[3] << 4) | (buf_rx[4] >> 4);       // Скорость (12 бит)
 	uint16_t i_int = ((buf_rx[4] & 0xF) << 8) | buf_rx[5];      // Момент (12 бит)
 
-	// === Позиция: рад -> градусы ===
-	ptr->param.total_angle_out = uint_to_float_mit(p_int, P_MIN_CAN_MIT[ptr->param.id], P_MAX_CAN_MIT[ptr->param.id], 16) * 57.3f;
+	// === Позиция: в радианах (без перевода в градусы) ===
+	ptr->param.total_angle_out = uint_to_float_mit(p_int, P_MIN_CAN_MIT[ptr->param.id], P_MAX_CAN_MIT[ptr->param.id], 16);
 
 	// === Момент: Н·м (с учётом инверсии) ===
 	ptr->t_now_flt = uint_to_float_mit(i_int, -T_MAX_CAN_MIT[ptr->param.id], T_MAX_CAN_MIT[ptr->param.id], 12) * ptr->param.t_inv_flag_measure * inv_q_flag;
 
-	// === Обработка позиции ===
-	ptr->param.cnt_rotate = (int)(ptr->param.total_angle_out) / 180;
-	float total_angle_out_single = fmod((float)(ptr->param.total_angle_out), 360.0f);
-	ptr->param.total_angle_out_single = total_angle_out_single;
+	// === Обработка позиции: нормализация в [-PI, PI] рад ===
+	ptr->param.cnt_rotate = (int)(ptr->param.total_angle_out / (2.0f * M_PI));
+	float total_angle_out_single = (float)fmod(ptr->param.total_angle_out, (double)(2.0f * M_PI));
+	ptr->param.total_angle_out_single = To_PI(total_angle_out_single);
 
-	ptr->q_now = inv_q_flag * To_180_degrees(ptr->param.total_angle_out_single);
-	ptr->q_now_flt = To_180_degrees(ptr->q_now + ptr->param.q_reset_angle);
+	ptr->q_now = inv_q_flag * ptr->param.total_angle_out_single;
+	ptr->q_now_flt = To_PI(ptr->q_now + ptr->param.q_reset_angle);
 
-	// === Скорость: рад/с -> град/с ===
+	// === Скорость: рад/с (без перевода) ===
 	float v_float = uint_to_float_mit(v_int, V_MIN_CAN_MIT[ptr->param.id], V_MAX_CAN_MIT[ptr->param.id], 12);
-	ptr->qd_now = v_float * 57.3f * inv_q_flag;
+	ptr->qd_now = v_float * inv_q_flag;
 	ptr->qd_now_flt = Moving_Median(ptr->param.id, qd_mid_f_mit, ptr->qd_now);
 
 	// Сохранение значений для следующей итерации
@@ -228,23 +207,23 @@ char data_can_mit_send(motor_measure_t *ptr){//���Ϳ���ָ��
 	else
 		q_flag=-1;
 	if(ptr->cmd_mode==2)
-		ptr->set_q=LIMIT(ptr->set_q_test+ptr->set_q_test_bias,-180,180);
+		ptr->set_q=LIMIT(ptr->set_q_test+ptr->set_q_test_bias,-M_PI,M_PI);
 	
 	#if EN_MIT_PID_INNER
 		float temp=0;
-		if(ptr->param.q_reset_angle==180){
-			if(ptr->set_q>=-180&&ptr->set_q<=-0){
+		if(ptr->param.q_reset_angle > 3.0f){ /* было 180 град, теперь PI рад */
+			if(ptr->set_q>=-M_PI&&ptr->set_q<=-0){
 				if(ptr->param.q_flag)
-					temp= 180-fabs(ptr->set_q);
+					temp= M_PI-fabsf(ptr->set_q);
 				else
-					temp= -(180-fabs(ptr->set_q));
-			}else if(ptr->set_q<=180&&ptr->set_q>=0){
+					temp= -(M_PI-fabsf(ptr->set_q));
+			}else if(ptr->set_q<=M_PI&&ptr->set_q>=0){
 				if(!ptr->param.q_flag)
-					temp= 180-fabs(ptr->set_q);
+					temp= M_PI-fabsf(ptr->set_q);
 				else
-					temp= -(180-fabs(ptr->set_q));
+					temp= -(M_PI-fabsf(ptr->set_q));
 			}
-		}else{//------------------------------------- 
+		}else{
 			temp=q_flag*(ptr->set_q-ptr->param.q_reset_angle);
 		}
 		set_q=temp;
@@ -252,10 +231,10 @@ char data_can_mit_send(motor_measure_t *ptr){//���Ϳ���ָ��
 
 	ptr->param.set_q=set_q;//for record
 
-	float set_dq=q_flag*ptr->set_qd/57.3;
+	float set_dq=q_flag*ptr->set_qd;
 	float set_t=q_flag*ptr->set_t;
 		
-	float p_des = fminf_mit(fmaxf_mit(P_MIN_CAN_MIT[ptr->param.id], set_q/57.3), P_MAX_CAN_MIT[ptr->param.id]);        
+	float p_des = fminf_mit(fmaxf_mit(P_MIN_CAN_MIT[ptr->param.id], set_q), P_MAX_CAN_MIT[ptr->param.id]);        
 	float v_des = fminf_mit(fmaxf_mit(V_MIN_CAN_MIT[ptr->param.id], set_dq), V_MAX_CAN_MIT[ptr->param.id]);  
 	float kp = fminf_mit(fmaxf_mit(KP_MIN_CAN_MIT[ptr->param.id], ptr->stiff*ptr->kp*EN_MIT_PID_INNER), KP_MAX_CAN_MIT[ptr->param.id]);   
 	float kd = fminf_mit(fmaxf_mit(KD_MIN_CAN_MIT[ptr->param.id], ptr->stiff*ptr->kd*EN_MIT_PID_INNER), KD_MAX_CAN_MIT[ptr->param.id]); 
@@ -336,11 +315,11 @@ char data_can_sample_only(motor_measure_t *ptr){//���ݲɼ�
 		q_flag=1;
 	else
 		q_flag=-1; 
-	float set_q=q_flag*To_180_degrees(ptr->set_q-To_180_degrees(ptr->param.q_reset_angle));
+	float set_q=q_flag*To_PI(ptr->set_q-To_PI(ptr->param.q_reset_angle));
 	ptr->param.set_q=set_q;
  
-	float p_des = fminf_mit(fmaxf_mit(P_MIN_CAN_MIT[ptr->param.id], set_q/57.3), P_MAX_CAN_MIT[ptr->param.id]);        
-	float v_des = fminf_mit(fmaxf_mit(V_MIN_CAN_MIT[ptr->param.id], 0/57.3), V_MAX_CAN_MIT[ptr->param.id]);   
+	float p_des = fminf_mit(fmaxf_mit(P_MIN_CAN_MIT[ptr->param.id], set_q), P_MAX_CAN_MIT[ptr->param.id]);        
+	float v_des = fminf_mit(fmaxf_mit(V_MIN_CAN_MIT[ptr->param.id], 0.0f), V_MAX_CAN_MIT[ptr->param.id]);   
 	float kp = fminf_mit(fmaxf_mit(KP_MIN_CAN_MIT[ptr->param.id],  0), KP_MAX_CAN_MIT[ptr->param.id]);   
 	float kd = fminf_mit(fmaxf_mit(KD_MIN_CAN_MIT[ptr->param.id],  0), KD_MAX_CAN_MIT[ptr->param.id]); 
 	float t_ff = fminf_mit(fmaxf_mit(T_MIN_CAN_MIT[ptr->param.id], 0), T_MAX_CAN_MIT[ptr->param.id]); 
@@ -405,7 +384,7 @@ char en_mit_out=0;
 int mit_delay_d[2]={100,200};
 int mit_delay=200;//300
 int mit_connect_cnt=0;
-float test_cmd[2]={3.5,25};
+float test_cmd[2]={3.5f, 0.436f}; /* amplitude in rad (~25 deg) */
 void mit_bldc_thread(char en_all,float dt)
 {
 	char i=0;
