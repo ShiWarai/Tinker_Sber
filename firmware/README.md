@@ -53,7 +53,7 @@ pyocd gdbserver --probe stlink: --connect attach --persist --reset-run --cbuild-
 - `src/sensors/` — IMU, MEMS.
 - `src/system/` — системные модули (`sys`, `delay`).
 - `include/` — заголовки по подсистемам.
-- `Libraries/`, `DSP_LIB/`, `lib/` — сторонние/вендорные библиотеки.
+- `lib/` — сторонние/вендорные библиотеки.
 
 ## Примечание по CAN ID
 

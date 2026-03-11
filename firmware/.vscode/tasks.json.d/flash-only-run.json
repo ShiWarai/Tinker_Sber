@@ -2,6 +2,23 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "CMSIS Erase",
+      "type": "shell",
+      "command": "pyocd",
+      "args": [
+        "erase",
+        "--probe",
+        "stlink:",
+        "--chip",
+        "--cbuild-run",
+        "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "CMSIS Load",
       "type": "shell",
       "command": "pyocd",
@@ -20,7 +37,38 @@
         "reveal": "always",
         "panel": "shared"
       }
+    },
+    {
+      "label": "CMSIS Run",
+      "type": "shell",
+      "command": "pyocd",
+      "args": [
+        "gdbserver",
+        "--probe",
+        "stlink:",
+        "--connect",
+        "attach",
+        "--persist",
+        "--reset-run",
+        "--cbuild-run",
+        "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
+        "--quiet",
+        "--log",
+        "*.cbuild_run,*server=info"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "CMSIS Load+Run",
+      "dependsOn": [
+        "CMSIS Load",
+        "CMSIS Run"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
     }
   ]
 }
-

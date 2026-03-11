@@ -1,10 +1,11 @@
 project:
+  rte:
+    base-dir: rte
   packs:
     - pack: Keil::ARM_Compiler@^1.6.3
     - pack: ARM::CMSIS@^6.2.0
     - pack: Keil::STM32F4xx_DFP@^2.15.0
     - pack: ARM::CMSIS-NN@^4.0.0
-    - pack: ARM::CMSIS-DSP@^1.10.1
   setups:
     - setup: Options for TinkerFirmware
       processor:
@@ -18,13 +19,10 @@ project:
         - include/servos
         - include/system
         - build
-        - Libraries/STM32F4xx_StdPeriph_Driver/inc
-        - DSP_LIB/Include
-        - Libraries/CMSIS/ST/STM32F4xx/Include
-        - Libraries/FatFS/src
-        - Libraries/CMSIS/Include
-        - DSP_LIB
-        - CMSIS/Include
+        - lib/STM32F4xx_StdPeriph_Driver/inc
+        - lib/CMSIS/ST/STM32F4xx/Include
+        - lib/DSP/Include
+        - lib/DSP
       debug: "on"
       define:
         - USE_STDPERIPH_DRIVER
@@ -99,24 +97,24 @@ project:
         - file: src/drivers/wsled_l.c
     - group: Libraries
       files:
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/misc.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c
-        - file: Libraries/CMSIS/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c
-        - file: Libraries/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c
-        - file: Libraries/CMSIS/ST/STM32F4xx/Source/Templates/arm/startup_stm32f4xx.s
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/misc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c
+        - file: lib/CMSIS/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c
+        - file: lib/CMSIS/ST/STM32F4xx/Source/Templates/arm/startup_stm32f4xx.s
           misc:
             - ASM:
                 - -masm=auto
@@ -129,7 +127,7 @@ project:
         - file: src/math/common_math.c
         - file: src/math/RT_math.c
         - file: src/math/fliter_math.c
-        - file: DSP_LIB/arm_cortexM4lf_math.lib
+        - file: lib/DSP/arm_cortexM4lf_math.lib
     - group: Motor_Link
       files:
         - file: src/drivers/mit_link.c

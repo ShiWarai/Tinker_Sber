@@ -39,7 +39,7 @@
             },
             "cmsis": {
                 "cbuildRunFile": "${command:cmsis-csolution.getCbuildRunFile}",
-                "updateConfiguration": "auto"
+                "updateConfiguration": "manual"
             }
         },
         {
@@ -65,7 +65,7 @@
             },
             "cmsis": {
                 "cbuildRunFile": "${command:cmsis-csolution.getCbuildRunFile}",
-                "updateConfiguration": "auto"
+                "updateConfiguration": "manual"
             }
         }
     ]
