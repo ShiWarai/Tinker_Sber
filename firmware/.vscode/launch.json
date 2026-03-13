@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "STLink@pyOCD (launch)",
+            "name": "CMSIS_DAP@pyOCD (launch)",
             "type": "gdbtarget",
             "request": "launch",
             "cwd": "${workspaceFolder}/",
@@ -43,7 +43,7 @@
             }
         },
         {
-            "name": "STLink@pyOCD (attach)",
+            "name": "CMSIS_DAP@pyOCD (attach)",
             "type": "gdbtarget",
             "request": "attach",
             "cwd": "${workspaceFolder}/",
