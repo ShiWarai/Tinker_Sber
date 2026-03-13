@@ -39,6 +39,25 @@
             }
         },
         {
+            "label": "CMSIS Load NoOpt",
+            "type": "shell",
+            "command": "pyocd",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": [
+                "load",
+                "--probe",
+                "stlink:",
+                "${workspaceFolder}/out/F407_FC/TinkerFirmwareNoOpt/F407_FC.axf"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
             "label": "CMSIS Run",
             "type": "shell",
             "command": "pyocd",
@@ -56,6 +75,15 @@
             "label": "CMSIS Load+Run",
             "dependsOn": [
                 "CMSIS Load",
+                "CMSIS Run"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "CMSIS Load+Run NoOpt",
+            "dependsOn": [
+                "CMSIS Load NoOpt",
                 "CMSIS Run"
             ],
             "dependsOrder": "sequence",

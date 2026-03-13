@@ -16,12 +16,23 @@
 #define LED_SCL_PIN           GPIO_PIN_6
 #define LED_SCP_PORT          GPIOA
 #define LED_SCP_PIN           GPIO_PIN_7
-#define LEG_POWER_PORT        GPIOC
-#define LEG_POWER_PIN         GPIO_PIN_5
-
 /* Button (KEY_DOG) - PB12 */
 #define BTN_DOG_PORT          GPIOB
 #define BTN_DOG_PIN           GPIO_PIN_12
+
+/* Buzzer (legacy mapping) - PB7 TIM4_CH2 */
+#define BEEP_GPIO_PORT         GPIOB
+#define BEEP_GPIO_PIN          GPIO_PIN_7
+
+/* CAN1 (legacy mapping) - PB8 RX, PB9 TX */
+#define CAN1_GPIO_PORT         GPIOB
+#define CAN1_RX_PIN            GPIO_PIN_8
+#define CAN1_TX_PIN            GPIO_PIN_9
+
+/* CAN2 (legacy mapping) - PB5 RX, PB6 TX */
+#define CAN2_GPIO_PORT         GPIOB
+#define CAN2_RX_PIN            GPIO_PIN_5
+#define CAN2_TX_PIN            GPIO_PIN_6
 
 void board_gpio_init(void);
 

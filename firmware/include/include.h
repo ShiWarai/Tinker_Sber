@@ -7,5 +7,7 @@
 #include "system/system_init.h"
 #include "system/board_pins.h"
 #include "drivers/led.h"
+#include "drivers/can.h"
+#include "drivers/beep.h"
 
 #endif /* INCLUDE_H */

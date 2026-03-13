@@ -32,7 +32,6 @@ project:
         - __MICROLIB
       misc:
         - C-CPP:
-            - -flto
             - -fno-rtti
             - -funsigned-char
             - -fshort-enums
@@ -56,7 +55,6 @@ project:
             - --info totals
             - --info unused
             - --info veneers
-            - --lto
             - --strict
             - --summary_stderr
             - --info summarysizes
@@ -77,6 +75,9 @@ project:
     - group: Drivers
       files:
         - file: src/drivers/led.c
+        - file: src/drivers/can.c
+        - file: src/drivers/mit_protocol.c
+        - file: src/drivers/beep.c
     - group: HAL
       files:
         - file: lib/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c

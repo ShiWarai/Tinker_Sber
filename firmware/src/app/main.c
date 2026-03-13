@@ -43,11 +43,22 @@ static void task_led_blue(void *argument)
   }
 }
 
+static void init_beep(void)
+{
+  Beep_Init(0U, 83U);
+  if (beep_service_start() != HAL_OK) {
+    fatal_blink(80, 80);
+  }
+
+  (void)beep_post(START_BEEP);
+}
+
 static void task_init(void *argument)
 {
   (void)argument;
 
   led_init();
+  init_beep();
 
   const osThreadAttr_t red_attr = {
     .name       = "LED_RED",

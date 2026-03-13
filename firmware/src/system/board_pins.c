@@ -27,7 +27,4 @@ void board_gpio_init(void)
   gpio.Pin = LED_STATUS_BLUE_PIN;
   HAL_GPIO_Init(LED_STATUS_BLUE_PORT, &gpio);
 
-  /* Leg power control */
-  gpio.Pin = LEG_POWER_PIN;
-  HAL_GPIO_Init(LEG_POWER_PORT, &gpio);
 }

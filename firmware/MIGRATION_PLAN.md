@@ -1,166 +1,125 @@
-# План миграции firmware: StdPeriph → HAL + FreeRTOS
+# План миграции firmware: legacy -> HAL + FreeRTOS
 
-## Текущее состояние
+## Текущий статус
 
-### Сделано
-- [x] HAL bring-up: `HAL_Init`, `SystemClock_Config`, GPIO
-- [x] LED RED/BLUE (PB3, PB4) — тестовое мигание
-- [x] LED status (PA0, PA1), SCL/SCP (PA6, PA7), leg power (PC5)
-- [x] Pack-компоненты: Device:Startup, CMSIS:CORE
-- [x] Удалены legacy: lib/CMSIS, lib/STM32F4xx_StdPeriph_Driver, lib/DSP
-- [x] Buzzer PB7, TIM4_CH2 — HAL PWM + новая стартовая мелодия
-- [x] CAN1/CAN2 HAL bring-up (MVP): init/start/filter + send/receive API
+### Уже реализовано
+- Базовый HAL-драйвер CAN1 в новом шаблоне.
+- Подключены прерывания CAN1 RX0/SCE.
+- Добавлен отдельный модуль MIT-протокола (pack/unpack) как независимый слой.
+- Добавлена RTOS-задача CAN service в инициализационный сценарий.
+- Подключены CAN1 пины PB8/PB9 в новом board_pins.
+- Добавлена очередь TX для MIT-команд в CAN service.
+- Реализована state machine RUN/DEGRADED/SAFE_STOP с мягким safe-stop профилем.
+- Добавлено декодирование MIT feedback в таблицу по motor_id для просмотра в debug.
+- Добавлена поддержка двух CAN шин (CAN1+CAN2) и маршрутизация 10 моторов с учетом типа мотора.
+- Временный keep-alive отправляется на все 10 моторов для проверки получения feedback на обеих шинах.
+- Изменения успешно проходят сборку и прошивку через CMSIS tasks.
 
-### Пин-аут (board_pins.h)
-| Сигнал | Порт | Пин | Legacy |
-|--------|------|-----|--------|
-| LED RED | PB | 3 | led_fc.c |
-| LED BLUE | PB | 4 | led_fc.c |
-| LED Status RED | PA | 0 | led_fc.c |
-| LED Status BLUE | PA | 1 | led_fc.c |
-| LED SCL | PA | 6 | led_fc.c |
-| LED SCP | PA | 7 | led_fc.c |
-| Leg power | PC | 5 | led_fc.c |
-| Button KEY_DOG | PB | 12 | init.c |
-| **Buzzer (Beep)** | **PB** | **7** | **beep.c, TIM4_CH2** |
+### Следующий практический шаг
+- Интегрировать реальные MIT-команды от control-задачи вместо временного keep-alive и начать публикацию CAN-статусов/feedback в SPI-пакет для наблюдения на управляющей плате.
 
----
+## Правила выполнения работ
+- Прошивка и reset платы выполняются только по явной команде пользователя.
+- В отчете по этапу описывается только проверка с пользовательской стороны: наблюдаемое поведение платы и ожидаемые данные по SPI.
+- Технические детали CI/сборки/предупреждений не считаются результатом проверки работоспособности.
 
-## План миграции (по приоритету)
+## Цель
+Перенести функционал из src_/include_ в новый каркас src/include поэтапно: сначала стабильная периферийная основа (HAL драйверы + RTOS сервисы), затем перенос логики управления и safety. Каждый этап завершается проверкой на железе через CMSIS Toolbox + pyOCD, чтобы не накапливать интеграционные риски.
 
-### 1. CAN — управление моторами
-**Legacy:** `src_/drivers/can.c`, StdPeriph CAN1/CAN2
+## Этапы
 
-- **Задачи:**
-  - [x] Добавить HAL CAN: `stm32f4xx_hal_can.c`
-  - [x] Перенести базовые CAN1_Mode_Init, CAN2_Mode_Init (MVP)
-  - Перенести обработку прерываний RX и таблицу команд
-  - Сохранить MIT-протокол, бинарную совместимость
-  - CAN_motor_sm(), Duty_Servo() — 1 ms цикл
+### 1. Фаза A - База миграции и критерии готовности
+1. Зафиксировать целевой MVP и DoD: CAN(MIT), IMU(SPI3), SPI slave с одноплатником, Flash params, Beep/LED, Watchdog/Safety.
+2. Подготовить карту соответствия legacy->new (модуль, API, RTOS-задача, приоритет, период).
+3. Границы первой итерации: без UART и без Battery/ADC.
 
-- **Зависимости:** `delay.c`, `time.c` (Get_Cycle_T)
+### 2. Фаза B - Платформенный слой HAL
+1. Развернуть базовые HAL-драйверы как независимые сервисы: CAN, SPI master(IMU), SPI slave(PI link), Flash, IWDG, GPIO(LED/Beep).
+2. Единый API на модуль: init/start/stop/read/write/ioctl + status/error.
+3. Подготовить таблицу IRQ/DMA приоритетов и владельцев каналов.
+4. Добавить обязательные runtime-проверки ошибок HAL (возвраты, timeout, recovery).
 
----
+### 3. Фаза C - RTOS каркас
+1. Разложить запуск на задачи: init, comm, sensors, control, safety, ui.
+2. Межзадачная модель: osMessageQueue, osEventFlags, osMutex.
+3. Базовые приоритеты и периоды:
+- safety/watchdog: highest, 10-20 ms
+- can_txrx: high, 1 ms
+- imu_fusion: high/above normal, 2 ms
+- pi_link_spi2: normal, event-driven + timeout
+- flash_service: below normal
+- led_beep_ui: low, 50-100 ms
+4. Ввести RTOS телеметрию: stack watermark, missed deadlines, fault counters.
 
-### 2. SPI2 Slave + Custom_SPI — связь с Linux (Raspberry Pi)
-**Legacy:** `src_/drivers/Custom_SPI_Device.c`, `spi.c` (SPI2)
+### 4. Фаза D - Миграция CAN MIT
+1. Перенести и адаптировать только протокол (float/int packing, limits), не перенося старый init.
+2. Реализовать HAL CAN backend: mailbox/FIFO/filter/IRQ callbacks.
+3. Добавить task_can_tx/task_can_rx или единую задачу + очереди команд/feedback.
+4. Реализовать безопасный fallback при потере связи: не мгновенный ноль, а safe-stop профиль.
+5. Проверка: loopback/реальная шина, 1 kHz, контроль overflow FIFO/mailbox.
 
-- **Пины:** PB13 SCK, PB14 MISO, PB15 MOSI, PB12 CS (EXTI)
-- **Протокол:** DataSize 162 байта, DMA RX/TX, EXTI по CS
-- **DataRxBuffer / DataTxBuffer** — формат пакетов
+### 5. Фаза E - Миграция IMU (SPI3) и оценка ориентации
+1. Перенести low-level ICM20602 в HAL SPI master + ISR/DMA.
+2. Перенести алгоритмы ориентации как pure compute модуль.
+3. Разделить acquisition и fusion: sensor_raw_queue -> fusion_task.
+4. Добавить валидацию NaN/Inf и reinit-стратегию.
+5. Проверка: 500 Hz, стабильность, jitter.
 
-- **Задачи:**
-  - HAL SPI2 slave mode
-  - HAL DMA для SPI RX/TX
-  - EXTI на PB12 (CS)
-  - Сохранить формат пакетов и протокол
+### 6. Фаза F - Миграция SPI slave канала с одноплатником
+1. Перенести формат протокола из Custom_SPI_Device и нормализовать state machine.
+2. Реализовать non-blocking DMA ring/двойной буфер + события завершения transfer.
+3. Добавить heartbeat и timeout без опасного мгновенного отключения приводов.
+4. Проверка: устойчивый обмен под нагрузкой и корректное восстановление после обрыва мастера.
 
----
+### 7. Фаза G - Flash params + конфиг
+1. Перенести структуру параметров и адресацию в HAL_FLASH слой.
+2. Ввести deferred write, CRC, versioning, defaults fallback.
+3. Проверка: cold boot, power-cycle, консистентность параметров.
 
-### 3. Buzzer (Beep) — ГОТОВО (MVP)
-**Legacy:** `src_/drivers/beep.c` — PB7, TIM4_CH2, PWM
+### 8. Фаза H - Safety, Watchdog, индикация
+1. Реализовать централизованный health monitor: связи модулей, таймауты, fault levels.
+2. Кормить IWDG только при выполнении health условий.
+3. Перенести профили LED/Beep в отдельную low-priority задачу.
+4. Проверка: fault injection (SPI/CAN/IMU) и ожидаемое безопасное поведение.
 
-- **Сделано:**
-  - Добавлен `BEEP_PORT`/`BEEP_PIN` в `board_pins.h` (PB7)
-  - Реализован HAL TIM4 PWM (Channel 2) в `src/drivers/beep.c`
-  - Простая стартовая мелодия (двойной короткий бип) в `beep_startup_melody()`
-  - Вызов в `app_main()` после инициализации LED
+### 9. Фаза I - Интеграция control-логики
+1. Перенести структуры и математику (base_struct/gait/common/filter/RT_math) как доменный слой.
+2. Переписать semantics legacy scheduler в RTOS control_task без super-loop.
+3. Добавить контроль deadline и деградационные режимы.
+4. Проверка: функциональный паритет с legacy.
 
-- **Дальше (позже):**
-  - Перенести сложную state-машину beep’ов из legacy (`Play_Music_Task`, коды BEEP_*) при переносе логики робота
+### 10. Фаза J - Стабилизация и техдолг
+1. Профилирование CPU/stack/heap и финальная настройка приоритетов.
+2. Регресс на железе по чек-листу.
+3. Документирование архитектуры потоков и интерфейсов для 2-й волны (ADC и дополнительные SPI сценарии).
 
----
+## Верификация по этапам
+1. Сборка после каждой фазы:
+   cbuild F407_FC.csolution.yml --context F407_FC+TinkerFirmware
+2. Прошивка/запуск после каждой фазы:
+   только по явной команде пользователя
+3. Дополнительно по этапам:
+- B/C: smoke test RTOS
+- D: CAN throughput/latency на 1 kHz
+- E: IMU rate/jitter на 500 Hz
+- F: SPI endurance + восстановление
+- G: persistence test
+- H: safety fault-injection
+- I/J: parity checklist с legacy
+4. Формат отчета по проверке:
+- Что должно наблюдаться на плате (LED/beep/реакция приводов).
+- Что должно наблюдаться на стороне управляющей платы по SPI (пакеты, тайминги, флаги состояний).
+- Критерий приемки этапа в терминах поведения системы.
 
-### 4. Память: W25 + внутренняя flash
-**Legacy:** `flash_w25.c` (SPI), `flash.c` (params)
+## Принятые решения
+- Основной источник миграции: src_/include_.
+- MVP первой волны: CAN MIT, IMU, SPI slave с одноплатником, Flash params, Beep/LED, Watchdog/Safety.
+- UART не используется в текущей архитектуре взаимодействия; основной канал обмена с управляющей платой - SPI.
+- Первый проход без Battery/ADC.
+- Стратегия: сначала периферия и инфраструктура RTOS, затем перенос control-логики.
+- Подход качества: сбалансированный.
 
-- **Задачи:**
-  - W25QXX на HAL SPI (SPI1 или SPI3)
-  - Flash params через HAL Flash API
-  - READ_PARM(), WRITE_PARM(), READ_WAY_POINTS()
-
----
-
-### 5. Кнопка PB12 (KEY_DOG)
-**Legacy:** `KEY_DOG()` в init.c, IWDG
-
-- **Задачи:**
-  - GPIO input PB12 (уже в board_pins)
-  - Обработка нажатия (EXTI или polling)
-  - Интеграция с IWDG
-
----
-
-### 6. UART
-**Legacy:** `usart_fc.c` — UART1/2/3/6, DMA
-
-- **Задачи:**
-  - HAL UART + DMA
-  - Usart1_Init (9600/115200), Usart2_Init, Usart3_Init, Uart6_Init
-
----
-
-### 7. SPI3 — IMU (icm20602)
-**Legacy:** `spi.c`, `icm20602.c`
-
-- **Задачи:**
-  - HAL SPI3 master
-  - icm20602_init(), чтение данных
-
----
-
-### 8. PWM, ADC, RNG, Watchdog
-**Legacy:** `pwm_out.c`, `bat.c` (ADC), `rng.c`, `watch_dog.c`
-
-- **Задачи:**
-  - HAL TIM PWM (для приводов, LED и пр., buzzer уже реализован отдельно)
-  - HAL ADC
-  - HAL RNG
-  - HAL IWDG
-
----
-
-### 9. FreeRTOS (CMSIS-RTOS2)
-**Legacy:** Superloop с SysTick 1 ms
-
-- **Задачи:**
-  - Добавить CMSIS-RTOS2 (RTX или FreeRTOS)
-  - Задачи: Duty_Servo (1 ms), Duty_Att (2 ms), Duty_System (50 ms)
-  - Потокобезопасность: volatile, мьютексы для shared data
-
----
-
-### 10. Остальные подсистемы
-- `scheduler.c` — Duty_Loop, Duty_Att_Fushion, Duty_Navigation, Duty_System
-- `mit_link.c` — MIT protocol
-- `gait_math.c`, `mems.c`, `imu.c` — математика, IMU
-- `wsled.c` — PWM LED
-- `time.c`, `delay.c` — системное время
-
----
-
-## Рекомендуемый порядок
-
-1. **CAN** — чтобы снова заработало управление моторами
-2. **SPI2 slave + Custom_SPI** — связь с Linux
-3. **LED-индикация по состояниям** — перенести паттерны из `led_fc.c` (состояния, ошибки, режимы) на HAL GPIO/таймеры, сверяясь с legacy
-4. **W25 + flash** — параметры и waypoints
-5. **Кнопка PB12** — watchdog
-6. **UART, IMU, PWM и т.д.** — по мере необходимости
-7. **FreeRTOS** — переход от superloop
-
----
-
-## Ссылки на legacy
-
-| Файл | Описание |
-|------|----------|
-| `src_/app/main.c` | main → All_Init, Duty_Loop |
-| `src_/app/init.c` | All_Init — инициализация всего |
-| `src_/app/scheduler.c` | Duty_Loop, Duty_Servo, Duty_System |
-| `src_/drivers/can.c` | CAN1/CAN2, motor protocol |
-| `src_/drivers/Custom_SPI_Device.c` | SPI2 slave, Linux |
-| `src_/drivers/beep.c` | Buzzer, TIM4_CH2, PB7 |
-| `src_/drivers/flash_w25.c` | W25 flash |
-| `src_/drivers/flash.c` | Params |
-| `include_/drivers/Custom_SPI_Device.h` | DataSize 162, пины |
+## Примечания по библиотекам
+- Базовый стек: HAL + CMSIS-FreeRTOS из паков.
+- CMSIS-DSP подключать на этапе I после профилирования math-пути.
+- Для SPI/CAN safety заранее оформить формальный state machine: RUN/DEGRADED/SAFE_STOP.

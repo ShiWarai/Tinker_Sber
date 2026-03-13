@@ -30,7 +30,7 @@
                     "--connect",
                     "attach",
                     "--cbuild-run",
-                    "${command:cmsis-csolution.getCbuildRunFile}",
+                    "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
                     "--quiet",
                     "--log",
                     "*.cbuild_run,*server=info"
@@ -38,7 +38,7 @@
                 "port": "3333"
             },
             "cmsis": {
-                "cbuildRunFile": "${command:cmsis-csolution.getCbuildRunFile}",
+                "cbuildRunFile": "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
                 "updateConfiguration": "manual"
             }
         },
@@ -64,7 +64,7 @@
                 "port": "3333"
             },
             "cmsis": {
-                "cbuildRunFile": "${command:cmsis-csolution.getCbuildRunFile}",
+                "cbuildRunFile": "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
                 "updateConfiguration": "manual"
             }
         },
@@ -97,7 +97,7 @@
                     "--connect",
                     "attach",
                     "--cbuild-run",
-                    "${command:cmsis-csolution.getCbuildRunFile}",
+                    "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
                     "--quiet",
                     "--log",
                     "*.cbuild_run,*server=info"
@@ -105,7 +105,7 @@
                 "port": "3333"
             },
             "cmsis": {
-                "cbuildRunFile": "${command:cmsis-csolution.getCbuildRunFile}",
+                "cbuildRunFile": "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
                 "updateConfiguration": "auto"
             }
         },
@@ -131,8 +131,49 @@
                 "port": "3333"
             },
             "cmsis": {
-                "cbuildRunFile": "${command:cmsis-csolution.getCbuildRunFile}",
+                "cbuildRunFile": "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
                 "updateConfiguration": "auto"
+            }
+        },
+        {
+            "name": "STLink@pyOCD (attach, NoOpt)",
+            "type": "gdbtarget",
+            "request": "launch",
+            "preLaunchTask": "CMSIS Load+Run NoOpt",
+            "cwd": "${workspaceFolder}/",
+            "program": "out/F407_FC/TinkerFirmwareNoOpt/F407_FC.axf",
+            "gdb": "arm-none-eabi-gdb",
+            "auxiliaryGdb": true,
+            "initCommands": [
+                "monitor reset halt",
+                "tbreak main"
+            ],
+            "customResetCommands": [
+                "monitor reset halt",
+                "maintenance flush register-cache",
+                "maintenance flush dcache",
+                "tbreak main",
+                "continue"
+            ],
+            "target": {
+                "server": "pyocd",
+                "serverParameters": [
+                    "gdbserver",
+                    "--probe",
+                    "stlink:",
+                    "--connect",
+                    "attach",
+                    "--cbuild-run",
+                    "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
+                    "--quiet",
+                    "--log",
+                    "*.cbuild_run,*server=info"
+                ],
+                "port": "3333"
+            },
+            "cmsis": {
+                "cbuildRunFile": "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml",
+                "updateConfiguration": "manual"
             }
         }
     ]
