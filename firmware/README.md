@@ -24,12 +24,6 @@
 cbuild F407_FC.csolution.yml --context F407_FC+TinkerFirmware
 ```
 
-Если каталог `RTE/` не хранится в репозитории, используйте команду с регенерацией:
-
-```powershell
-cbuild F407_FC.csolution.yml --context F407_FC+TinkerFirmware --packs --update-rte
-```
-
 Результат:
 - `out/F407_FC/TinkerFirmware/F407_FC.axf`
 

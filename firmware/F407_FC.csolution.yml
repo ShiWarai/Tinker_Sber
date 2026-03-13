@@ -10,9 +10,5 @@ solution:
         - set:
           images:
             - project-context: F407_FC
-          debugger:
-            name: ST-Link@pyOCD
-            clock: 4000000
-            protocol: swd
   projects:
     - project: F407_FC.cproject.yml

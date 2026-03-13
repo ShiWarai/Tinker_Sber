@@ -150,27 +150,6 @@ int en_over_save3=0;
 float t_check_over=12;
 float err_dead=1.2;
 
-/**
- * @brief Разбор CAN-пакета обратной связи от мотора (MIT protocol)
- * 
- * Формат пакета (8 байт):
- *   D[0]: ID | ERR<<4
- *   D[1]: POS[15:8]
- *   D[2]: POS[7:0]
- *   D[3]: VEL[11:4]
- *   D[4]: VEL[3:0] | T[11:8]
- *   D[5]: T[7:0]
- *   D[6]: T_MOS (температура привода, °C)
- *   D[7]: T_Rotor (температура обмоток, °C)
- * 
- * Единицы измерения от мотора:
- *   - Позиция: радианы (16 бит)
- *   - Скорость: рад/с (12 бит)
- *   - Момент: Н·м (12 бит)
- * 
- * @param ptr    Указатель на структуру мотора
- * @param buf_rx Буфер с принятым CAN-пакетом
- */
 void data_can_mit_anal(motor_measure_t *ptr, uint8_t buf_rx[8])
 {
 	float dt = Get_Cycle_T(ptr->param.id + 50);

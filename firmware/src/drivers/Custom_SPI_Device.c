@@ -201,7 +201,7 @@ void Custom_SPI_DEVICE_Slave_EXTI_Config(void)
 	SPI_I2S_DMACmd(SPI_DEVICE, SPI_I2S_DMAReq_Rx, ENABLE);
 	/* Enable SPI DMA TX Requsts */
 	SPI_I2S_DMACmd(SPI_DEVICE, SPI_I2S_DMAReq_Tx, ENABLE);
-	SPI_Cmd(SPI_DEVICE, ENABLE); /* enable SPI */
+	SPI_Cmd(SPI_DEVICE, ENABLE); //使能SPI外设
 }   
 
 unsigned char Get_CheckSum(unsigned char data[],uint32_t len)
@@ -252,19 +252,18 @@ void DMA1_Stream3_IRQHandler(void)//rx
 	static u8 _data_len2_spi = 0,_data_cnt2_spi = 0;
 	unsigned char data_spi;
 	static int send_flag=0;
-			timer_sys=0;
+	static float timer_sys=0;
 	/* Test on DMA Stream Transfer Complete interrupt */
 	if(DMA_GetITStatus(DMA1_Stream3, DMA_IT_TCIF3))
 	{
 		/* Clear DMA Stream Transfer Complete interrupt pending bit */
 		DMA_ClearITPendingBit(DMA1_Stream3, DMA_IT_TCIF3);
 		DMA_ITConfig(DMA1_Stream3, DMA_IT_TCIF3, DISABLE);
-		/* Always parse RX (was gated by wsled.led_lock) */
-		{
+		if(!wsled.led_lock){
 			for (i=0;i<(DataSize+CheckSumSize);i++)
 			{
 
-				data_spi = DataRxBuffer[i]; /* read SPI byte */
+				data_spi = DataRxBuffer[i];//中断读取SPI数据
 			
 				if(state_spi==0&&data_spi==0xFE)
 				{
@@ -305,7 +304,7 @@ void DMA1_Stream3_IRQHandler(void)//rx
 				}
 				else
 					state_spi = 0;
-			}
+			}	
 		}
 		Custom_SPI_DMABufferWait(); 
     Custom_SPI_DMABufferStart();
@@ -332,28 +331,31 @@ void DMA1_Stream4_IRQHandler(void)//tx
 		DMA_ClearITPendingBit(DMA1_Stream4, DMA_IT_TCIF4);
 		DMA_ITConfig(DMA1_Stream4, DMA_IT_TCIF4, DISABLE);
 
-		/* Always update TX (was gated by wsled.led_lock) */
-		spi_flag_pi[1]=0;
-		spi_dt[0] = Get_Cycle_T(16);
+		if(!wsled.led_lock){//spi_flag_pi[1]==1||1){//data can change
+			spi_flag_pi[1]=0;
+			spi_dt[0] = Get_Cycle_T(16); 
 
-		timer_sys+=spi_dt[0];
-
-#if MCU_TINYPALE
-		slave_send(30); /* simple car */
-#else
-	#if USE_WHEEL
-		slave_send(25); /* wheel */
+			timer_sys+=spi_dt[0];
+			
+  #if MCU_TINYPALE
+			slave_send(30);//simple car
+	#else
+		#if USE_WHEEL
+			slave_send(25);//21 6通道遥控器  24 云卓H12遥控器	 轮足	
 		#else
-		if(timer_sys>0.02){
-			timer_sys=0;
-		}
-		slave_send(26); /* tinker human */
+			  if(timer_sys>0.02){//50Hz
+					timer_sys=0;
+					//slave_send(36);
+				}
+				//else
+				slave_send(26);//21 6通道遥控器  24 云卓H12遥控器
 		#endif
 	#endif
 			spi_tx_cnt_send=0;
 		
 			for(i=0;i<DataSize;i++)
-			DataTxBuffer[i]=spi_tx_buf[i];
+				DataTxBuffer[i]=spi_tx_buf[i];
+		}		
 	}
 }
 
