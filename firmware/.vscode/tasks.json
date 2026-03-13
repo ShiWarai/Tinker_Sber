@@ -6,14 +6,7 @@
             "type": "shell",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/",
-                "shell": {
-                    "executable": "cmd.exe",
-                    "args": [
-                        "/d",
-                        "/c"
-                    ]
-                }
+                "cwd": "${workspaceFolder}"
             },
             "args": [
                 "erase",
@@ -21,7 +14,7 @@
                 "stlink:",
                 "--chip",
                 "--cbuild-run",
-                "${command:cmsis-csolution.getCbuildRunFile}"
+                "${workspaceFolder}/out/F407_FC+TinkerFirmware.cbuild-run.yml"
             ],
             "problemMatcher": []
         },
@@ -50,14 +43,7 @@
             "type": "shell",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/",
-                "shell": {
-                    "executable": "cmd.exe",
-                    "args": [
-                        "/d",
-                        "/c"
-                    ]
-                }
+                "cwd": "${workspaceFolder}"
             },
             "args": [
                 "reset",
