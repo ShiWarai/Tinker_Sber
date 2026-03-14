@@ -1,4 +1,28 @@
 #include "system/system_init.h"
+#include "cmsis_os2.h"
+
+/*
+ * FreeRTOS owns SysTick (SysTick_Handler -> xPortSysTickHandler),
+ * so the default weak HAL_IncTick() is never called and uwTick freezes.
+ * Override HAL_GetTick to return the RTOS tick count (1 kHz = 1 ms)
+ * once the kernel is running.  Before that, return 0 — HAL init
+ * functions that poll hardware status bits will succeed without
+ * needing a real tick (they just lose timeout protection at boot,
+ * which is acceptable).
+ */
+HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
+{
+  (void)TickPriority;
+  return HAL_OK;
+}
+
+uint32_t HAL_GetTick(void)
+{
+  if (osKernelGetState() >= osKernelRunning) {
+    return (uint32_t)osKernelGetTickCount();
+  }
+  return 0U;
+}
 
 void SystemClock_Config(void)
 {
@@ -12,7 +36,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 25;
+  RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 336;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;

@@ -21,7 +21,7 @@
 #define HAL_IWDG_MODULE_ENABLED
 
 #if !defined(HSE_VALUE)
-  #define HSE_VALUE    (25000000U)
+  #define HSE_VALUE    (8000000U)
 #endif
 #if !defined(HSI_VALUE)
   #define HSI_VALUE    (16000000U)
