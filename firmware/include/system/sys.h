@@ -1,18 +1,18 @@
 #ifndef __SYS_H
 #define __SYS_H	 
 #include "stm32f4xx.h" 
-//0,▓╗╓з│╓ucos
-//1,╓з│╓ucos
-#define SYSTEM_SUPPORT_UCOS		0	//╢и╥х╧╡═│╬─╝■╝╨╩╟╖ё╓з│╓UCOS
+//0,я┐╜я┐╜╓зя┐╜я┐╜ucos
+//1,╓зя┐╜я┐╜ucos
+#define SYSTEM_SUPPORT_UCOS		0	//я┐╜я┐╜я┐╜я┐╜╧╡═│я┐╜─╝я┐╜я┐╜я┐╜я┐╜╟╖я┐╜╓зя┐╜я┐╜UCOS
 																	    
 	 
-//╬╗┤°▓┘╫ў,╩╡╧╓51└р╦╞╡─GPIO┐╪╓╞╣ж─▄
-//╛▀╠х╩╡╧╓╦╝╧ы,▓╬┐╝<<CM3╚и═■╓╕─╧>>╡┌╬х╒┬(87╥│~92╥│).M4═мM3└р╦╞,╓╗╩╟╝─┤ц╞ў╡╪╓╖▒ф┴╦.
-//IO┐┌▓┘╫ў║ъ╢и╥х
+//╬╗я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜,╩╡я┐╜я┐╜51я┐╜я┐╜я┐╜╞╡я┐╜GPIOя┐╜я┐╜я┐╜╞╣я┐╜я┐╜я┐╜
+//я┐╜я┐╜я┐╜я┐╜╩╡я┐╜я┐╜╦╝я┐╜я┐╜,я┐╜╬┐я┐╜<<CM3╚ия┐╜я┐╜╓╕я┐╜я┐╜>>я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜(87╥│~92╥│).M4═мM3я┐╜я┐╜я┐╜я┐╜,╓╗я┐╜╟╝─┤я┐╜я┐╜я┐╜я┐╜я┐╜╓╖я┐╜я┐╜я┐╜я┐╜.
+//IOя┐╜┌▓я┐╜я┐╜я┐╜я┐╜ъ╢ия┐╜я┐╜
 #define BITBAND(addr, bitnum) ((addr & 0xF0000000)+0x2000000+((addr &0xFFFFF)<<5)+(bitnum<<2)) 
 #define MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) 
 #define BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) 
-//IO┐┌╡╪╓╖╙│╔ф
+//IOя┐╜┌╡я┐╜╓╖╙│я┐╜я┐╜
 #define GPIOA_ODR_Addr    (GPIOA_BASE+20) //0x40020014
 #define GPIOB_ODR_Addr    (GPIOB_BASE+20) //0x40020414 
 #define GPIOC_ODR_Addr    (GPIOC_BASE+20) //0x40020814 
@@ -33,40 +33,40 @@
 #define GPIOH_IDR_Addr    (GPIOH_BASE+16) //0x40021C10 
 #define GPIOI_IDR_Addr    (GPIOI_BASE+16) //0x40022010 
  
-//IO┐┌▓┘╫ў,╓╗╢╘╡е╥╗╡─IO┐┌!
-//╚╖▒гn╡─╓╡╨б╙┌16!
-#define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //╩ф│Ў 
-#define PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  //╩ф╚ы 
+//IOя┐╜┌▓я┐╜я┐╜я┐╜,╓╗я┐╜╘╡я┐╜╥╗я┐╜я┐╜IOя┐╜я┐╜!
+//╚╖я┐╜я┐╜nя┐╜я┐╜╓╡╨бя┐╜я┐╜16!
+#define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PAin(n)    BIT_ADDR(GPIOA_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜ 
 
-#define PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  //╩ф│Ў 
-#define PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  //╩ф╚ы 
+#define PBout(n)   BIT_ADDR(GPIOB_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PBin(n)    BIT_ADDR(GPIOB_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜ 
 
-#define PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  //╩ф│Ў 
-#define PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  //╩ф╚ы 
+#define PCout(n)   BIT_ADDR(GPIOC_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PCin(n)    BIT_ADDR(GPIOC_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜ 
 
-#define PDout(n)   BIT_ADDR(GPIOD_ODR_Addr,n)  //╩ф│Ў 
-#define PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  //╩ф╚ы 
+#define PDout(n)   BIT_ADDR(GPIOD_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PDin(n)    BIT_ADDR(GPIOD_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜ 
 
-#define PEout(n)   BIT_ADDR(GPIOE_ODR_Addr,n)  //╩ф│Ў 
-#define PEin(n)    BIT_ADDR(GPIOE_IDR_Addr,n)  //╩ф╚ы
+#define PEout(n)   BIT_ADDR(GPIOE_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PEin(n)    BIT_ADDR(GPIOE_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜
 
-#define PFout(n)   BIT_ADDR(GPIOF_ODR_Addr,n)  //╩ф│Ў 
-#define PFin(n)    BIT_ADDR(GPIOF_IDR_Addr,n)  //╩ф╚ы
+#define PFout(n)   BIT_ADDR(GPIOF_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PFin(n)    BIT_ADDR(GPIOF_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜
 
-#define PGout(n)   BIT_ADDR(GPIOG_ODR_Addr,n)  //╩ф│Ў 
-#define PGin(n)    BIT_ADDR(GPIOG_IDR_Addr,n)  //╩ф╚ы
+#define PGout(n)   BIT_ADDR(GPIOG_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PGin(n)    BIT_ADDR(GPIOG_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜
 
-#define PHout(n)   BIT_ADDR(GPIOH_ODR_Addr,n)  //╩ф│Ў 
-#define PHin(n)    BIT_ADDR(GPIOH_IDR_Addr,n)  //╩ф╚ы
+#define PHout(n)   BIT_ADDR(GPIOH_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PHin(n)    BIT_ADDR(GPIOH_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜
 
-#define PIout(n)   BIT_ADDR(GPIOI_ODR_Addr,n)  //╩ф│Ў 
-#define PIin(n)    BIT_ADDR(GPIOI_IDR_Addr,n)  //╩ф╚ы
+#define PIout(n)   BIT_ADDR(GPIOI_ODR_Addr,n)  //я┐╜я┐╜я┐╜ 
+#define PIin(n)    BIT_ADDR(GPIOI_IDR_Addr,n)  //я┐╜я┐╜я┐╜я┐╜
 
-//╥╘╧┬╬к╗у▒р║п╩¤
-void WFI_SET(void);		//╓┤╨╨WFI╓╕┴ю
-void INTX_DISABLE(void);//╣╪▒╒╦∙╙╨╓╨╢╧
-void INTX_ENABLE(void);	//┐к╞Ї╦∙╙╨╓╨╢╧
-void MSR_MSP(u32 addr);	//╔ш╓├╢╤╒╗╡╪╓╖ 
+//я┐╜я┐╜я┐╜я┐╜╬кя┐╜я┐╜р║пя┐╜я┐╜
+void WFI_SET(void);		//╓┤я┐╜я┐╜WFI╓╕я┐╜я┐╜
+void INTX_DISABLE(void);//я┐╜╪▒я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╨╢я┐╜
+void INTX_ENABLE(void);	//я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜╨╢я┐╜
+void MSR_MSP(u32 addr);	//я┐╜я┐╜я┐╜├╢я┐╜╒╗я┐╜я┐╜╓╖ 
 #endif
 
 

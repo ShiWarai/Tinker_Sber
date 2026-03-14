@@ -6,7 +6,7 @@
 #include 	 "can.h"
 u8 music_sel;
 //  11  21
-//Òô½×(0~3)Òô¸ß(0~7)   ||   STOPÑ­»·´ÎÊý(0~7) ÐÝÖ¹·û³¤¶È(0~7)
+//ï¿½ï¿½ï¿½ï¿½(0~3)ï¿½ï¿½ï¿½ï¿½(0~7)   ||   STOPÑ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(0~7) ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(0~7)
 #define B1 13
 #define B2 16
 #define B3 15
@@ -305,38 +305,38 @@ void Beep_Init(u32 arr,u32 psc)
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	TIM_OCInitTypeDef  TIM_OCInitStructure;
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4,ENABLE);  	//TIM14Ê±ÖÓÊ¹ÄÜ    
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); 	//Ê¹ÄÜPORTFÊ±ÖÓ	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4,ENABLE);  	//TIM14Ê±ï¿½ï¿½Ê¹ï¿½ï¿½    
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); 	//Ê¹ï¿½ï¿½PORTFÊ±ï¿½ï¿½	
 	
-	GPIO_PinAFConfig(GPIOB,GPIO_PinSource7,GPIO_AF_TIM4); //GPIOF9¸´ÓÃÎª¶¨Ê±Æ÷14
+	GPIO_PinAFConfig(GPIOB,GPIO_PinSource7,GPIO_AF_TIM4); //GPIOF9ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Ê±ï¿½ï¿½14
 	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;           //GPIOF9
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;        //¸´ÓÃ¹¦ÄÜ
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//ËÙ¶È100MHz
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;      //ÍÆÍì¸´ÓÃÊä³ö
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //ÉÏÀ­
-	GPIO_Init(GPIOB,&GPIO_InitStructure);              //³õÊ¼»¯PF9
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;        //ï¿½ï¿½ï¿½Ã¹ï¿½ï¿½ï¿½
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//ï¿½Ù¶ï¿½100MHz
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;      //ï¿½ï¿½ï¿½ì¸´ï¿½ï¿½ï¿½ï¿½ï¿½
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //ï¿½ï¿½ï¿½ï¿½
+	GPIO_Init(GPIOB,&GPIO_InitStructure);              //ï¿½ï¿½Ê¼ï¿½ï¿½PF9
 	  
-	TIM_TimeBaseStructure.TIM_Prescaler=psc;  //¶¨Ê±Æ÷·ÖÆµ
-	TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up; //ÏòÉÏ¼ÆÊýÄ£Ê½
-	TIM_TimeBaseStructure.TIM_Period=arr;   //×Ô¶¯ÖØ×°ÔØÖµ
+	TIM_TimeBaseStructure.TIM_Prescaler=psc;  //ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Æµ
+	TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up; //ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½Ä£Ê½
+	TIM_TimeBaseStructure.TIM_Period=arr;   //ï¿½Ô¶ï¿½ï¿½ï¿½×°ï¿½ï¿½Öµ
 	TIM_TimeBaseStructure.TIM_ClockDivision=TIM_CKD_DIV1; 
 	
-	TIM_TimeBaseInit(TIM4,&TIM_TimeBaseStructure);//³õÊ¼»¯¶¨Ê±Æ÷14
+	TIM_TimeBaseInit(TIM4,&TIM_TimeBaseStructure);//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½14
 	
-	//³õÊ¼»¯TIM14 Channel1 PWMÄ£Ê½	 
-	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; //Ñ¡Ôñ¶¨Ê±Æ÷Ä£Ê½:TIMÂö³å¿í¶Èµ÷ÖÆÄ£Ê½2
- 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; //±È½ÏÊä³öÊ¹ÄÜ
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low; //Êä³ö¼«ÐÔ:TIMÊä³ö±È½Ï¼«ÐÔµÍ
+	//ï¿½ï¿½Ê¼ï¿½ï¿½TIM14 Channel1 PWMÄ£Ê½	 
+	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; //Ñ¡ï¿½ï¿½Ê±ï¿½ï¿½Ä£Ê½:TIMï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Èµï¿½ï¿½ï¿½Ä£Ê½2
+ 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; //ï¿½È½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
+	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:TIMï¿½ï¿½ï¿½ï¿½È½Ï¼ï¿½ï¿½Ôµï¿½
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_Pulse = arr/2;
-	TIM_OC2Init(TIM4, &TIM_OCInitStructure);  //¸ù¾ÝTÖ¸¶¨µÄ²ÎÊý³õÊ¼»¯ÍâÉèTIM1 4OC1
+	TIM_OC2Init(TIM4, &TIM_OCInitStructure);  //ï¿½ï¿½ï¿½ï¿½TÖ¸ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½TIM1 4OC1
 
-	TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);  //Ê¹ÄÜTIM14ÔÚCCR1ÉÏµÄÔ¤×°ÔØ¼Ä´æÆ÷
+	TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);  //Ê¹ï¿½ï¿½TIM14ï¿½ï¿½CCR1ï¿½Ïµï¿½Ô¤×°ï¿½Ø¼Ä´ï¿½ï¿½ï¿½
  
-  TIM_ARRPreloadConfig(TIM4,ENABLE);//ARPEÊ¹ÄÜ 
+  TIM_ARRPreloadConfig(TIM4,ENABLE);//ARPEÊ¹ï¿½ï¿½ 
 	
-	TIM_Cmd(TIM4, ENABLE);  //Ê¹ÄÜTIM14
+	TIM_Cmd(TIM4, ENABLE);  //Ê¹ï¿½ï¿½TIM14
 	
 	delay_ms(100);
 	Play_Music_Direct(START_BEEP);
@@ -358,25 +358,25 @@ void Tone(u8 level, u8 tone)
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	TIM_OCInitTypeDef  TIM_OCInitStructure;
 	
-	TIM_TimeBaseStructure.TIM_Prescaler=psc;  //¶¨Ê±Æ÷·ÖÆµ
-	TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up; //ÏòÉÏ¼ÆÊýÄ£Ê½
-	TIM_TimeBaseStructure.TIM_Period=arr;   //×Ô¶¯ÖØ×°ÔØÖµ
+	TIM_TimeBaseStructure.TIM_Prescaler=psc;  //ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Æµ
+	TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up; //ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½Ä£Ê½
+	TIM_TimeBaseStructure.TIM_Period=arr;   //ï¿½Ô¶ï¿½ï¿½ï¿½×°ï¿½ï¿½Öµ
 	TIM_TimeBaseStructure.TIM_ClockDivision=TIM_CKD_DIV1; 
 	
-	TIM_TimeBaseInit(TIM4,&TIM_TimeBaseStructure);//³õÊ¼»¯¶¨Ê±Æ÷14
+	TIM_TimeBaseInit(TIM4,&TIM_TimeBaseStructure);//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½14
 	
-	//³õÊ¼»¯TIM14 Channel1 PWMÄ£Ê½	 
-	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; //Ñ¡Ôñ¶¨Ê±Æ÷Ä£Ê½:TIMÂö³å¿í¶Èµ÷ÖÆÄ£Ê½2
- 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; //±È½ÏÊä³öÊ¹ÄÜ
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low; //Êä³ö¼«ÐÔ:TIMÊä³ö±È½Ï¼«ÐÔµÍ
+	//ï¿½ï¿½Ê¼ï¿½ï¿½TIM14 Channel1 PWMÄ£Ê½	 
+	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; //Ñ¡ï¿½ï¿½Ê±ï¿½ï¿½Ä£Ê½:TIMï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Èµï¿½ï¿½ï¿½Ä£Ê½2
+ 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; //ï¿½È½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
+	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:TIMï¿½ï¿½ï¿½ï¿½È½Ï¼ï¿½ï¿½Ôµï¿½
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_Pulse = arr/2;
-	TIM_OC2Init(TIM4, &TIM_OCInitStructure);  //¸ù¾ÝTÖ¸¶¨µÄ²ÎÊý³õÊ¼»¯ÍâÉèTIM1 4OC1
+	TIM_OC2Init(TIM4, &TIM_OCInitStructure);  //ï¿½ï¿½ï¿½ï¿½TÖ¸ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½TIM1 4OC1
 
-	TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);  //Ê¹ÄÜTIM14ÔÚCCR1ÉÏµÄÔ¤×°ÔØ¼Ä´æÆ÷
+	TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);  //Ê¹ï¿½ï¿½TIM14ï¿½ï¿½CCR1ï¿½Ïµï¿½Ô¤×°ï¿½Ø¼Ä´ï¿½ï¿½ï¿½
  
-  TIM_ARRPreloadConfig(TIM4,ENABLE);//ARPEÊ¹ÄÜ 
+  TIM_ARRPreloadConfig(TIM4,ENABLE);//ARPEÊ¹ï¿½ï¿½ 
 	
-	TIM_Cmd(TIM4, ENABLE);  //Ê¹ÄÜTIM14
+	TIM_Cmd(TIM4, ENABLE);  //Ê¹ï¿½ï¿½TIM14
 	#endif
 } 

@@ -67,6 +67,10 @@ project:
             - --info summarysizes
   linker:
     - script: F407_FC_TinkerFirmware.sct
+  output:
+    type:
+      - elf
+      - hex
   groups:
     - group: System
       misc:

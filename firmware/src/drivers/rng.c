@@ -1,32 +1,32 @@
 #include "rng.h"
 #include "stm32f4xx_rng.h"
 #include "time.h"
-//³õÊ¼»¯RNG
+//ï¿½ï¿½Ê¼ï¿½ï¿½RNG
 u8 RNG_Init(void)
 {
 	u16 retry=0; 
 	
-  RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);//¿ªÆôRNGÊ±ÖÓ,À´×ÔPLL48CLK
+  RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);//ï¿½ï¿½ï¿½ï¿½RNGÊ±ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½PLL48CLK
 	
-	RNG_Cmd(ENABLE);	//Ê¹ÄÜRNG
+	RNG_Cmd(ENABLE);	//Ê¹ï¿½ï¿½RNG
 	
-	while(RNG_GetFlagStatus(RNG_FLAG_DRDY)==RESET&&retry<10000)	//µÈ´ýËæ»úÊý¾ÍÐ÷
+	while(RNG_GetFlagStatus(RNG_FLAG_DRDY)==RESET&&retry<10000)	//ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		retry++;
 		Delay_us(100);
 	}
-	if(retry>=10000)return 1;//Ëæ»úÊý²úÉúÆ÷¹¤×÷²»Õý³£
+	if(retry>=10000)return 1;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	return 0;
 }
-//µÃµ½Ëæ»úÊý
-//·µ»ØÖµ:»ñÈ¡µ½µÄËæ»úÊý
+//ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//ï¿½ï¿½ï¿½ï¿½Öµ:ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 u32 RNG_Get_RandomNum(void)
 {	 
-	while(RNG_GetFlagStatus(RNG_FLAG_DRDY)==RESET);	//µÈ´ýËæ»úÊý¾ÍÐ÷  
+	while(RNG_GetFlagStatus(RNG_FLAG_DRDY)==RESET);	//ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
 	return RNG_GetRandomNumber();	
 }
 
-//Éú³É[min,max]·¶Î§µÄËæ»úÊý
+//ï¿½ï¿½ï¿½ï¿½[min,max]ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 int RNG_Get_RandomRange(int min,int max)
 { 
    return RNG_Get_RandomNum()%(max-min+1) +min;
