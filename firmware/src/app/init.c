@@ -11,7 +11,7 @@
 #include "icm20602.h"
 #include "can.h"
 #include "scheduler.h"
-#include "Custom_SPI_Device.h"
+#include "Custom_SPI_DEVICE.h"
 #include "wsled.h"
 
 u8 All_Init()

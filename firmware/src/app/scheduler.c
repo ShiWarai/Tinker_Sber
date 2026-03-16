@@ -14,7 +14,7 @@
 #include "beep.h" 
 #include "gait_math.h"
 #include "wsled.h"
-#include "Custom_SPI_Device.h"
+#include "Custom_SPI_DEVICE.h"
 
 typedef struct
 {
