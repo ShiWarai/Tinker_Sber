@@ -17,9 +17,9 @@ ament_python_install_package(${PROJECT_NAME})
 install(
   PROGRAMS
     tinker_gui/gui_slider_node.py
-    tinker_gui/test_data_publisher.py
-    tinker_gui/commands_to_states_bridge.py
-    tinker_gui/states_to_joint_states.py
+    #tinker_gui/test_data_publisher.py
+    #tinker_gui/commands_to_states_bridge.py
+    #tinker_gui/states_to_joint_states.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

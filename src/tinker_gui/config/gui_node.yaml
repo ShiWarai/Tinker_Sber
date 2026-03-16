@@ -51,13 +51,3 @@ motors:
       min: -1.57 # rad
       max: 1.57 # rad
 
-  motor_11:
-    position_limits:
-      min: -1.57 # rad
-      max: 1.57 # rad
-
-  motor_12:
-    position_limits:
-      min: -1.57 # rad
-      max: 1.57 # rad
-
