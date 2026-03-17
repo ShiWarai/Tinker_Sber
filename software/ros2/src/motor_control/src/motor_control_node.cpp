@@ -213,6 +213,12 @@ void MotorControlNode::on_timer()
         auto now = this->now();
         auto dt = (now - last_time).seconds();
         RCLCPP_INFO(this->get_logger(), "SPI frequency: %.1f Hz", 1000.0 / dt);
+        RCLCPP_INFO(this->get_logger(), "  id | position | velocity |  torque  |");
+        for (int i = 0; i < 10; ++i)
+        {
+            RCLCPP_INFO(this->get_logger(), " %2d  | %8.3f | %8.3f | %8.4f |",
+                        i + 1, static_cast<double>(spi_rx_.q[i]), static_cast<double>(spi_rx_.dq[i]), static_cast<double>(spi_rx_.tau[i]));
+        }
         last_time = now;
     }
 

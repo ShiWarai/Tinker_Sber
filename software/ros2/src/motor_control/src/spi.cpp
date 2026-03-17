@@ -56,7 +56,6 @@ static int spiFds[2];
  */
 int SPIDataRW(int channel, uint8_t *tx_data, uint8_t *rx_data, int len)
 {
-	int i = 0;
 	struct spi_ioc_transfer spi;
 
 	channel &= 1; // Обеспечиваем корректный диапазон канала (0 или 1)
