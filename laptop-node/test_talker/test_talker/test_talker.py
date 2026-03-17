@@ -19,7 +19,7 @@ class SinusoidalTrajectoryTalker(Node):
         self.kd_big = 0.65
 
         self.torque_ff = 0.0
-        self.rate_hz = 1000.0
+        self.rate_hz = 100.0
         self.num_motors = 10
 
         self.low_cmd_pub = self.create_publisher(LowCmd, '/low_level_command', 10)
@@ -61,11 +61,11 @@ class SinusoidalTrajectoryTalker(Node):
         motor_cmds = []
         for i in range(self.num_motors):
             if i in [1, 4, 5, 9]:
-                kp = self.kp_big
-                kd = self.kd_big
-            else:
                 kp = self.kp_little
                 kd = self.kd_little
+            else:
+                kp = self.kp_big
+                kd = self.kd_big
 
             pos = self.offset + self.amplitude * math.sin(2.0 * math.pi * self.frequency * t)
             vel = 0
