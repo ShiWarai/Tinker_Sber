@@ -1,0 +1,54 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from tinker_msgs/msg/MotorState.msg
+// generated code does not contain a copyright notice
+
+#include "builtin_interfaces/msg/Time.idl"
+
+module tinker_msgs {
+  module msg {
+    module MotorState_Constants {
+      const uint8 DISABLING = 0;
+      @verbatim (language="comment", text=
+        "uint8 ENABLE = 0x01")
+      const uint8 ENABLE = 1;
+      @verbatim (language="comment", text=
+        "uint8 OVERCURRENT = 0x0A")
+      const uint8 OVERCURRENT = 10;
+      @verbatim (language="comment", text=
+        "uint8 OVERVOLTAGE = 0x08")
+      const uint8 OVERVOLTAGE = 8;
+      @verbatim (language="comment", text=
+        "uint8 LOWVOLTAGE = 0x09")
+      const uint8 LOWVOLTAGE = 9;
+      @verbatim (language="comment", text=
+        "uint8 OVERTEMPERATURE_MOSFET = 0x0B")
+      const uint8 OVERTEMPERATURE_MOSFET = 11;
+      @verbatim (language="comment", text=
+        "uint8 OVERTEMPERATURE_ROTOR = 0x0C")
+      const uint8 OVERTEMPERATURE_ROTOR = 12;
+      @verbatim (language="comment", text=
+        "uint8 LOSS_CONNECTION= 0x0D")
+      const uint8 LOSS_CONNECTION = 13;
+      @verbatim (language="comment", text=
+        "uint8 OVERLOAD = 0x0E")
+      const uint8 OVERLOAD = 14;
+    };
+    @verbatim (language="comment", text=
+      "uint8 DISABLING = 0")
+    struct MotorState {
+      builtin_interfaces::msg::Time timestamp_state;
+
+      float position;
+
+      float velocity;
+
+      float torque;
+
+      int16 temperature_mosfet;
+
+      int16 temperature_rotor;
+
+      uint8 error;
+    };
+  };
+};
