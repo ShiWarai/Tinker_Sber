@@ -42,7 +42,7 @@ s16 loop_cnt;
 loop_t loop;
 float leg_dt[GET_TIME_NUM];
 float trig_test_dt[3]={0};
-void Loop_check()  //TIME INTTERRUPT
+void Loop_check()  // TIME INTTERRUPT
 {
 	loop.time++; //u16
 	loop.cnt_2ms++;
@@ -80,11 +80,11 @@ void Loop_check()  //TIME INTTERRUPT
 
 void Duty_Servo()//1ms 伺服驱动
 {
-	system_dt.can_task= leg_dt[0] = Get_Cycle_T(0); 
+	system_dt.can_task = leg_dt[0] = Get_Cycle_T(0); 
 	if(leg_dt[0]>0.00225)
 		can_rx_over[4]++;
-	
-  CAN_motor_sm(leg_dt[0]);	
+
+	CAN_motor_sm(leg_dt[0]);	
 }
 
 #define EN_GYRO_Z_F_ODOM 1
@@ -233,7 +233,7 @@ void Duty_Att_Fushion()//姿态解算 100Hz
 	DigitalLPF(-acc_temp[1]*9.8, &vmc_all.acc[Yr], FLT_ACC, T);
 	DigitalLPF( acc_temp[2]*9.8, &vmc_all.acc[Zr], FLT_ACC, T);
 
-	copy_imu_to_robotwb(T);
+	// copy_imu_to_robotwb(T);
   }				
 }
 
@@ -398,130 +398,55 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 	if( loop.check_flag == 1 )
 	{
 		loop_cnt = time_1ms;
-		#if SPI_PI_IS_MASTER
-			master_send();
-		#endif
-		
-		if( loop.cnt_2ms >= 2*time_scale )//周期2ms的任务 500Hz
-		{
-			Duty_Att_Fushion();//状态估计 + VMC力控		
-			loop.cnt_2ms = 0;						
-		}
 
-		if(!spi_master_connect_pi)//掉线保护
+		if(!spi_master_connect_pi)
 		{
-			for(id=0;id<10;id++){
-				leg_motor.set_t[id]=0;
+			for(id=0;id<10;id++) {
 				leg_motor.q_set[id]=leg_motor.q_now[id];
+				leg_motor.qd_set[id]=0;
+				leg_motor.set_t[id]=0;
+				leg_motor.kp[id]=0;
+				leg_motor.kd[id]=0;
+				
 				leg_motor.motor_en=0;
 			}
-		}
+		}	
 		
-		Duty_Servo();							
-
-		if( loop.cnt_5ms >= 5 )//周期5ms的任务 200Hz
+		if( loop.cnt_2ms >= 2*time_scale ) // 500Hz
 		{
-			loop.cnt_5ms = 0;		
+			loop.cnt_2ms = 0;
+			Duty_Att_Fushion(); // IMU					
+		}	
+
+		if( loop.cnt_5ms >= 5 )// 200Hz
+		{
+			loop.cnt_5ms = 0;
 		}
 		
-		if( loop.cnt_10ms >= 5 )//周期10ms的任务 100Hz 轮毂控制
+		if( loop.cnt_10ms >= 10 )// 100Hz
 		{
 			loop.cnt_10ms = 0;
-			#if MCU_TINYPALE||MCU_TINYPALE_S1
-			wheel_2d_loop(0.01);
-			#endif
-			#if MCU_TINYPALE_S1//控制轮子
-			static int flag_motor=0;
-		 	if(DMA_GetFlagStatus(DMA1_Stream6,DMA_FLAG_TCIF6)!=RESET)//等待DMA2_Steam7传输完成
-			{ 
-				DMA_ClearFlag(DMA1_Stream6,DMA_FLAG_TCIF6);//清除DMA2_Steam7传输完成标志
-				for	(SendBuff1_cnt=0;SendBuff1_cnt<SEND_BUF_SIZE1;SendBuff1_cnt++)
-					SendBuff1[SendBuff1_cnt]=0;
-				SendBuff1_cnt=0;
-				float dt_wheel=Get_Cycle_T(14); 	
-				if(flag_motor)
-				wheel_motor_loop(1,dt_wheel);
-				else
-				wheel_motor_loop(2,dt_wheel);
-				flag_motor=!flag_motor;
-				USART_DMACmd(USART2,USART_DMAReq_Tx,ENABLE);  //使能串口1的DMA发送     
-				MYDMA_Enable(DMA1_Stream6,SendBuff1_cnt+2);     //开始一次DMA传输！	
-			}	
-			#endif
-			#if MCU_TINYPALE
-			static int flag_motor=0;
-		  if(DMA_GetFlagStatus(DMA2_Stream7,DMA_FLAG_TCIF7)!=RESET)//等待DMA2_Steam7传输完成
-			{ 	
-				DMA_ClearFlag(DMA2_Stream7,DMA_FLAG_TCIF7);//清除DMA2_Steam7传输完成标志
-				for	(SendBuff1_cnt=0;SendBuff1_cnt<SEND_BUF_SIZE1;SendBuff1_cnt++)
-					SendBuff1[SendBuff1_cnt]=0;
-				SendBuff1_cnt=0;
-				float dt_wheel=Get_Cycle_T(14); 	
-				wheel_motor_loop(flag_motor++,dt_wheel);
-				if(flag_motor>4)
-					flag_motor=0;
-				USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);  //使能串口1的DMA发送     
-				MYDMA_Enable(DMA2_Stream7,SendBuff1_cnt);     //开始一次DMA传输
-				RxState1 = 0;
-			}	
-			#endif
+			Duty_Servo();
 		}
 		
-		#if 0//舵机机械臂控制 钟灵舵机
-	  if( loop.cnt_20ms >= 20*time_scale &&1)//周期20ms的任务 50Hz
+		if( loop.cnt_20ms >= 20)// 50Hz
 		{
-			loop.cnt_20ms = 0;	
-			if(DMA_GetFlagStatus(DMA2_Stream6,DMA_FLAG_TCIF6)!=RESET)//等待DMA2_Steam7传输完成
-			{ 	
-				DMA_ClearFlag(DMA2_Stream6,DMA_FLAG_TCIF6);//清除DMA2_Steam7传输完成标志
-				for	(SendBuff6_cnt=0;SendBuff6_cnt<SEND_BUF_SIZE6;SendBuff6_cnt++)
-					SendBuff6[SendBuff6_cnt]=0;
-				SendBuff6_cnt=0;
-				float dt_dj=Get_Cycle_T(14); 	
-				dj_control_loop(dt_dj);
-				USART_DMACmd(USART6,USART_DMAReq_Tx,ENABLE);  //使能串口1的DMA发送     
-				MYDMA_Enable(DMA2_Stream6,SendBuff6_cnt+2);     //开始一次DMA传输！	  
-			}	
-		}
-		#else
-		#if USE_VR
-			if( loop.cnt_20ms >= 10*time_scale &&1)//周期20ms的任务 100Hz 飞特舵机控制
-			{
-		#else
-			if( loop.cnt_20ms >= 20*time_scale &&1)//周期20ms的任务 50Hz 飞特舵机控制
-			{
-		#endif
 			loop.cnt_20ms = 0;
-			float dt_dj=Get_Cycle_T(14);
-			(void)dt_dj; // unused 
-			#if EN_DMA_UART3//omnihub-extcan unuse now 目前DMA被SPI占用
-				if(DMA_GetFlagStatus(DMA1_Stream3,DMA_FLAG_TCIF3)!=RESET)
-				{ 	
-					DMA_ClearFlag(DMA1_Stream3,DMA_FLAG_TCIF3);
-					for	(SendBuff3_cnt=0;SendBuff3_cnt<SEND_BUF_SIZE3;SendBuff3_cnt++)
-						SendBuff3[SendBuff3_cnt]=0;
-					SendBuff3_cnt=0;
-					//your code here
-					
-					
-					USART_DMACmd(USART3,USART_DMAReq_Tx,ENABLE);  
-					MYDMA_Enable(DMA1_Stream3,SendBuff3_cnt+2);
-				}		
-			#endif
 		}
-		#endif	
 		
-		if( loop.cnt_50ms >= 50*time_scale )
+		if( loop.cnt_50ms >= 50)
 		{
 			loop.cnt_50ms = 0;
 			Duty_System();
 		}
-		//LED控制
-		if( loop.cnt_1s >= 500*time_scale )
+
+		//LED
+		if( loop.cnt_1s >= 500)
 		{
 			loop.cnt_1s = 0;
 			can_rx_over[4]=0;
 		}
+
 		timer_ip+=Get_Cycle_T(25); 	
 		if( timer_ip>2 )
 		{
@@ -532,13 +457,8 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 				ip_get=1;
 				
 				IWDG_Init(4,25000);//100ms
-				
-				#if USE_AUDIO
-					Audio_system();
-				#endif
 				IWDG_Init(4,250);//100ms
 		  }
-			//wslled_loop(0.5);//PWM LED
 		}
 		
 		loop.check_flag = 0;		//循环运行完毕标志

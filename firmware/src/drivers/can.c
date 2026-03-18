@@ -490,21 +490,8 @@ u8 CAN2_Send_Msg_Board(u8* msg,u8 len,uint32_t id)
 
 void CAN_motor_sm(float dt)
 {
-	char i=0;
-	if(!can_cmd_usb_disable||ocu_connect==0)//usb�????
-	{
-		for(i=0;i<10;i++)
-			motor_chassis[i].en_cmd=leg_motor.motor_en;
-		
-		mit_bldc_thread(leg_motor.motor_en,dt);
-	}
-	else
-	{
-		for(i=0;i<10;i++)
-			motor_chassis[i].en_cmd=motor_chassis[i].en_cmd_ocu;
-		
-		mit_bldc_thread(motor_chassis[0].en_cmd_ocu,dt);
-	}
+	for(char i=0;i<10;i++)
+		motor_chassis[i].en_cmd=leg_motor.motor_en;
+
+	mit_bldc_thread(leg_motor.motor_en,dt);
 }
-
-
