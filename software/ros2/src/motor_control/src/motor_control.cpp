@@ -156,29 +156,16 @@ void can_board_send(char sel, const _SPI_TX &tx_data, const _MEMS &mems_data)
     spi_tx_buf[spi_tx_cnt++] = sel;
     spi_tx_buf[spi_tx_cnt++] = 0;
 
-    switch (sel)
+    spi_tx_buf[spi_tx_cnt++] = tx_data.en_motor * 100 + (tx_data.reset_q * 2) * 10 + tx_data.reset_err;
+    spi_tx_buf[spi_tx_cnt++] = mems_data.Acc_CALIBRATE * 100 + mems_data.Gyro_CALIBRATE * 10 + mems_data.Mag_CALIBRATE;
+    spi_tx_buf[spi_tx_cnt++] = tx_data.beep_state;
+    for (int id = 0; id < 10; id++)
     {
-    case 45:
-        spi_tx_buf[spi_tx_cnt++] = tx_data.en_motor * 100 + (tx_data.reset_q * 2) * 10 + tx_data.reset_err;
-        spi_tx_buf[spi_tx_cnt++] = mems_data.Acc_CALIBRATE * 100 + mems_data.Gyro_CALIBRATE * 10 + mems_data.Mag_CALIBRATE;
-        spi_tx_buf[spi_tx_cnt++] = tx_data.beep_state;
-        for (int id = 0; id < 10; id++)
-        {
-            setDataFloat_spi_int(tx_data.q_set[id], CAN_POS_DIV);
-            setDataFloat_spi_int(tx_data.dq_set[id], CAN_DPOS_DIV);
-            setDataFloat_spi_int(tx_data.tau_ff[id], CAN_T_DIV);
-            setDataFloat_spi_int(tx_data.kp[id], CAN_GAIN_DIV_P);
-            setDataFloat_spi_int(tx_data.kd[id], CAN_GAIN_DIV_D);
-        }
-        break;
-    default:
-        for (int id = 0; id < 10; id++)
-        {
-            setDataFloat_spi(0);
-            setDataFloat_spi(0);
-            setDataFloat_spi(0);
-        }
-        break;
+        setDataFloat_spi_int(tx_data.q_set[id], CAN_POS_DIV);
+        setDataFloat_spi_int(tx_data.dq_set[id], CAN_DPOS_DIV);
+        setDataFloat_spi_int(tx_data.tau_ff[id], CAN_T_DIV);
+        setDataFloat_spi_int(tx_data.kp[id], CAN_GAIN_DIV_P);
+        setDataFloat_spi_int(tx_data.kd[id], CAN_GAIN_DIV_D);
     }
 
     spi_tx_buf[3] = static_cast<uint8_t>(spi_tx_cnt - 4);
