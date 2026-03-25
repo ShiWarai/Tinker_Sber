@@ -80,11 +80,11 @@ void Loop_check()  // TIME INTTERRUPT
 	
 }
 
-void Duty_Servo()//1ms 伺服驱动
+void Duty_Servo()
 {
 	system_dt.can_task = leg_dt[0] = Get_Cycle_T(0); 
-	if(leg_dt[0]>0.00225)
-		can_rx_over[4]++;
+	// if(leg_dt[0]>0.00225)
+	// 	can_rx_over[4]++;
 
 	CAN_motor_sm(leg_dt[0]);	
 }
@@ -96,31 +96,6 @@ float FLT_ATT_RT=0;//20;//15;//1.68*2;
 char att_fusion_use[2]={1,1};
 Vect3 vect_n_test,vect_b_test;
 float FLT_ATT_RATE=0;//WS
-static void copy_imu_to_robotwb(float dt)
-{
-	char i,j;
-	robotwb.IMU_now.pitch=vmc_all.att[PITr];
-	robotwb.IMU_now.roll=vmc_all.att[ROLr];
-	robotwb.IMU_now.yaw=vmc_all.att[YAWr];
-	
-  for(i=0;i<3;i++)
-  {
-    for(j=0;j<3;j++){
-    robotwb.Rb_n[i][j]=vmc_all.Rb_n[i][j];
-    robotwb.Rn_b[i][j]=vmc_all.Rn_b[i][j];
-		robotwb.Rb_n_noroll[i][j]=vmc_all.Rb_n_noroll[i][j];
-    robotwb.Rn_b_noroll[i][j]=vmc_all.Rn_b_noroll[i][j];
-    }
-  }
-
-	DigitalLPF_Double(vmc_all.att_rate[PITr], &robotwb.IMU_dot.pitch, FLT_ATT_RATE, dt);
-	DigitalLPF_Double(vmc_all.att_rate[ROLr], &robotwb.IMU_dot.roll, FLT_ATT_RATE, dt);
-	DigitalLPF_Double(vmc_all.att_rate[YAWr], &robotwb.IMU_dot.yaw, FLT_ATT_RATE, dt);
-
-	robotwb.now_att=robotwb.IMU_now;
-	robotwb.now_rate=robotwb.IMU_dot;
-}
-
 void Duty_Att_Fushion()//姿态解算 100Hz
 {  
 	u8 i;
@@ -244,7 +219,7 @@ void Duty_System()//遥控 保护
 	u8 i;	
 	static u16 cnt_1,cnt_2;	
 	static u8 cnt;
-  static char state_ocu=0;
+  	static char state_ocu=0;
 	static char state_sdk=0;
 	float T;
 	system_dt.system_task=T=leg_dt[7] = Get_Cycle_T(7); 
@@ -451,26 +426,25 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 			Duty_System();
 		}
 
-		//LED
-		if( loop.cnt_1s >= 500)
+		if( loop.cnt_1s >= 1000)
 		{
 			loop.cnt_1s = 0;
-			can_rx_over[4]=0;
+			// can_rx_over[4]=0;
 		}
 
 		timer_ip+=Get_Cycle_T(25); 	
-		if( timer_ip>2 )
-		{
-			timer_ip = 0;		
-			if(spi_master_connect_pi==1&&robot.ip1!=0
-				&&!ip_get
-			){
-				ip_get=1;
+		// if( timer_ip>2 )
+		// {
+		// 	timer_ip = 0;		
+		// 	if(spi_master_connect_pi==1&&robot.ip1!=0
+		// 		&&!ip_get
+		// 	){
+		// 		ip_get=1;
 				
-				IWDG_Init(4,25000);//100ms
-				IWDG_Init(4,250);//100ms
-		  }
-		}
+		// 		IWDG_Init(4,25000);//100ms
+		// 		IWDG_Init(4,250);//100ms
+		//   }
+		// }
 		
 		loop.check_flag = 0;		//循环运行完毕标志
 	}

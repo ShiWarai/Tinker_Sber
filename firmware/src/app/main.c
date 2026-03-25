@@ -9,6 +9,6 @@ int main(void)
 
 	while(1)
 	{  
-		Duty_Loop() ; 
+		Duty_Loop(); 
 	}
 }

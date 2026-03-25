@@ -60,7 +60,6 @@ extern int spi_comm_mess_type;//Э��汾
 
 
 #define BOARD_V20 
-//#define  BOARD_V30
 
 #define MEM_ICM
 
@@ -137,7 +136,7 @@ extern int spi_comm_mess_type;//Э��汾
 #define GET_TIME_NUM 	(100)		//���û�ȡʱ�����������
 #define USE_TOE_IN_UNLOCK 0 // 0��Ĭ�Ͻ�����ʽ��1����˽�����ʽ
 //============== DMAʹ��=========================
-#define EN_DMA_UART1 1  //
+#define EN_DMA_UART1 0  //
 #define EN_DMA_UART2 0  //
 #define EN_DMA_UART3 0  //
 #define EN_DMA_UART4 0  //
