@@ -36,6 +36,7 @@ extern int spi_comm_mess_type;//Э��汾
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <math.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265f

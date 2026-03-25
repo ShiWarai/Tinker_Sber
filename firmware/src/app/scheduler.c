@@ -37,6 +37,10 @@ float MAX_X=0.15;
 float MAX_SPD=0;
 float MAX_SPD_RAD=50;
 
+// Debug helper for ST-Link: value of the calculated z in the Test section.
+// `volatile` чтобы отладчик стабильно видел изменение даже при оптимизациях.
+volatile float debug_z = 0.0f;
+
 _SYSTEM_DT system_dt;
 s16 loop_cnt;
 loop_t loop;
@@ -410,12 +414,21 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 				
 				leg_motor.motor_en=0;
 			}
-		}	
+		}
 		
 		if( loop.cnt_2ms >= 2*time_scale ) // 500Hz
 		{
 			loop.cnt_2ms = 0;
-			Duty_Att_Fushion(); // IMU					
+			Duty_Att_Fushion(); // IMU	
+			
+			// Test
+			if(motor_chassis[0].en_cmd==1) {
+				debug_z = fabsf(motor_chassis[9].q_now - motor_chassis[9].set_q);
+				if(debug_z > 0.5) {
+					leg_motor.kd[5]=1.0;
+					leg_motor.set_t[5]=0;
+				}
+			}
 		}	
 
 		if( loop.cnt_5ms >= 5 )// 200Hz

@@ -406,7 +406,8 @@ float test_spi_rx[2]={0};
 int sum_spi_err=0;
 int temp_sel[4][128]={0};
 void slave_rx(u8 *data_buf,u8 num)//---------------------------��Linux����������ָ��
-{ static u8 cnt[4];
+{ 
+	static u8 cnt[4];
 	u8 id;
 	char temp_char;
 	vs16 rc_value_temp;
