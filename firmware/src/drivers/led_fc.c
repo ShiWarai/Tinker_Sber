@@ -8,16 +8,22 @@
 int dog_flag;
 int KEY_DOG(void)
 {
-  GPIO_InitTypeDef  GPIO_InitStructure;
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);//??GPIOA,GPIOE??
-  
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12; //KEY2 KEY3????
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;         //??????
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;   //100M
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;         //??
-  GPIO_Init(GPIOB, &GPIO_InitStructure);               //???GPIOE2,3,4
-	dog_flag=GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_12);
-  return dog_flag;
+#if defined(BOARD_FOR_CAN) && !USE_USE_COMM
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	dog_flag = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_12);
+	return dog_flag;
+#else
+	GPIO_InitTypeDef GPIO_InitStructure;
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	dog_flag = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_12);
+	return dog_flag;
+#endif
 }
 
 void POWER_INIT(void)

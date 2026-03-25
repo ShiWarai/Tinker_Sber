@@ -9,25 +9,10 @@
 //#define	DBG_LOG(func,num)				(printf("%s:%d\r\n",func,num))
 /* Private variables ---------------------------------------------------------*/
 
-/*SPI variable*/
-unsigned char Dummy=0x5A;
-
 unsigned char DataRxBuffer[DataSize+CheckSumSize] = {0};	
 unsigned char DataTxBuffer[DataSize+CheckSumSize] = {0};	
 
-extern unsigned char Initready_flag;
-
-unsigned char RxDisplay_flag = 0;
-unsigned char DataReady_flag = 0;
 DMA_InitTypeDef DMA_InitStructure_Slave;
-
-/* Private functions ---------------------------------------------------------*/
-static void Delay(uint32_t u32Delay)
-{
-	//uint32_t i;
-	//i = 0xffff;
-	while(u32Delay--);
-}
 
 void Custom_SPI_DMABufferStart(void)
 {
@@ -124,71 +109,37 @@ void Custom_SPI_DMABufferConfig(void)
 	DMA_InitStructure_Slave.DMA_Channel = DMA_Channel_0 ;
 }
 
-void Custom_SPI_DEVICE_Slave_Config(void)
+void Custom_SPI_DEVICE_Init(void)
 {
-//	GPIO_InitTypeDef 	GPIO_InitStructure;
-	SPI_InitTypeDef  	SPI_InitStructure;
-//	EXTI_InitTypeDef   	EXTI_InitStructure;
-//	NVIC_InitTypeDef   NVIC_InitStructure;
+	GPIO_InitTypeDef GPIO_InitStructure;
+	SPI_InitTypeDef SPI_InitStructure;
 
-	/* Enable the SPI periph */
+	RCC_AHB1PeriphClockCmd(
+		SPI_DEVICE_SCK_GPIO_CLK | SPI_DEVICE_MISO_GPIO_CLK | SPI_DEVICE_MOSI_GPIO_CLK
+		| RCC_AHB1Periph_GPIOB, ENABLE);
 	SPI_DEVICE_CLK_INIT(SPI_DEVICE_CLK, ENABLE);
 
-	/* SPI configuration -------------------------------------------------------*/
-	SPI_I2S_DeInit(SPI_DEVICE);
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;	
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;//SPI_NSS_Soft;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SLAVE_SPI_BAUDRATE;
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-	SPI_InitStructure.SPI_CRCPolynomial = 7;
-	SPI_Init(SPI_DEVICE, &SPI_InitStructure);
+	RCC_APB1PeriphResetCmd(SPI_DEVICE_CLK, ENABLE);
+	RCC_APB1PeriphResetCmd(SPI_DEVICE_CLK, DISABLE);
 
-	/* Enable SPI DMA RX Requsts */
-	SPI_I2S_DMACmd(SPI_DEVICE, SPI_I2S_DMAReq_Rx, ENABLE);
-	/* Enable SPI DMA TX Requsts */
-	SPI_I2S_DMACmd(SPI_DEVICE, SPI_I2S_DMAReq_Tx, ENABLE);	
-
-}
-
-void Custom_SPI_DEVICE_Slave_EXTI_Config(void)
-{
-	GPIO_InitTypeDef 	GPIO_InitStructure;
-	SPI_InitTypeDef  	SPI_InitStructure;
-	EXTI_InitTypeDef   	EXTI_InitStructure;
-	NVIC_InitTypeDef   NVIC_InitStructure;
-
-	/* Enable the SPI periph */
-	SPI_DEVICE_CLK_INIT(SPI_DEVICE_CLK, ENABLE);
-
-	/* Enable SCK, MOSI, MISO and NSS GPIO clocks */
-	RCC_AHB1PeriphClockCmd(SPI_DEVICE_MOSI_GPIO_CLK|SPI_DEVICE_MISO_GPIO_CLK |SPI_DEVICE_SCK_GPIO_CLK , ENABLE);
-
-	GPIO_PinAFConfig(SPI_DEVICE_SCK_GPIO_PORT, SPI_DEVICE_SCK_GPIO_SOURCE, SPI_DEVICE_SCK_GPIO_AF);			//CLK
-	GPIO_PinAFConfig(SPI_DEVICE_MISO_GPIO_PORT, SPI_DEVICE_MISO_GPIO_SOURCE, SPI_DEVICE_MISO_GPIO_AF);   	//MISO
-	GPIO_PinAFConfig(SPI_DEVICE_MOSI_GPIO_PORT, SPI_DEVICE_MOSI_GPIO_SOURCE, SPI_DEVICE_MOSI_GPIO_AF);		//MOSI
+	GPIO_PinAFConfig(SPI_DEVICE_SCK_GPIO_PORT, SPI_DEVICE_SCK_GPIO_SOURCE, SPI_DEVICE_SCK_GPIO_AF);
+	GPIO_PinAFConfig(SPI_DEVICE_MISO_GPIO_PORT, SPI_DEVICE_MISO_GPIO_SOURCE, SPI_DEVICE_MISO_GPIO_AF);
+	GPIO_PinAFConfig(SPI_DEVICE_MOSI_GPIO_PORT, SPI_DEVICE_MOSI_GPIO_SOURCE, SPI_DEVICE_MOSI_GPIO_AF);
 
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-	/*!< Configure SPI_DEVICE_SPI pins: SCK */
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 	GPIO_InitStructure.GPIO_Pin = SPI_DEVICE_SCK_PIN;
 	GPIO_Init(SPI_DEVICE_SCK_GPIO_PORT, &GPIO_InitStructure);
-	/*!< Configure SPI_DEVICE_SPI pins: MISO */
-	GPIO_InitStructure.GPIO_Pin =  SPI_DEVICE_MISO_PIN;
-	GPIO_Init(SPI_DEVICE_MISO_GPIO_PORT, &GPIO_InitStructure);  
-	/*!< Configure SPI_DEVICE_SPI pins: MOSI */
-	GPIO_InitStructure.GPIO_Pin =  SPI_DEVICE_MOSI_PIN;
+	GPIO_InitStructure.GPIO_Pin = SPI_DEVICE_MISO_PIN;
+	GPIO_Init(SPI_DEVICE_MISO_GPIO_PORT, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = SPI_DEVICE_MOSI_PIN;
 	GPIO_Init(SPI_DEVICE_MOSI_GPIO_PORT, &GPIO_InitStructure);
 
-	/* SPI configuration -------------------------------------------------------*/
 	SPI_I2S_DeInit(SPI_DEVICE);
 	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;	
+	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
 	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
 	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
@@ -197,47 +148,13 @@ void Custom_SPI_DEVICE_Slave_EXTI_Config(void)
 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
 	SPI_InitStructure.SPI_CRCPolynomial = 7;
 	SPI_Init(SPI_DEVICE, &SPI_InitStructure);
-	/* Enable SPI DMA RX Requsts */
+
 	SPI_I2S_DMACmd(SPI_DEVICE, SPI_I2S_DMAReq_Rx, ENABLE);
-	/* Enable SPI DMA TX Requsts */
 	SPI_I2S_DMACmd(SPI_DEVICE, SPI_I2S_DMAReq_Tx, ENABLE);
-	SPI_Cmd(SPI_DEVICE, ENABLE); //Ê¹ÄÜSPIÍâÉè
-}   
+	SPI_Cmd(SPI_DEVICE, DISABLE);
 
-unsigned char Get_CheckSum(unsigned char data[],uint32_t len)
-{
-	int i,res=0;
-	for(i=0;i<len;i++)
-	{
-		res += data[i];
-	}
-	return (unsigned char)(0xFF - res);
-}
-
-
-void EXTI15_10_IRQHandler(void)
-{
-	unsigned char i = 0;
-	static uint16_t counter = 1;
-	
-	if(EXTI_GetITStatus(SPI_DEVICE_CS_EXTI_Line) != RESET)
-	{
-		if (Is_SPI_NCS_LOW())	//ready to receive data
-		{
- 
-			for (i=0;i<DataSize;i++)
-			{
-				DataTxBuffer[i]= i+0x70*counter;
-			}
-			DataTxBuffer[DataSize+CheckSumSize-1] = Get_CheckSum(DataTxBuffer,DataSize);
-
-			counter++;
- 
-			Custom_SPI_DMABufferStart();			
-		}
-
-		EXTI_ClearITPendingBit(SPI_DEVICE_CS_EXTI_Line);
-	}
+	Custom_SPI_DMABufferConfig();
+	Custom_SPI_DMABufferStart();
 }
 
 void DMA1_Stream3_IRQHandler(void)//rx
@@ -263,7 +180,7 @@ void DMA1_Stream3_IRQHandler(void)//rx
 			for (i=0;i<(DataSize+CheckSumSize);i++)
 			{
 
-				data_spi = DataRxBuffer[i];//ÖÐ¶Ï¶ÁÈ¡SPIÊý¾Ý
+				data_spi = DataRxBuffer[i];//ï¿½??ï¿½?SPIï¿½ï¿½ï¿½ï¿½
 			
 				if(state_spi==0&&data_spi==0xFE)
 				{
@@ -336,21 +253,12 @@ void DMA1_Stream4_IRQHandler(void)//tx
 			spi_dt[0] = Get_Cycle_T(16); 
 
 			timer_sys+=spi_dt[0];
-			
-  #if MCU_TINYPALE
-			slave_send(30);//simple car
-	#else
-		#if USE_WHEEL
-			slave_send(25);//21 6Í¨µÀÒ£¿ØÆ÷  24 ÔÆ×¿H12Ò£¿ØÆ÷	 ÂÖ×ã	
-		#else
 			  if(timer_sys>0.02){//50Hz
 					timer_sys=0;
 					//slave_send(36);
 				}
 				//else
-				slave_send(26);//21 6Í¨µÀÒ£¿ØÆ÷  24 ÔÆ×¿H12Ò£¿ØÆ÷
-		#endif
-	#endif
+				slave_send(26);//21 6?ï¿½ï¿½?ï¿½ï¿½ï¿½ï¿½  24 ï¿½ï¿½?H12?ï¿½ï¿½ï¿½ï¿½
 			spi_tx_cnt_send=0;
 		
 			for(i=0;i<DataSize;i++)

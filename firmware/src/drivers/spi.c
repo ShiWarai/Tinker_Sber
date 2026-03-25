@@ -3,9 +3,6 @@
 #include "base_struct.h"
 #include "can.h"
 #include "watch_dog.h"
-#include "led_fc.h"
-#include "usart_fc.h"
-#include "Custom_SPI_DEVICE.h"
 void SPI3_Init(void)
 {	GPIO_InitTypeDef GPIO_InitStructure;
 	SPI_InitTypeDef  SPI_InitStructure;
@@ -201,74 +198,6 @@ static void spi_dma_init(void)
 }
 
 
-void SPI2_Init(void)
-{	GPIO_InitTypeDef GPIO_InitStructure;
-	SPI_InitTypeDef  SPI_InitStructure;
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
-	NVIC_InitTypeDef   NVIC_InitStructure;
-
-	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);
-	
-  GPIO_PinAFConfig(GPIOB,GPIO_PinSource13,GPIO_AF_SPI2);
-	GPIO_PinAFConfig(GPIOB,GPIO_PinSource14,GPIO_AF_SPI2);
-	GPIO_PinAFConfig(GPIOB,GPIO_PinSource15,GPIO_AF_SPI2);
- 
-
-	RCC_APB1PeriphResetCmd(RCC_APB1Periph_SPI2,ENABLE);
-	RCC_APB1PeriphResetCmd(RCC_APB1Periph_SPI2,DISABLE);
-         	
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;  //����SPI�������˫�������ģʽ:SPI����Ϊ˫��˫��ȫ˫��
-
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
-
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;		//����SPI�����ݴ�С:SPI���ͽ���8λ֡�ṹ
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;    // CPOL = 0  PI
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;  // CPHA = 0
-
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;	
-//SPI_SPEED_2   2??   (SPI 12M    --sys 24M)
-//SPI_SPEED_8   8??   (SPI 3M     --sys 24M)
-//SPI_SPEED_16  16??  (SPI 1.5M    --sys 24M)
-//SPI_SPEED_256 256?? (SPI  905.6K --sys 24M)
-	SPI_InitStructure.SPI_BaudRatePrescaler = SLAVE_SPI_BAUDRATE;		//���岨����Ԥ��Ƶ��ֵ:������Ԥ��ƵֵΪ256
-
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;	//ָ�����ݴ����MSBλ����LSBλ��ʼ:���ݴ����MSBλ��ʼ
-	SPI_InitStructure.SPI_CRCPolynomial = 7;	//CRCֵ����Ķ���ʽ
-	SPI_Init(SPI2, &SPI_InitStructure); 
-#if DMA_SPI2
-	SPI_I2S_DMACmd(SPI2, SPI_I2S_DMAReq_Tx, ENABLE);  
-	SPI_I2S_DMACmd(SPI2, SPI_I2S_DMAReq_Rx, ENABLE);
-	spi_dma_init();
-	
-	NVIC_InitStructure.NVIC_IRQChannel         = DMA1_Stream3_IRQn;  
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority 	= 0x01;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority 			= 0x00;
-	NVIC_InitStructure.NVIC_IRQChannelCmd      = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-
-	DMA_ITConfig(DMA1_Stream3, DMA_IT_TC, ENABLE);
-
-	SPI_Cmd(SPI2, ENABLE);
-	SPI_I2S_ClearITPendingBit(SPI2, SPI_I2S_IT_RXNE);
-#else
-	NVIC_InitStructure.NVIC_IRQChannel 						= SPI2_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority 	= 0x01;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority 			= 0x01;
-	NVIC_InitStructure.NVIC_IRQChannelCmd 					= ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-	//SPI_I2S_ITConfig(SPI2, SPI_I2S_IT_TXE, ENABLE);
-	SPI_I2S_ITConfig(SPI2,SPI_I2S_IT_RXNE, ENABLE);	
-	//SPI_SSOutputCmd(SPI2, DISABLE);
-	SPI_Cmd(SPI2, ENABLE); //ʹ��SPI����
-	#endif
-}
-
 static __IO uint32_t  TimeOut = SPIT_LONG_TIMEOUT; 
 int spi_master_connect_pi=0,spi_master_loss_pi_all=0;
 int spi_master_loss_pi=0;
@@ -438,23 +367,23 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------��Linux��
 		IWDG_Feed();
 		spi_rx_cnt_all++;
 		
-		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
+		rc_value_temp=charFromData_spi(data_buf,&anal_cnt);
 		leg_motor.motor_en=rc_value_temp/100;//���ʹ��
 		leg_motor.reset_q=(rc_value_temp-leg_motor.motor_en*100)/10;//cal bldc all
 		leg_motor.reset_err=rc_value_temp%10;//��λ����
 
-		rc_value_temp=charFromData_spi(spi_rx_buf,&anal_cnt);
+		rc_value_temp=charFromData_spi(data_buf,&anal_cnt);
 		mems.Acc_CALIBRATE=rc_value_temp/100;
 		mems.Gyro_CALIBRATE=(rc_value_temp-mems.Acc_CALIBRATE*100)/10;
 		
-    robotwb.beep_state=charFromData_spi(spi_rx_buf,&anal_cnt);//������״̬		
+    robotwb.beep_state=charFromData_spi(data_buf,&anal_cnt);//������״̬		
 		
 		for(i=0;i<10;i++){
-			leg_motor.q_set[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_POS_DIV);//�����Ƕ�
-			leg_motor.qd_set[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_DPOS_DIV);
-			leg_motor.set_t[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_T_DIV);//����Ť��
-			leg_motor.kp[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_P);
-			leg_motor.kd[i]=floatFromData_spi_int(spi_rx_buf,&anal_cnt,CAN_GAIN_DIV_D);		
+			leg_motor.q_set[i]=floatFromData_spi_int(data_buf,&anal_cnt,CAN_POS_DIV);//�����Ƕ�
+			leg_motor.qd_set[i]=floatFromData_spi_int(data_buf,&anal_cnt,CAN_DPOS_DIV);
+			leg_motor.set_t[i]=floatFromData_spi_int(data_buf,&anal_cnt,CAN_T_DIV);//����Ť��
+			leg_motor.kp[i]=floatFromData_spi_int(data_buf,&anal_cnt,CAN_GAIN_DIV_P);
+			leg_motor.kd[i]=floatFromData_spi_int(data_buf,&anal_cnt,CAN_GAIN_DIV_D);		
 		}
 
 //----------------�������������---------------------
@@ -477,104 +406,3 @@ void slave_rx(u8 *data_buf,u8 num)//---------------------------��Linux��
 		//}
 	}
 }
-
-u8 SPI2_ReadWriteByte_s(u8 TxData)
-{		 			 
-  while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET){}//�ȴ���������    ʹ��if�Ļ����Ͳ��ȶ�����
-	
-	SPI_I2S_SendData(SPI2, TxData); //ͨ������SPIx����һ��byte  ����
-}
-
- 
-void SPI2_IRQHandler(void)//unuse now Ŀǰ����DMA1_Stream4_IRQHandler�жϽ���SPI����ͨ��  
-{ 
-	static char state=0,rx_cnt;
-	static int spi_tx_cnt_send=0;
-	char sum_r=0;
-	int i,j;
-	unsigned char  data_temp[8];
-	char err,_cnt;
-	char id;
-	static u8 _data_len2 = 0,_data_cnt2 = 0;
-	uint16_t data;
-	static int send_flag=0;
-	static float timer_sys=0;
-	if (SPI_I2S_GetITStatus(SPI2, SPI_I2S_IT_TXE) != RESET) {
-			SPI2_ReadWriteByte_s(spi_tx_buf[spi_tx_cnt_send++]); 
-			if(spi_tx_cnt_send>=spi_tx_cnt&&spi_flag_pi[1]==0)//������Ͽ������¸�ֵ
-			{ spi_flag_pi[1]=1;
-			}
-	}
-
-	if(SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_RXNE) != RESET)	
-	{
-		if(spi_flag_pi[1]==1){//data can change
-			spi_flag_pi[1]=0;
-			spi_dt[0] = Get_Cycle_T(16); 
-		
-			timer_sys+=spi_dt[0];
-			if(timer_sys>0.1){timer_sys=0;
-				slave_send(3);//ϵͳ״̬
-			}else{
-				if(send_flag==1){
-				send_flag=0;
-				slave_send(1);//��̬
-				}//�����������¸�ֵ
-				else{
-				send_flag=1;
-				slave_send(2);
-				}		
-			}
-			 spi_tx_cnt_send=0;
-		}					
-		
-		data = SPI_I2S_ReceiveData(SPI2);//�ж϶�ȡSPI����
-	
-		if(state==0&&data==0xFB)
-		{
-			state=1;
-			spi_rx_buf[0]=data;
-		}
-		else if(state==1&&data==0xFC)
-		{
-			state=2;
-			spi_rx_buf[1]=data;
-		}
-		else if(state==2&&data>0&&data<0XF1)
-		{
-			state=3;
-			spi_rx_buf[2]=data;
-		}
-		else if(state==3&&data<SPI_BUF_SIZE)
-		{
-			state = 4;
-			spi_rx_buf[3]=data;
-			_data_len2 = data;
-			_data_cnt2 = 0;
-		}
-		else if(state==4&&_data_len2>0)
-		{
-			_data_len2--;
-			spi_rx_buf[4+_data_cnt2++]=data;
-			if(_data_len2==0)
-				state= 5;
-		}
-		else if(state==5)
-		{
-			state = 0;
-			spi_rx_buf[4+_data_cnt2]=data;
-			spi_rx_cnt=4;
-			slave_rx(spi_rx_buf,_data_cnt2+5);
-			spi_rx_cnt_all++;
-		}
-		else
-			state = 0;
-		
-		//ͬ������
-		if(spi_tx_cnt_send>=spi_tx_cnt&&spi_flag_pi[1]==0)//������Ͽ������¸�ֵ
-		{ spi_flag_pi[1]=1;
-		}else
-			SPI2_ReadWriteByte_s(spi_tx_buf[spi_tx_cnt_send++]); 
-	}
-}
- 

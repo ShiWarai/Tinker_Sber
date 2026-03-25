@@ -61,11 +61,7 @@ u8 All_Init()
  	SPI3_Init();//IMU
 	
 	#if defined(BOARD_FOR_CAN)&&!USE_USE_COMM
-		SPI2_Init();//CAN PI
-		Custom_SPI_DEVICE_Slave_Config();
-		Custom_SPI_DMABufferConfig();	
-		Custom_SPI_DEVICE_Slave_EXTI_Config();
-		Custom_SPI_DMABufferStart();
+		Custom_SPI_DEVICE_Init();
 	#endif
   Delay_ms(100);
 

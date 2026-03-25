@@ -11,20 +11,18 @@
 
 #define USE_WHEEL     0
 /* Define config -------------------------------------------------------------*/
-#define CAN_LINK_COMM_VER1 1//new version for param divded ÐÂÐ­Òé  µç»úÊýÁ¿ÐèÒªÔÚ½ÚµãºÐÁíÍâÅäÖÃ
+#define CAN_LINK_COMM_VER1 1//new version for param divded ï¿½ï¿½Ð­ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ú½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 #define SEND_DIV_SPI 0
 #define SPI_IS_BIG  1
-#define	SLAVE_SPI_BAUDRATE					(SPI_BaudRatePrescaler_8)	//ÎÞÓÃ  SPIÓÉLinux×÷ÎªÖ÷»úÉèÖÃ  
-#define DataSize								162//SPIÊý¾ÝÁ¿ ÐèÒªÓëLinuxÒ»ÖÂ ÇÒÎª¶þÕß·¢ËÍ×î´óÁ¿µÄÒ»¸ö
+#define	SLAVE_SPI_BAUDRATE					(SPI_BaudRatePrescaler_8)	//ï¿½ï¿½ï¿½ï¿½  SPIï¿½ï¿½Linuxï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
+#define DataSize								162//SPIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Òªï¿½ï¿½LinuxÒ»ï¿½ï¿½ ï¿½ï¿½Îªï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
 #define CheckSumSize						(0)
 
 
 #define SPI_DEVICE							SPI2
 #define SPI_DEVICE_CLK						RCC_APB1Periph_SPI2
 #define SPI_DEVICE_CLK_INIT             		RCC_APB1PeriphClockCmd 
-
-#define SPI_DEVICE_IRQn						SPI2_IRQn
 
 #define SPI_DEVICE_SCK_PIN					GPIO_Pin_13
 #define SPI_DEVICE_SCK_GPIO_PORT			GPIOB
@@ -44,35 +42,14 @@
 #define SPI_DEVICE_MOSI_GPIO_AF			GPIO_AF_SPI2
 #define SPI_DEVICE_MOSI_GPIO_CLK			RCC_AHB1Periph_GPIOB
 
-//GPIO
-#define SPI_DEVICE_CS_PIN					GPIO_Pin_12
-#define SPI_DEVICE_CS_GPIO_PORT			GPIOB
-#define SPI_DEVICE_CS_GPIO_SOURCE			GPIO_PinSource12
-//#define SPI_DEVICE_CS_GPIO_AF				GPIO_AF_SPI2
-//#define SPI_DEVICE_CS_GPIO_CLK				RCC_AHB1Periph_GPIOB
-
-//slave only
-#define SPI_DEVICE_CS_EXTI_PortSource		EXTI_PortSourceGPIOB
-#define SPI_DEVICE_CS_EXTI_PinSource			EXTI_PinSource12
-#define SPI_DEVICE_CS_EXTI_Line				EXTI_Line12
-#define SPI_DEVICE_CS_EXTI_IRQn				EXTI15_10_IRQn
-
-//#define SPI_NCS_LOW(void)       			(GPIO_ResetBits(SPI_DEVICE_CS_GPIO_PORT, SPI_DEVICE_CS_PIN))
-//#define SPI_NCS_HIGH(void)      			(GPIO_SetBits(SPI_DEVICE_CS_GPIO_PORT, SPI_DEVICE_CS_PIN))  
-#define Is_SPI_NCS_LOW(void)       			(GPIO_ReadInputDataBit(SPI_DEVICE_CS_GPIO_PORT, SPI_DEVICE_CS_PIN))
-
 /* Macro ---------------------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
 void Custom_SPI_DMABufferStart(void);
 void Custom_SPI_DMABufferWait(void);
-void Custom_SPI_DEVICE_TestCommand(void);
 void Custom_SPI_DMABufferConfig(void);
 
-void Custom_SPI_DEVICE_Slave_Config(void);
-void Custom_SPI_DEVICE_Slave_EXTI_Config(void);
-
-uint8_t Get_CheckSum(uint8_t data[],uint32_t len);
+void Custom_SPI_DEVICE_Init(void);
 
 /* Exported constants --------------------------------------------------------*/
 
