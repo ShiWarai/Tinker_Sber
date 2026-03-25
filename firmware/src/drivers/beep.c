@@ -1,6 +1,5 @@
 #include   "beep.h"
 #include   "time.h"
-#include   "bat.h"
 #include   "include.h"
 #include 	 "led_fc.h"
 #include 	 "can.h"

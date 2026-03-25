@@ -1,13 +1,11 @@
 #include "scheduler.h"
 #include "include.h"
-#include "bat.h"
 #include "imu.h"
 #include "flash.h"
 #include "led_fc.h"
 #include "rc_mine.h"
 #include "watch_dog.h"
 #include "usart_fc.h"
-#include "pwm_out.h"
 #include "beep.h"
 #include "spi.h"
 #include "can.h" 
@@ -259,7 +257,7 @@ void Duty_System()//遥控 保护
 
 	if(vmc_all.param.cal_flag[0]&&module.flash){
 	for(i=0;i<4;i++)
-		vmc_all.param.ground_force[i][0]=press_leg_end[i+1]*1.068;
+		vmc_all.param.ground_force[i][0]=0.0f;
 		mems.Gyro_CALIBRATE=1;
 	vmc_all.param.cal_flag[0]=0;
 	}else if(vmc_all.param.cal_flag[1]==1&&module.flash){
@@ -421,14 +419,14 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 			loop.cnt_2ms = 0;
 			Duty_Att_Fushion(); // IMU	
 			
-			// Test
-			if(motor_chassis[0].en_cmd==1) {
-				debug_z = fabsf(motor_chassis[9].q_now - motor_chassis[9].set_q);
-				if(debug_z > 0.5) {
-					leg_motor.kd[5]=1.0;
-					leg_motor.set_t[5]=0;
-				}
-			}
+			// // Test
+			// if(motor_chassis[0].en_cmd==1) {
+			// 	debug_z = fabsf(motor_chassis[9].q_now - motor_chassis[9].set_q);
+			// 	if(debug_z > 0.5) {
+			// 		leg_motor.kd[5]=1.0;
+			// 		leg_motor.set_t[5]=0;
+			// 	}
+			// }
 		}	
 
 		if( loop.cnt_5ms >= 5 )// 200Hz

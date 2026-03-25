@@ -2,7 +2,6 @@
 #include "include.h"
 #include "mems.h"
 #include "beep.h"
-#include "bat.h"
 #include "usart_fc.h"
 #include "gait_math.h"
 #include "spi.h"

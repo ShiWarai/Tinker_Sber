@@ -3,10 +3,8 @@
 #include "led_fc.h"
 #include "usart_fc.h"
 #include "spi.h"
-#include "bat.h"
 #include "beep.h"
 #include "watch_dog.h"
-#include "pwm_out.h"
 #include "stm32f4xx_dma.h"
 #include "icm20602.h"
 #include "can.h"
@@ -19,10 +17,8 @@ u8 All_Init()
 		char i;
 		NVIC_PriorityGroupConfig(NVIC_GROUP);//??????????????????2
 		SysTick_Configuration(); 	
-	 	POWER_INIT();
+		POWER_INIT();
 		RNG_Init();
-		PWM_AUX_Out_Init(50); 	 
-		PWM_Out_Init(50); 
 		LED_Init();			    //????LED
 //------------------------Uart Init-------------------------------------
   #if USE_AUDIO
@@ -85,8 +81,6 @@ u8 All_Init()
 	if(spi_master_connect_pi)
 		Beep_Init(0,84-1);
 	#endif
-	
-	Adc_Init();
 	
 	LED_Init_SCL_SDA();//???LED
 
