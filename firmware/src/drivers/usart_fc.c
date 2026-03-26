@@ -169,9 +169,7 @@ void Uart6_PollCommandLine(void)
 			if (cmd)
 			{
 				printf("test\n");
-#if defined(EN_BEEP)
-				Play_Music_Direct(MEMS_GPS_RIGHT);
-#endif
+				Play_Music_Direct(MEMS_GPS_RIGHT);	
 			}
 			continue;
 		}
