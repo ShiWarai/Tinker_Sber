@@ -14,13 +14,13 @@ void delay(unsigned int us)  //300ns
 
 void init_gpio_ws(void)
 {
-	GPIO_InitTypeDef  GPIO_InitStructure;            //GPIO½á¹¹ÌåÉèÖÃ
+	GPIO_InitTypeDef  GPIO_InitStructure;            //GPIOç»“æ„ä½“è®¾ç½®
 
-	//Ê¹ÄÜÊ±ÖÓ
+	//ä½¿èƒ½æ—¶é’Ÿ
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1;          //LED9 ÔÚPF9Òı½Å
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;       //³õÊ¼»¯µÄ¸´ÓÃ¹¦ÄÜ£¨ÒòÎª±¾Òı½Å»¹ÒªÓÃµ½PWMÊä³ö¹¦ÄÜ£©
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1;          //LED9 åœ¨PF9å¼•è„š
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;       //åˆå§‹åŒ–çš„å¤ç”¨åŠŸèƒ½ï¼ˆå› ä¸ºæœ¬å¼•è„šè¿˜è¦ç”¨åˆ°PWMè¾“å‡ºåŠŸèƒ½ï¼‰
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
@@ -296,19 +296,19 @@ void wslled_loop(float dt)
 }
 
 //----------------------------------------------------------
-//½«ÈıÔ­É«µ¥¶ÀÊı¾İºÏ²¢Îª24Î»Êı¾İ
+//å°†ä¸‰åŸè‰²å•ç‹¬æ•°æ®åˆå¹¶ä¸º24ä½æ•°æ®
 uint32_t ws281x_color(uint8_t red, uint8_t green, uint8_t blue)
 {
   return green << 16 | red << 8 | blue;
 }
 
 /**
- * @Description  	WS2812 ÉèÖÃµÚn¸öµÆÖéµÄÑÕÉ«
-* @Param     n:µÚ¼¸¸öµÆÖé   red:0-255   green:0-255    blue:0-255 	   eg:yellow:255 255 0
+ * @Description  	WS2812 è®¾ç½®ç¬¬nä¸ªç¯ç çš„é¢œè‰²
+* @Param     n:ç¬¬å‡ ä¸ªç¯ç    red:0-255   green:0-255    blue:0-255 	   eg:yellow:255 255 0
  * @Return    	  
 */
 
-//Éè¶¨µÚn¸öµÆÖéµÄÑÕÉ«
+//è®¾å®šç¬¬nä¸ªç¯ç çš„é¢œè‰²
 void ws281x_setPixelRGB(uint16_t n ,uint8_t red, uint8_t green, uint8_t blue)
 {
   uint8_t i;
@@ -326,8 +326,8 @@ void ws281x_setPixelRGB(uint16_t n ,uint8_t red, uint8_t green, uint8_t blue)
 
 
 /**
- * @Description  	WS2812 ÉèÖÃµÆÖéÑÕÉ«£¨¹Ì¶¨µÄ£©
-* @Param       		 n:µÚ¼¸¸öµÆÖé   color:ÄÄÖÖÑÕÉ«£¨0-7£©
+ * @Description  	WS2812 è®¾ç½®ç¯ç é¢œè‰²ï¼ˆå›ºå®šçš„ï¼‰
+* @Param       		 n:ç¬¬å‡ ä¸ªç¯ç    color:å“ªç§é¢œè‰²ï¼ˆ0-7ï¼‰
  * @Return    	  
 */
 void set_pixel_rgb(uint16_t n,u8 color)
@@ -365,7 +365,7 @@ void set_pixel_rgb(uint16_t n,u8 color)
 
 
 
-//ÉèÖÃ¹Ø±ÕµÚn¸öµÆÖé
+//è®¾ç½®å…³é—­ç¬¬nä¸ªç¯ç 
 void ws281x_ShutoffPixel(uint16_t n)
 {
   uint8_t i;
@@ -384,7 +384,7 @@ void ws281x_ShutoffPixel(uint16_t n)
 
 
 /**
- * @Description  	WS2812¹Ø±ÕËùÓĞµÆ¹â		1. ·¢ËÍWS2812_LED_NUM * 24Î»µÄ 0 Âë
+ * @Description  	WS2812å…³é—­æ‰€æœ‰ç¯å…‰		1. å‘é€WS2812_LED_NUM * 24ä½çš„ 0 ç 
 																
  * @Param     	  {void}
  * @Return    	  {void}
@@ -406,7 +406,7 @@ void ws2812_AllShutOff(void){
 
 
 /**
- * @Description  	WS2812ÉèÖÃÄ³Ò»Î»µÄLEDµÄÑÕÉ« µ«²»·¢ËÍ
+ * @Description  	WS2812è®¾ç½®æŸä¸€ä½çš„LEDçš„é¢œè‰² ä½†ä¸å‘é€
  * @Param     	  {uint16_t LED_index ,uint32_t GRB_color}
  * @Return    	  {void}
 */
@@ -428,7 +428,7 @@ void ws2812_Set_one_LED_Color(uint16_t LED_index ,uint32_t GRB_color){
 
 
 /**
- * @Description  	WS2812 É«»·×ª»¯ 0-255»Ò¶ÈÖµ×ª»»ÎªGRBÖµ
+ * @Description  	WS2812 è‰²ç¯è½¬åŒ– 0-255ç°åº¦å€¼è½¬æ¢ä¸ºGRBå€¼
  * @Param     	  {uint8_t LED_gray}
  * @Return    	  {uint32_t}
 */
@@ -447,8 +447,8 @@ uint32_t ws2812_LED_Gray2GRB(uint8_t LED_gray){
 
 
 /**
- * @Description  	WS2812 »Ò¶ÈÖµÇı¶¯½¥±äĞ§¹û ÑØÉ«»·×ª¶¯
- * @Param     	  {uint16_t interval_time} ½¥±ä¼ä¸ôÊ±¼ä
+ * @Description  	WS2812 ç°åº¦å€¼é©±åŠ¨æ¸å˜æ•ˆæœ æ²¿è‰²ç¯è½¬åŠ¨
+ * @Param     	  {uint16_t interval_time} æ¸å˜é—´éš”æ—¶é—´
  * @Return    	  {void}
 */
 void ws2812_Roll_on_Color_Ring(uint16_t interval_time){
@@ -464,8 +464,8 @@ void ws2812_Roll_on_Color_Ring(uint16_t interval_time){
 }
 
 /**
- * @Description  	WS2812 µ¥É«ºôÎüµÆ °µ->ÁÁ->°µ
- * @Param     	  {uint16_t interval_time, uint32_t GRB_color} ½¥±ä¼ä¸ôÊ±¼ä
+ * @Description  	WS2812 å•è‰²å‘¼å¸ç¯ æš—->äº®->æš—
+ * @Param     	  {uint16_t interval_time, uint32_t GRB_color} æ¸å˜é—´éš”æ—¶é—´
  * @Return    	  {void}
 */
 void ws2812_All_LED_one_Color_breath(uint16_t interval_time, uint32_t GRB_color){
@@ -493,8 +493,8 @@ void ws2812_All_LED_one_Color_breath(uint16_t interval_time, uint32_t GRB_color)
 }
 
 /**
- * @Description  	ÅÜÂíµÆĞ§¹û
-* @Param     interval_time:¼ä¸ôÊ±¼ä
+ * @Description  	è·‘é©¬ç¯æ•ˆæœ
+* @Param     interval_time:é—´éš”æ—¶é—´
  * @Return    	NONE  
 */
 void horse_race_lamp(uint16_t interval_time)
@@ -506,7 +506,7 @@ void horse_race_lamp(uint16_t interval_time)
   {
 //		ws281x_setPixelRGB(i,255,255,0);
 		color = rand()%7;
-		set_pixel_rgb(i,color);//Ëæ»úÑÕÉ«
+		set_pixel_rgb(i,color);//éšæœºé¢œè‰²
 		ws281x_ShutoffPixel(i-1);
 		delay_ms(interval_time);
   }
@@ -516,8 +516,8 @@ void horse_race_lamp(uint16_t interval_time)
 
 
 /**
- * @Description  	Á÷Ë®µÆĞ§¹û
-* @Param     interval_time:¼ä¸ôÊ±¼ä  red:0-255 green:0-255 blue:0-255
+ * @Description  	æµæ°´ç¯æ•ˆæœ
+* @Param     interval_time:é—´éš”æ—¶é—´  red:0-255 green:0-255 blue:0-255
  * @Return    	NONE  
 */
 void Running_water_lamp( uint8_t red ,uint8_t green ,uint8_t blue, uint16_t interval_time )
@@ -537,8 +537,8 @@ void Running_water_lamp( uint8_t red ,uint8_t green ,uint8_t blue, uint16_t inte
 
 
 /**
- * @Description  	Ëæ»úµãÁÁRGBµÆ
-* @Param     interval_time:¼ä¸ôÊ±¼ä
+ * @Description  	éšæœºç‚¹äº®RGBç¯
+* @Param     interval_time:é—´éš”æ—¶é—´
  * @Return    	NONE  
 */
 uint8_t tmp_flag[WS2812_LED_NUM];
@@ -551,7 +551,7 @@ void srand_lamp(uint16_t interval_time)
 
 	tmp = rand()%(WS2812_LED_NUM);
 	color = rand()%7;
-	if(i==0) //Ö»×öÒ»´Î
+	if(i==0) //åªåšä¸€æ¬¡
 	{
 		memset(tmp_flag,50,WS2812_LED_NUM);
 		tmp_flag[i] = tmp;
@@ -567,14 +567,14 @@ void srand_lamp(uint16_t interval_time)
 		
 	for(k=0;k<i;k++)
 	{
-		if(tmp == tmp_flag[k])//ÏàÍ¬¾ÍÍË³ö
+		if(tmp == tmp_flag[k])//ç›¸åŒå°±é€€å‡º
 		{
 			return ;
 		}
 		
 	}
 
-	//±éÀúÍê³É
+	//éå†å®Œæˆ
 	tmp_flag[i] = tmp;
 	set_pixel_rgb(tmp,color);
 	delay_ms(interval_time);
@@ -592,7 +592,7 @@ void srand_lamp(uint16_t interval_time)
 										Private Function
 ************************************************************/
 /**
- * @Description  	»ñµÃÁ½Êı×î´óÖµ
+ * @Description  	è·å¾—ä¸¤æ•°æœ€å¤§å€¼
  * @Param     	  {float a,float b}
  * @Return    	  {float}
 */
@@ -601,7 +601,7 @@ float __getMaxValue(float a, float b){
 }
 
 /**
- * @Description  	»ñµÃÁ½Êı×îĞ¡Öµ
+ * @Description  	è·å¾—ä¸¤æ•°æœ€å°å€¼
  * @Param     	  {void}
  * @Return    	  {void}
 */
@@ -611,7 +611,7 @@ float __getMinValue(float a, float b){
 
 
 /**
- * @Description  	RGB ×ªÎª HSV
+ * @Description  	RGB è½¬ä¸º HSV
  * @Param     	  {RGB_Color RGB, HSV_Color *HSV}
  * @Return    	  {void}
 */
@@ -659,7 +659,7 @@ void __RGB_2_HSV(RGB_Color RGB, HSV_Color *HSV){
 
 
 /**
- * @Description  	HSV ×ªÎª RGB
+ * @Description  	HSV è½¬ä¸º RGB
  * @Param     	  {void}
  * @Return    	  {void}
 */
@@ -718,7 +718,7 @@ void __HSV_2_RGB(HSV_Color HSV, RGB_Color *RGB){
 
 
 /**
- * @Description  	ÁÁ¶Èµ÷½Ú
+ * @Description  	äº®åº¦è°ƒèŠ‚
  * @Param     	  {void}
  * @Return    	  {void}
 */

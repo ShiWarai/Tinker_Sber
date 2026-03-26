@@ -2,9 +2,9 @@
 #define __RNG_H	 
 #include "sys.h" 
 	
-u8  RNG_Init(void);			//RNG³õÊ¼»¯ 
-u32 RNG_Get_RandomNum(void);//µÃµ½Ëæ»úÊı
-int RNG_Get_RandomRange(int min,int max);//Éú³É[min,max]·¶Î§µÄËæ»úÊı
+u8  RNG_Init(void);			//RNGåˆå§‹åŒ– 
+u32 RNG_Get_RandomNum(void);//å¾—åˆ°éšæœºæ•°
+int RNG_Get_RandomRange(int min,int max);//ç”Ÿæˆ[min,max]èŒƒå›´çš„éšæœºæ•°
 #endif
 
 

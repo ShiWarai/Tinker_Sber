@@ -11,7 +11,7 @@
 #define 		SIG_0  		0XE0
 
 
-//       ÑÕÉ«     GRB
+//       é¢œè‰²     GRB
 #define	C_Red		  0x00FF00
 #define	C_Green		0xFF0000
 #define	C_Blue		0x0000FF
