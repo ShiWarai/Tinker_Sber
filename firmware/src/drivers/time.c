@@ -4,72 +4,70 @@
 #include "include.h"
 #include "scheduler.h"
 #include "init.h"
-#define SYS_TIMx					TIM2
-#define SYS_RCC_TIMx			RCC_APB1Periph_TIM2
+#define SYS_TIMx TIM2
+#define SYS_RCC_TIMx RCC_APB1Periph_TIM2
 
-void TIM_CONF()   //APB1  84M
+void TIM_CONF() // APB1  84M
 {
-    TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-		
-		/* ???? */
-    RCC_APB1PeriphClockCmd(SYS_RCC_TIMx,ENABLE);
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
-		TIM_DeInit(SYS_TIMx);
-	
+	/* ???? */
+	RCC_APB1PeriphClockCmd(SYS_RCC_TIMx, ENABLE);
+
+	TIM_DeInit(SYS_TIMx);
+
 	/* ????????????(???) */
-    TIM_TimeBaseStructure.TIM_Period=1000;
-	
-    /* ?? TIM_Period?????????????? */
-	  /* ???????72 */
-    TIM_TimeBaseStructure.TIM_Prescaler= 84 - 1;
-	
-		/* ??????????????,?????? */
-    TIM_TimeBaseStructure.TIM_ClockDivision=TIM_CKD_DIV1;
-	
-    TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up;   //????
-	
-		TIM_TimeBaseInit(SYS_TIMx,&TIM_TimeBaseStructure);
+	TIM_TimeBaseStructure.TIM_Period = 1000;
 
-		TIM_ClearFlag(SYS_TIMx,TIM_FLAG_Update);
+	/* ?? TIM_Period?????????????? */
+	/* ???????72 */
+	TIM_TimeBaseStructure.TIM_Prescaler = 84 - 1;
 
-		TIM_ITConfig(SYS_TIMx,TIM_IT_Update,ENABLE);
-		
-		
-    TIM_Cmd(SYS_TIMx, ENABLE);																		
-    
-    RCC_APB1PeriphClockCmd(SYS_RCC_TIMx , DISABLE);		/*???????*/  
+	/* ??????????????,?????? */
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //????
+
+	TIM_TimeBaseInit(SYS_TIMx, &TIM_TimeBaseStructure);
+
+	TIM_ClearFlag(SYS_TIMx, TIM_FLAG_Update);
+
+	TIM_ITConfig(SYS_TIMx, TIM_IT_Update, ENABLE);
+
+	TIM_Cmd(SYS_TIMx, ENABLE);
+
+	RCC_APB1PeriphClockCmd(SYS_RCC_TIMx, DISABLE); /*???????*/
 }
 void TIM_NVIC()
 {
-    NVIC_InitTypeDef NVIC_InitStructure; 
-    
-//    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);  													
-    NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;	  
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_TIME_P;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = NVIC_TIME_S;	
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	//    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+	NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_TIME_P;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = NVIC_TIME_S;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
 }
 
 void TIM_INIT()
 {
-    TIM_CONF();
-    TIM_NVIC();
-	
-		/* TIM2 ?????,???? */
-	  RCC_APB1PeriphClockCmd(SYS_RCC_TIMx , ENABLE);
-}
+	TIM_CONF();
+	TIM_NVIC();
 
+	/* TIM2 ?????,???? */
+	RCC_APB1PeriphClockCmd(SYS_RCC_TIMx, ENABLE);
+}
 
 volatile uint32_t sysTickUptime = 0;
 
-#define TICK_PER_SECOND 1000 //2000
-#define TICK_US	(1000000/TICK_PER_SECOND)
+#define TICK_PER_SECOND 1000 // 2000
+#define TICK_US (1000000 / TICK_PER_SECOND)
 
-void  SysTick_Configuration(void)
+void SysTick_Configuration(void)
 {
-	RCC_ClocksTypeDef  rcc_clocks;
-	uint32_t         cnts;
+	RCC_ClocksTypeDef rcc_clocks;
+	uint32_t cnts;
 
 	RCC_GetClocksFreq(&rcc_clocks);
 
@@ -80,7 +78,7 @@ void  SysTick_Configuration(void)
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);
 }
 
-uint32_t GetSysTime_us(void) 
+uint32_t GetSysTime_us(void)
 {
 	register uint32_t ms;
 	u32 value;
@@ -91,57 +89,58 @@ uint32_t GetSysTime_us(void)
 
 void Delay_us(uint32_t us)
 {
-    uint32_t now = GetSysTime_us();
-    while (GetSysTime_us() - now < us);
+	uint32_t now = GetSysTime_us();
+	while (GetSysTime_us() - now < us)
+		;
 }
 
 void Delay_ms(uint32_t ms)
 {
-    while (ms--)
-        Delay_us(1000);
+	while (ms--)
+		Delay_us(1000);
 }
 
 uint32_t micros(void)
 {
- 	uint32_t temp=0 ;
- 	temp = SYS_TIMx->CNT;
- 	return temp;
+	uint32_t temp = 0;
+	temp = SYS_TIMx->CNT;
+	return temp;
 }
 
-int time_1h,time_1m,time_1s,time_1ms; 	
+int time_1h, time_1m, time_1s, time_1ms;
 
 void sys_time()
-{ 
+{
 
-  if(time_1ms < 999)
+	if (time_1ms < 999)
 	{
-    time_1ms++;
+		time_1ms++;
 
 		Loop_check();
 	}
 	else
 	{
-		
-    time_1ms =0;
-	  if(time_1s<59)
-	  {
-      time_1s++;
-			loop.err_flag_1s=loop.err_flag;
-			
-			loop.err_flag_rate=loop.err_flag_1s/1000.;
-			loop.err_flag=0;
+
+		time_1ms = 0;
+		if (time_1s < 59)
+		{
+			time_1s++;
+			loop.err_flag_1s = loop.err_flag;
+
+			loop.err_flag_rate = loop.err_flag_1s / 1000.;
+			loop.err_flag = 0;
 		}
 		else
 		{
 			time_1s = 0;
-			if(time_1m<59)
+			if (time_1m < 59)
 			{
 				time_1m++;
 			}
 			else
 			{
 				time_1m = 0;
-				if(time_1h<23)
+				if (time_1h < 23)
 				{
 					time_1h++;
 				}
@@ -163,61 +162,53 @@ enum
 	DT_LAST
 };
 
-float Get_Cycle_T(u8 item)	
+float Get_Cycle_T(u8 item)
 {
-	Cycle_T[item][OLD] = Cycle_T[item][NOW];	/* предыдущий замер */
-	Cycle_T[item][NOW] = (float)GetSysTime_us()/1000000.0f; /* время цикла, с */
-	if(Cycle_T[item][NOW]>Cycle_T[item][OLD]){
-		Cycle_T[item][NEW] = ( ( Cycle_T[item][NOW] - Cycle_T[item][OLD] ) );/* dt */
+	Cycle_T[item][OLD] = Cycle_T[item][NOW];                  /* предыдущий замер */
+	Cycle_T[item][NOW] = (float)GetSysTime_us() / 1000000.0f; /* время цикла, с */
+	if (Cycle_T[item][NOW] > Cycle_T[item][OLD])
+	{
+		Cycle_T[item][NEW] = ((Cycle_T[item][NOW] - Cycle_T[item][OLD])); /* dt */
 		Cycle_T[item][DT_LAST] = Cycle_T[item][NEW];
-  }
+	}
 	else
 		Cycle_T[item][NEW] = Cycle_T[item][DT_LAST];
 
-	if(Cycle_T[item][NEW]>0.5)
+	if (Cycle_T[item][NEW] > 0.5)
 		return 0.5;
 	else
 		return Cycle_T[item][NEW];
 }
 
-
 void Cycle_Time_Init()
 {
 	u8 i;
-	for(i=0;i<GET_TIME_NUM;i++)
+	for (i = 0; i < GET_TIME_NUM; i++)
 	{
 		Get_Cycle_T(i);
 	}
-
 }
 
-
-void TIM3_Int_Init(u16 arr,u16 psc)
+void TIM3_Int_Init(u16 arr, u16 psc)
 {
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
-	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);  /* тактирование TIM3 */
-	
-  TIM_TimeBaseInitStructure.TIM_Period = arr; 	/* период (ARR) */
-	TIM_TimeBaseInitStructure.TIM_Prescaler=psc;  /* делитель */
-	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up; /* счёт вверх */
-	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1; 
-	
-	TIM_TimeBaseInit(TIM3,&TIM_TimeBaseInitStructure);
-	
-	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE); /* прерывание по обновлению */
-	TIM_Cmd(TIM3,ENABLE);
-	
-	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority=3;
-	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
+
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE); /* тактирование TIM3 */
+
+	TIM_TimeBaseInitStructure.TIM_Period = arr;                     /* период (ARR) */
+	TIM_TimeBaseInitStructure.TIM_Prescaler = psc;                  /* делитель */
+	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up; /* счёт вверх */
+	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStructure);
+
+	TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE); /* прерывание по обновлению */
+	TIM_Cmd(TIM3, ENABLE);
+
+	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-	
 }
-
-
-
-
-

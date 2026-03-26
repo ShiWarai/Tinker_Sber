@@ -11,89 +11,95 @@ u8 acc_3d_step;
 _MEMS mems;
 void IMU_Read(void)
 {
-	#if defined(MEM_ICM)
-	icm20602_get_accel_adc();		
+#if defined(MEM_ICM)
+	icm20602_get_accel_adc();
 	icm20602_get_gyro_adc();
-	#else
-  LSM6_readAcc(1);
+#else
+	LSM6_readAcc(1);
 	LSM6_readGyro(1);
-	#endif
+#endif
 }
 
-s32 sum_temp[7]= {0,0,0,0,0,0,0};
-float sum_temp_att[2]={0};
-s32 sum_temp_3d[7]= {0,0,0,0,0,0,0};
-u16 acc_sum_cnt = 0,acc_sum_cnt_3d=0,acc_smple_cnt_3d=0,gyro_sum_cnt = 0;
+s32 sum_temp[7] = {0, 0, 0, 0, 0, 0, 0};
+float sum_temp_att[2] = {0};
+s32 sum_temp_3d[7] = {0, 0, 0, 0, 0, 0, 0};
+u16 acc_sum_cnt = 0, acc_sum_cnt_3d = 0, acc_smple_cnt_3d = 0, gyro_sum_cnt = 0;
 #define OFFSET_AV_NUM_ACC 50
 void MEMS_Data_Offset()
 {
 #if defined(MEM_ICM)
-    if (mems.Acc_CALIBRATE == 1) {
-		#if SAVE_FLASH_WATCHDOG
+	if (mems.Acc_CALIBRATE == 1)
+	{
+#if SAVE_FLASH_WATCHDOG
 		IWDG_Init(1, 10000);
-		#endif
-		if (icm20602_accel_calibrate_step(mems.Acc_I16.x, mems.Acc_I16.y, mems.Acc_I16.z,
-				&mems.Acc_Offset.x, &mems.Acc_Offset.y, &mems.Acc_Offset.z)) {
+#endif
+		if (icm20602_accel_calibrate_step(mems.Acc_I16.x, mems.Acc_I16.y, mems.Acc_I16.z, &mems.Acc_Offset.x,
+		                                  &mems.Acc_Offset.y, &mems.Acc_Offset.z))
+		{
 			mems.Acc_CALIBRATE = 0;
-			if (vmc_all.param.cal_flag[1]==0 && vmc_all.param.cal_flag[0]==0 && module.flash)
+			if (vmc_all.param.cal_flag[1] == 0 && vmc_all.param.cal_flag[0] == 0 && module.flash)
 				WRITE_PARM();
-			#if SAVE_FLASH_WATCHDOG
+#if SAVE_FLASH_WATCHDOG
 			IWDG_Init(4, 150);
-			#endif
+#endif
 		}
 	}
-    if (mems.Gyro_CALIBRATE) {
-		#if SAVE_FLASH_WATCHDOG
+	if (mems.Gyro_CALIBRATE)
+	{
+#if SAVE_FLASH_WATCHDOG
 		IWDG_Init(1, 10000);
-		#endif
-		if (icm20602_gyro_calibrate_step(mems.Gyro_I16.x, mems.Gyro_I16.y, mems.Gyro_I16.z,
-				&mems.Gyro_Offset.x, &mems.Gyro_Offset.y, &mems.Gyro_Offset.z)) {
+#endif
+		if (icm20602_gyro_calibrate_step(mems.Gyro_I16.x, mems.Gyro_I16.y, mems.Gyro_I16.z, &mems.Gyro_Offset.x,
+		                                 &mems.Gyro_Offset.y, &mems.Gyro_Offset.z))
+		{
 			mems.Gyro_CALIBRATE = 0;
 			if (module.flash)
 				WRITE_PARM();
-			#if SAVE_FLASH_WATCHDOG
+#if SAVE_FLASH_WATCHDOG
 			IWDG_Init(4, 150);
-			#endif
+#endif
 		}
 	}
 #else
-    if(mems.Acc_CALIBRATE == 1)
-    {
-			#if SAVE_FLASH_WATCHDOG
-			  IWDG_Init(1,10000);//100ms
-			#endif
-        acc_sum_cnt++;
-				if(mems.Cali_3d){
-				  sum_temp_att[0]+=Pitch;
-					sum_temp_att[1]+=Roll;
-				}
-				{
-        sum_temp[A_X] += mems.Acc_I16.x;
-        sum_temp[A_Y] += mems.Acc_I16.y;
-        sum_temp[A_Z] += mems.Acc_I16.z - 65536/16;   // +-8G
-				}
-        if( acc_sum_cnt >= OFFSET_AV_NUM )
-        {   
-					if(vmc_all.param.cal_flag[1]==0&&vmc_all.param.cal_flag[0]==0){
-            mems.Acc_Offset.x = sum_temp[A_X]/OFFSET_AV_NUM;
-            mems.Acc_Offset.y = sum_temp[A_Y]/OFFSET_AV_NUM;
-            mems.Acc_Offset.z = sum_temp[A_Z]/OFFSET_AV_NUM;
-					}
-            acc_sum_cnt =0;
-            mems.Acc_CALIBRATE = 0;
-					#if SAVE_FLASH_WATCHDOG
-					if(module.flash)
-            WRITE_PARM();
-					#endif
-            sum_temp[A_X] = sum_temp[A_Y] = sum_temp[A_Z] = sum_temp[TEM] = 0;
-				  	sum_temp_att[1]=sum_temp_att[0]=0;
-					#if SAVE_FLASH_WATCHDOG
-					IWDG_Init(4,150);//100ms
-					#endif
-        }
-    }
-// 3d cal
-		#if 0
+	if (mems.Acc_CALIBRATE == 1)
+	{
+#if SAVE_FLASH_WATCHDOG
+		IWDG_Init(1, 10000); // 100ms
+#endif
+		acc_sum_cnt++;
+		if (mems.Cali_3d)
+		{
+			sum_temp_att[0] += Pitch;
+			sum_temp_att[1] += Roll;
+		}
+		{
+			sum_temp[A_X] += mems.Acc_I16.x;
+			sum_temp[A_Y] += mems.Acc_I16.y;
+			sum_temp[A_Z] += mems.Acc_I16.z - 65536 / 16; // +-8G
+		}
+		if (acc_sum_cnt >= OFFSET_AV_NUM)
+		{
+			if (vmc_all.param.cal_flag[1] == 0 && vmc_all.param.cal_flag[0] == 0)
+			{
+				mems.Acc_Offset.x = sum_temp[A_X] / OFFSET_AV_NUM;
+				mems.Acc_Offset.y = sum_temp[A_Y] / OFFSET_AV_NUM;
+				mems.Acc_Offset.z = sum_temp[A_Z] / OFFSET_AV_NUM;
+			}
+			acc_sum_cnt = 0;
+			mems.Acc_CALIBRATE = 0;
+#if SAVE_FLASH_WATCHDOG
+			if (module.flash)
+				WRITE_PARM();
+#endif
+			sum_temp[A_X] = sum_temp[A_Y] = sum_temp[A_Z] = sum_temp[TEM] = 0;
+			sum_temp_att[1] = sum_temp_att[0] = 0;
+#if SAVE_FLASH_WATCHDOG
+			IWDG_Init(4, 150); // 100ms
+#endif
+		}
+	}
+	// 3d cal
+#if 0
 		static xyz_f_t ACC_Reg;
 		static u8 acc_3d_step_reg;
 		float sphere_x,sphere_y,sphere_z,sphere_r;
@@ -142,65 +148,63 @@ void MEMS_Data_Offset()
 		ACC_Reg.x=mems.Acc_I16.x;
 	  ACC_Reg.y=mems.Acc_I16.y;
 		ACC_Reg.z=mems.Acc_I16.z;
-		#endif
+#endif
 
-
-
-    if(mems.Gyro_CALIBRATE)
-    {
-			#if SAVE_FLASH_WATCHDOG
-				IWDG_Init(1,10000);//100ms
-			#endif
-        gyro_sum_cnt++;
-        sum_temp[G_X] += mems.Gyro_I16.x;
-        sum_temp[G_Y] += mems.Gyro_I16.y;
-        sum_temp[G_Z] += mems.Gyro_I16.z;
-        if( gyro_sum_cnt >= OFFSET_AV_NUM )
-        {
-					if(vmc_all.param.cal_flag[1]==0&&vmc_all.param.cal_flag[0]==0){
-            mems.Gyro_Offset.x = (float)sum_temp[G_X]/OFFSET_AV_NUM;
-            mems.Gyro_Offset.y = (float)sum_temp[G_Y]/OFFSET_AV_NUM;
-            mems.Gyro_Offset.z = (float)sum_temp[G_Z]/OFFSET_AV_NUM;
-					}
-            gyro_sum_cnt =0;
-					if(mems.Gyro_CALIBRATE == 1&&module.flash)
-					{
-						#if SAVE_FLASH_WATCHDOG
-						WRITE_PARM();
-						#endif
-					}  
-            mems.Gyro_CALIBRATE = 0;
-            sum_temp[G_X] = sum_temp[G_Y] = sum_temp[G_Z] = sum_temp[TEM] = 0;
-					#if SAVE_FLASH_WATCHDOG
-					IWDG_Init(4,150);//100ms
-					#endif
-        }
-    }
+	if (mems.Gyro_CALIBRATE)
+	{
+#if SAVE_FLASH_WATCHDOG
+		IWDG_Init(1, 10000); // 100ms
+#endif
+		gyro_sum_cnt++;
+		sum_temp[G_X] += mems.Gyro_I16.x;
+		sum_temp[G_Y] += mems.Gyro_I16.y;
+		sum_temp[G_Z] += mems.Gyro_I16.z;
+		if (gyro_sum_cnt >= OFFSET_AV_NUM)
+		{
+			if (vmc_all.param.cal_flag[1] == 0 && vmc_all.param.cal_flag[0] == 0)
+			{
+				mems.Gyro_Offset.x = (float)sum_temp[G_X] / OFFSET_AV_NUM;
+				mems.Gyro_Offset.y = (float)sum_temp[G_Y] / OFFSET_AV_NUM;
+				mems.Gyro_Offset.z = (float)sum_temp[G_Z] / OFFSET_AV_NUM;
+			}
+			gyro_sum_cnt = 0;
+			if (mems.Gyro_CALIBRATE == 1 && module.flash)
+			{
+#if SAVE_FLASH_WATCHDOG
+				WRITE_PARM();
+#endif
+			}
+			mems.Gyro_CALIBRATE = 0;
+			sum_temp[G_X] = sum_temp[G_Y] = sum_temp[G_Z] = sum_temp[TEM] = 0;
+#if SAVE_FLASH_WATCHDOG
+			IWDG_Init(4, 150); // 100ms
+#endif
+		}
+	}
 #endif /* MEM_ICM */
-
 }
 
-void Transform(float itx,float ity,float itz,float *it_x,float *it_y,float *it_z)
+void Transform(float itx, float ity, float itz, float *it_x, float *it_y, float *it_z)
 {
-    *it_x = itx;
-    *it_y = ity;
-    *it_z = itz;
+	*it_x = itx;
+	*it_y = ity;
+	*it_z = itz;
 }
 
 s16 FILT_BUF[ITEMS][(FILTER_NUM + 1)];
-uint8_t filter_cnt = 0,filter_cnt_old = 0;
+uint8_t filter_cnt = 0, filter_cnt_old = 0;
 
 float mems_tmp[ITEMS];
 float mpu_fil_tmp[ITEMS];
-float test_ang =0,test_ang_old=0,test_ang_d,test_fli_a,test_i;
+float test_ang = 0, test_ang_old = 0, test_ang_d, test_fli_a, test_i;
 
 void IMU_Data_Prepare(float T)
 {
-    u8 i;
-    s32 FILT_TMP[ITEMS] = {0,0,0,0,0,0,0};
-    float Gyro_tmp[3];
-    MEMS_Data_Offset(); /* калибровка смещений */
-		#if 0
+	u8 i;
+	s32 FILT_TMP[ITEMS] = {0, 0, 0, 0, 0, 0, 0};
+	float Gyro_tmp[3];
+	MEMS_Data_Offset(); /* калибровка смещений */
+#if 0
 		mems.Acc_I16.x=lis3mdl_cov.Acc_I16.x ;
 		mems.Acc_I16.y=lis3mdl_cov.Acc_I16.y ;
 		mems.Acc_I16.z=lis3mdl_cov.Acc_I16.z ;
@@ -209,88 +213,86 @@ void IMU_Data_Prepare(float T)
 		mems.Gyro_I16.z=lis3mdl_cov.Gyro_I16.z ;
     Gyro_tmp[0] = mems.Gyro_I16.x ;//
     Gyro_tmp[1] = mems.Gyro_I16.y ;//
-    Gyro_tmp[2] = mems.Gyro_I16.z ;//		
-		#else
-		mems.Acc_I16.x=lis3mdl.Acc_I16.x ;
-		mems.Acc_I16.y=lis3mdl.Acc_I16.y ;
-		mems.Acc_I16.z=lis3mdl.Acc_I16.z ;
-		mems.Gyro_I16.x=lis3mdl.Gyro_I16.x ;
-		mems.Gyro_I16.y=lis3mdl.Gyro_I16.y ;
-		mems.Gyro_I16.z=lis3mdl.Gyro_I16.z ;
-    Gyro_tmp[0] = mems.Gyro_I16.x ;//
-    Gyro_tmp[1] = mems.Gyro_I16.y ;//
     Gyro_tmp[2] = mems.Gyro_I16.z ;//
-		#endif
-  
-//======================================================================
-    if( ++filter_cnt > FILTER_NUM )
-    {
-        filter_cnt = 0;
-        filter_cnt_old = 1;
-    }
-    else
-    {
-        filter_cnt_old = (filter_cnt == FILTER_NUM)? 0 : (filter_cnt + 1);
-    }
-//10 170 4056
-		if(fabs(mems.Off_3d.x)>10||fabs(mems.Off_3d.y)>10||fabs(mems.Off_3d.z)>10)
-			mems.Cali_3d=1;
-		int en_off_3d_off=0;
-    /* данные после калибровки */
-		if(mems.Cali_3d){
-				mems_tmp[A_X] = (mems.Acc_I16.x - mems.Off_3d.x)*mems.Gain_3d.x - mems.Acc_Offset.x*en_off_3d_off;
-				mems_tmp[A_Y] = (mems.Acc_I16.y - mems.Off_3d.y)*mems.Gain_3d.y - mems.Acc_Offset.y*en_off_3d_off;
-				mems_tmp[A_Z] = (mems.Acc_I16.z - mems.Off_3d.z)*mems.Gain_3d.z - mems.Acc_Offset.z*en_off_3d_off;
-		}
-		else{	 
+#else
+	mems.Acc_I16.x = lis3mdl.Acc_I16.x;
+	mems.Acc_I16.y = lis3mdl.Acc_I16.y;
+	mems.Acc_I16.z = lis3mdl.Acc_I16.z;
+	mems.Gyro_I16.x = lis3mdl.Gyro_I16.x;
+	mems.Gyro_I16.y = lis3mdl.Gyro_I16.y;
+	mems.Gyro_I16.z = lis3mdl.Gyro_I16.z;
+	Gyro_tmp[0] = mems.Gyro_I16.x; //
+	Gyro_tmp[1] = mems.Gyro_I16.y; //
+	Gyro_tmp[2] = mems.Gyro_I16.z; //
+#endif
 
-				mems_tmp[A_X] = (mems.Acc_I16.x - mems.Acc_Offset.x) ;
-				mems_tmp[A_Y] = (mems.Acc_I16.y - mems.Acc_Offset.y) ;
-				mems_tmp[A_Z] = (mems.Acc_I16.z - mems.Acc_Offset.z) ;
-		}
-    mems_tmp[G_X] = Gyro_tmp[0] - mems.Gyro_Offset.x ;//
-    mems_tmp[G_Y] = Gyro_tmp[1] - mems.Gyro_Offset.y ;//
-    mems_tmp[G_Z] = Gyro_tmp[2] - mems.Gyro_Offset.z ;//
+	//======================================================================
+	if (++filter_cnt > FILTER_NUM)
+	{
+		filter_cnt = 0;
+		filter_cnt_old = 1;
+	}
+	else
+	{
+		filter_cnt_old = (filter_cnt == FILTER_NUM) ? 0 : (filter_cnt + 1);
+	}
+	// 10 170 4056
+	if (fabs(mems.Off_3d.x) > 10 || fabs(mems.Off_3d.y) > 10 || fabs(mems.Off_3d.z) > 10)
+		mems.Cali_3d = 1;
+	int en_off_3d_off = 0;
+	/* данные после калибровки */
+	if (mems.Cali_3d)
+	{
+		mems_tmp[A_X] = (mems.Acc_I16.x - mems.Off_3d.x) * mems.Gain_3d.x - mems.Acc_Offset.x * en_off_3d_off;
+		mems_tmp[A_Y] = (mems.Acc_I16.y - mems.Off_3d.y) * mems.Gain_3d.y - mems.Acc_Offset.y * en_off_3d_off;
+		mems_tmp[A_Z] = (mems.Acc_I16.z - mems.Off_3d.z) * mems.Gain_3d.z - mems.Acc_Offset.z * en_off_3d_off;
+	}
+	else
+	{
 
+		mems_tmp[A_X] = (mems.Acc_I16.x - mems.Acc_Offset.x);
+		mems_tmp[A_Y] = (mems.Acc_I16.y - mems.Acc_Offset.y);
+		mems_tmp[A_Z] = (mems.Acc_I16.z - mems.Acc_Offset.z);
+	}
+	mems_tmp[G_X] = Gyro_tmp[0] - mems.Gyro_Offset.x; //
+	mems_tmp[G_Y] = Gyro_tmp[1] - mems.Gyro_Offset.y; //
+	mems_tmp[G_Z] = Gyro_tmp[2] - mems.Gyro_Offset.z; //
 
-    /* обновить окно скользящего фильтра */
-    FILT_BUF[A_X][filter_cnt] = mems_tmp[A_X];
-    FILT_BUF[A_Y][filter_cnt] = mems_tmp[A_Y];
-    FILT_BUF[A_Z][filter_cnt] = mems_tmp[A_Z];
-    FILT_BUF[G_X][filter_cnt] = mems_tmp[G_X];
-    FILT_BUF[G_Y][filter_cnt] = mems_tmp[G_Y];
-    FILT_BUF[G_Z][filter_cnt] = mems_tmp[G_Z];
+	/* обновить окно скользящего фильтра */
+	FILT_BUF[A_X][filter_cnt] = mems_tmp[A_X];
+	FILT_BUF[A_Y][filter_cnt] = mems_tmp[A_Y];
+	FILT_BUF[A_Z][filter_cnt] = mems_tmp[A_Z];
+	FILT_BUF[G_X][filter_cnt] = mems_tmp[G_X];
+	FILT_BUF[G_Y][filter_cnt] = mems_tmp[G_Y];
+	FILT_BUF[G_Z][filter_cnt] = mems_tmp[G_Z];
 
-    for(i=0; i<FILTER_NUM; i++)
-    {
-        FILT_TMP[A_X] += FILT_BUF[A_X][i];
-        FILT_TMP[A_Y] += FILT_BUF[A_Y][i];
-        FILT_TMP[A_Z] += FILT_BUF[A_Z][i];
-        FILT_TMP[G_X] += FILT_BUF[G_X][i];
-        FILT_TMP[G_Y] += FILT_BUF[G_Y][i];
-        FILT_TMP[G_Z] += FILT_BUF[G_Z][i];
-    }
+	for (i = 0; i < FILTER_NUM; i++)
+	{
+		FILT_TMP[A_X] += FILT_BUF[A_X][i];
+		FILT_TMP[A_Y] += FILT_BUF[A_Y][i];
+		FILT_TMP[A_Z] += FILT_BUF[A_Z][i];
+		FILT_TMP[G_X] += FILT_BUF[G_X][i];
+		FILT_TMP[G_Y] += FILT_BUF[G_Y][i];
+		FILT_TMP[G_Z] += FILT_BUF[G_Z][i];
+	}
 
-    mpu_fil_tmp[A_X] = (float)( FILT_TMP[A_X] )/(float)FILTER_NUM;
-    mpu_fil_tmp[A_Y] = (float)( FILT_TMP[A_Y] )/(float)FILTER_NUM;
-    mpu_fil_tmp[A_Z] = (float)( FILT_TMP[A_Z] )/(float)FILTER_NUM;
+	mpu_fil_tmp[A_X] = (float)(FILT_TMP[A_X]) / (float)FILTER_NUM;
+	mpu_fil_tmp[A_Y] = (float)(FILT_TMP[A_Y]) / (float)FILTER_NUM;
+	mpu_fil_tmp[A_Z] = (float)(FILT_TMP[A_Z]) / (float)FILTER_NUM;
 
+	mpu_fil_tmp[G_X] = (float)(FILT_TMP[G_X]) / (float)FILTER_NUM;
+	mpu_fil_tmp[G_Y] = (float)(FILT_TMP[G_Y]) / (float)FILTER_NUM;
+	mpu_fil_tmp[G_Z] = (float)(FILT_TMP[G_Z]) / (float)FILTER_NUM;
 
-    mpu_fil_tmp[G_X] = (float)( FILT_TMP[G_X] )/(float)FILTER_NUM;
-    mpu_fil_tmp[G_Y] = (float)( FILT_TMP[G_Y] )/(float)FILTER_NUM;
-    mpu_fil_tmp[G_Z] = (float)( FILT_TMP[G_Z] )/(float)FILTER_NUM;
+	/* преобразование координат */
+	Transform(mpu_fil_tmp[A_X], mpu_fil_tmp[A_Y], mpu_fil_tmp[A_Z], &mems.Acc.x, &mems.Acc.y, &mems.Acc.z);
+	Transform(mpu_fil_tmp[G_X], mpu_fil_tmp[G_Y], mpu_fil_tmp[G_Z], &mems.Gyro.x, &mems.Gyro.y, &mems.Gyro.z);
 
+	mems.Gyro_deg.x = mems.Gyro.x * TO_ANGLE;
+	mems.Gyro_deg.y = mems.Gyro.y * TO_ANGLE;
+	mems.Gyro_deg.z = mems.Gyro.z * TO_ANGLE;
 
-    /* преобразование координат */
-    Transform(mpu_fil_tmp[A_X],mpu_fil_tmp[A_Y],mpu_fil_tmp[A_Z],&mems.Acc.x,&mems.Acc.y,&mems.Acc.z);
-    Transform(mpu_fil_tmp[G_X],mpu_fil_tmp[G_Y],mpu_fil_tmp[G_Z],&mems.Gyro.x,&mems.Gyro.y,&mems.Gyro.z);
-
-    mems.Gyro_deg.x = mems.Gyro.x *TO_ANGLE;
-    mems.Gyro_deg.y = mems.Gyro.y *TO_ANGLE;
-    mems.Gyro_deg.z = mems.Gyro.z *TO_ANGLE;
-
-		converRT_float(mems.Acc.x,mems.Acc.y,mems.Acc.z,
-		&mems.Acc_rt.x,&mems.Acc_rt.y,&mems.Acc_rt.z);
-		converRT_float(mems.Gyro_deg.x,mems.Gyro_deg.y,mems.Gyro_deg.z,
-		&mems.Gyro_deg_rt.x,&mems.Gyro_deg_rt.y,&mems.Gyro_deg_rt.z);
+	converRT_float(mems.Acc.x, mems.Acc.y, mems.Acc.z, &mems.Acc_rt.x, &mems.Acc_rt.y, &mems.Acc_rt.z);
+	converRT_float(mems.Gyro_deg.x, mems.Gyro_deg.y, mems.Gyro_deg.z, &mems.Gyro_deg_rt.x, &mems.Gyro_deg_rt.y,
+	               &mems.Gyro_deg_rt.z);
 }

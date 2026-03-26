@@ -5,20 +5,20 @@
 
 void WFI_SET(void)
 {
-	__asm volatile ("wfi");
+	__asm volatile("wfi");
 }
 
 void INTX_DISABLE(void)
 {
-	__asm volatile ("cpsid i" : : : "memory");
+	__asm volatile("cpsid i" : : : "memory");
 }
 
 void INTX_ENABLE(void)
 {
-	__asm volatile ("cpsie i" : : : "memory");
+	__asm volatile("cpsie i" : : : "memory");
 }
 
 void MSR_MSP(u32 addr)
 {
-	__asm volatile ("msr msp, %0" : : "r" (addr) : "memory");
+	__asm volatile("msr msp, %0" : : "r"(addr) : "memory");
 }

@@ -18,7 +18,7 @@ typedef struct
 	s16 cnt_1s;
 	s16 cnt_2s;
 	u16 time;
-}loop_t;
+} loop_t;
 extern loop_t loop;
 typedef struct
 {
@@ -30,7 +30,7 @@ typedef struct
 	float link_task;
 	float nav_task;
 	float system_task;
-}_SYSTEM_DT;
+} _SYSTEM_DT;
 
 extern _SYSTEM_DT system_dt;
 
@@ -42,7 +42,6 @@ void Inner_Loop(float);
 
 void Outer_Loop(float);
 
-
 void Duty_Servo();
 void Duty_PForce_Control();
 void Duty_Att_Fushion();
@@ -52,4 +51,3 @@ void Duty_Kin_Cal();
 
 extern float trig_test_dt[3];
 #endif
-

@@ -73,7 +73,8 @@ void Uart6_Init(u32 br_num)
 
 void UsartSend6(uint8_t ch)
 {
-	while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
+	while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET)
+		;
 	USART_SendData(USART6, ch);
 }
 
@@ -154,7 +155,8 @@ void Uart6_PollCommandLine(void)
 
 	while (Uart6_Available())
 	{
-		if (Uart6_Read(&b, 1) != 1) {
+		if (Uart6_Read(&b, 1) != 1)
+		{
 			break;
 		}
 
@@ -169,7 +171,7 @@ void Uart6_PollCommandLine(void)
 			if (cmd)
 			{
 				printf("test\n");
-				Play_Music_Direct(MEMS_GPS_RIGHT);	
+				Play_Music_Direct(MEMS_GPS_RIGHT);
 			}
 			continue;
 		}
