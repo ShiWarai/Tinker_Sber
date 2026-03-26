@@ -376,6 +376,8 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 	{
 		loop_cnt = time_1ms;
 
+		Uart6_PollCommandLine();
+
 		if(!spi_master_connect_pi)
 		{
 			for(id=0;id<10;id++) {
@@ -429,6 +431,7 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 		if( loop.cnt_1s >= 1000)
 		{
 			loop.cnt_1s = 0;
+			printf("Hello ROS\n");
 			// can_rx_over[4]=0;
 		}
 

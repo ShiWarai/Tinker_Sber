@@ -21,17 +21,7 @@ u8 All_Init()
 		RNG_Init();
 		LED_Init();			    //????LED
 //------------------------Uart Init-------------------------------------
-  #if USE_AUDIO
-		Usart1_Init(115200);//AI audio
-	#else
-		Usart1_Init(9600);//wheel 485| remote 2.4G
-	#endif
-
-	#if !USE_OLED 
-		Usart2_Init(1000000);
-	#endif
-		Usart3_Init(512000);//omnihub-extcan for expand IO
-	  Uart6_Init(115200);	//485 only output
+	  Uart6_Init(115200);
 		#if EN_DMA_UART1 
 		MYDMA_Config(DMA2_Stream7,DMA_Channel_4,(u32)&USART1->DR,(u32)SendBuff1,SEND_BUF_SIZE1,1);//DMA2,STEAM7,CH4,?????????1,?????SendBuff,?????:SEND_BUF_SIZE.
 		#endif
@@ -90,14 +80,10 @@ u8 All_Init()
 		Write_Audio_Data(0x6);//max audio sound
 	#endif
 	
-	#if USE_SERVO1||USE_VR
-		Usart1_Init(1000000);
-	#endif
-	
 	#if defined(BOARD_FOR_CAN)&&1
 	int dog_enable=KEY_DOG();
 	if(dog_enable||0)
 		IWDG_Init(4,500);//100ms
 	#endif	
- 	return (1);
+	return (1);
 }

@@ -1,1713 +1,190 @@
 #include "include.h"
 #include "usart_fc.h"
-#include "gait_math.h"
-#include "spi.h"
-#include "led_fc.h"
-#include "wsled.h"
-#include <stdio.h> 	
-#include "can.h"
+#include "beep.h"
+#include <stdio.h>
+#include <string.h>
 
 _ODOMETER flow;
 _PI pi;
 MOUDLE module;
 RC_GETDATA Rc_Get;
-M100 m100,px4;
+RC_GETDATA Rc_Get_PWM;
+RC_GETDATA Rc_Get_SBUS;
+RC_GETDATA Rc_Wifi;
+M100 m100, px4;
 _ARMSS arm_cmd_s;
- _IMUO imuo;
- _WHEEL_WX _wheel_wx[4];
- _WHEEL_2Dof _wheel_2d;
- _Robot robot;
- 
-int id_test=0;
-int pwm_dj_test=1500;
- //UART ???????????
-void Usart1_Init(u32 br_num)//-------Radio
+_IMUO imuo;
+_WHEEL_WX _wheel_wx[4];
+_WHEEL_2Dof _wheel_2d;
+_Robot robot;
+_LINK_CMD o_cmd;
+_FLOW optical_flow;
+
+float ws_set_flt;
+int pwm_dj[5] = {1500, 1500, 1500, 1500, 1500};
+int time_dj[5] = {0, 0, 0, 0, 0};
+u8 RxState1;
+int16_t BLE_DEBUG[16];
+
+void Uart6_Init(u32 br_num)
 {
 	USART_InitTypeDef USART_InitStructure;
-	USART_ClockInitTypeDef USART_ClockInitStruct;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE); //????USART2???
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);	
-	
-	//????????????
-	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	#if USE_SERVO1
-		#if USE_VR
-			NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =1;
-			NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-		#else
-			NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =1;
-			NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
-		#endif
-	#else
-		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =1;
-		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	#endif
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);	
 
-	
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
-	
-	//????PD5???USART2??Tx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
-  GPIO_Init(GPIOA, &GPIO_InitStructure); 
-	//????PD6???USART2??Rx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 ; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
-  GPIO_Init(GPIOA, &GPIO_InitStructure); 
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
 
-   //USART1 ?????????
-	USART_InitStructure.USART_BaudRate = br_num;//??????????
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
-	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
-  USART_Init(USART1, &USART_InitStructure); //?????????1
-	
-  USART_Cmd(USART1, ENABLE);  //??????1 
-	
-	USART_ClearFlag(USART1, USART_FLAG_TC);
-	
-
-	//???USART2???????
-	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-	//???USART2
-	USART_Cmd(USART1, ENABLE); 
-}
-
-void Usart2_Init(u32 br_num)//--GPS
-{
-	USART_InitTypeDef USART_InitStructure;
-	USART_ClockInitTypeDef USART_ClockInitStruct;
-	NVIC_InitTypeDef NVIC_InitStructure;
-	GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); //????USART2???
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);	
-	
-	//????????????
-	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);	
-
-	
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
-	
-	//????PD5???USART2??Tx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
-  GPIO_Init(GPIOA, &GPIO_InitStructure); 
-	//????PD6???USART2??Rx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3 ; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-   //USART1 ?????????
-	USART_InitStructure.USART_BaudRate = br_num;//??????????
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
-	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
-  USART_Init(USART2, &USART_InitStructure); //?????????1
-	
-  USART_Cmd(USART2, ENABLE);  //??????1 
-	USART_ClearFlag(USART2, USART_FLAG_TC);
-	//???USART2???????
-	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-	//???USART2
-	USART_Cmd(USART2, ENABLE); 
-}
-
-void Usart3_Init(u32 br_num)//-------PI
-{
-	USART_InitTypeDef USART_InitStructure;
-	USART_ClockInitTypeDef USART_ClockInitStruct;
-	NVIC_InitTypeDef NVIC_InitStructure;
-	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); //????USART2???
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB,ENABLE);	
-	
-	//????????????
-	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);	
-
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_USART3);
-  GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_USART3);
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
-  GPIO_Init(GPIOB, &GPIO_InitStructure); 
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 ; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
-  GPIO_Init(GPIOB, &GPIO_InitStructure); 
-	
-   //USART3 ?????????
-	USART_InitStructure.USART_BaudRate = br_num;//??????????
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
-	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
-  USART_Init(USART3, &USART_InitStructure); //?????????1
-	
-  USART_Cmd(USART3, ENABLE);  //??????1 
-	
-	USART_ClearFlag(USART3, USART_FLAG_TC);
-	//???USART3???????
-	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
-	//???USART3
-	USART_Cmd(USART3, ENABLE); 
-//	//???????????????????
-}
-
-void Usart4_Init(u32 br_num)//-------unused
-{
-	USART_InitTypeDef USART_InitStructure;
-	USART_ClockInitTypeDef USART_ClockInitStruct;
-	NVIC_InitTypeDef NVIC_InitStructure;
-	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE); //????USART2???
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);	
-	
-	//????????????
-	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);	
-
-	
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_UART4);
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_UART4);
-	
-	//????PD5???USART2??Tx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
-  GPIO_Init(GPIOC, &GPIO_InitStructure); 
-	//????PD6???USART2??Rx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 ; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
-  GPIO_Init(GPIOC, &GPIO_InitStructure); 
-
-   //USART1 ?????????
-	USART_InitStructure.USART_BaudRate = br_num;//??????????
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
-	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
-  USART_Init(UART4, &USART_InitStructure); //?????????1
-	
-  USART_Cmd(UART4, ENABLE);  //??????1 
-	USART_ClearFlag(UART4, USART_FLAG_TC);
-	//???USART2???????
-  USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
-	//???USART2
-	USART_Cmd(UART4, ENABLE); 
-}
-
-
-void Uart5_Init(u32 br_num)//-----Sbus
-{
-	USART_InitTypeDef USART_InitStructure;
-	USART_ClockInitTypeDef USART_ClockInitStruct;
-	NVIC_InitTypeDef NVIC_InitStructure;
-	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE); //????USART2???
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD,ENABLE);
-	
-	//????????????
-	NVIC_InitStructure.NVIC_IRQChannel = UART5_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =2;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);	
-  GPIO_PinAFConfig(GPIOD, GPIO_PinSource2, GPIO_AF_UART5);
-	//????PD2???UART5??Rx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 ; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
-  GPIO_Init(GPIOD, &GPIO_InitStructure); 
-	
-	//????UART5
-	//??????????
-	USART_InitStructure.USART_BaudRate = br_num;       //?????????????????????
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;  //8?????
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;   //??????????1?????
-	USART_InitStructure.USART_Parity = USART_Parity_No;    //??????????
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //????????????
-	USART_InitStructure.USART_Mode =  USART_Mode_Rx;  //????????????
-	USART_Init(UART5, &USART_InitStructure);
-	//???UART5???????
-	USART_ITConfig(UART5, USART_IT_RXNE, ENABLE);
-	//???USART5
-	USART_Cmd(UART5, ENABLE); 
-}
-
-void Uart6_Init(u32 br_num)//-------IDLE
-{
-	USART_InitTypeDef USART_InitStructure;
-	USART_ClockInitTypeDef USART_ClockInitStruct;
-	NVIC_InitTypeDef NVIC_InitStructure;
-	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6, ENABLE); //????USART2???
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE);	
-	
-	//????????????
 	NVIC_InitStructure.NVIC_IRQChannel = USART6_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =3;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);	
+	NVIC_Init(&NVIC_InitStructure);
 
-	
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_USART6);
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_USART6);
-	
-	//????PD5???USART2??Tx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
-  GPIO_Init(GPIOC, &GPIO_InitStructure); 
-	//????PD6???USART2??Rx
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
-  GPIO_Init(GPIOC, &GPIO_InitStructure); 
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_USART6);
 
-   //USART1 ?????????
-	USART_InitStructure.USART_BaudRate = br_num;//??????????
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b;//????8???????
-	USART_InitStructure.USART_StopBits = USART_StopBits_1;//??????
-	USART_InitStructure.USART_Parity = USART_Parity_No;//?????????
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//???????????????
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//?????
-  USART_Init(USART6, &USART_InitStructure); //?????????1
-	
-  USART_Cmd(USART6, ENABLE);  //??????1 
-	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	USART_InitStructure.USART_BaudRate = br_num;
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;
+	USART_InitStructure.USART_Parity = USART_Parity_No;
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+	USART_Init(USART6, &USART_InitStructure);
+
+	USART_Cmd(USART6, ENABLE);
 	USART_ClearFlag(USART6, USART_FLAG_TC);
-	
-
-	//???USART2???????
 	USART_ITConfig(USART6, USART_IT_RXNE, ENABLE);
-	//???USART2
-	USART_Cmd(USART6, ENABLE); 
-}
-
-void UsartSend1(uint8_t ch)
-{
-while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
-USART_SendData(USART1, ch); 
-}
-
-void Send_buf1(u8 *dataToSend , char length)
-{
-	int i;
-  for(i=0;i<length;i++)
-     UsartSend1(dataToSend[i]);
-}
-
-void UsartSend2(uint8_t ch)
-{
-while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
-USART_SendData(USART2, ch); 
-}
-void UsartSend3(uint8_t ch)
-{
-while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
-USART_SendData(USART3, ch); 
 }
 
 void UsartSend6(uint8_t ch)
 {
-while(USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
-USART_SendData(USART6, ch); 
+	while (USART_GetFlagStatus(USART6, USART_FLAG_TXE) == RESET);
+	USART_SendData(USART6, ch);
 }
 
+#define UART6_RX_RING_SIZE 512
+static volatile uint8_t uart6_rx_ring[UART6_RX_RING_SIZE];
+static volatile uint16_t uart6_rx_head;
+static volatile uint16_t uart6_rx_tail;
 
-//For engien
-u8 Radio_Start[]={"#000P1501T0000!\r\n"};
-#define SRadio_Start sizeof(Radio_Start)	
-float Radio_Startt=6;//s
-
-u8 Radio_Slow[]={"#000P1502T0000!\r\n"};
-#define SRadio_Slow sizeof(Radio_Slow)	
-float Radio_Slowt=54+60;//s
-
-u8 Radio_Fast[]={"#000P1503T0000!\r\n"};
-#define SRadio_Fast sizeof(Radio_Fast)	
-float Radio_Fastt=60+50;//s
-
-u8 Radio_Down[]={"#000P1504T0000!\r\n"};
-#define SRadio_Down sizeof(Radio_Down)	
-float Radio_Downt=5;//s
-
-u8 Radio_Off[]={"#000PDST0!\r\n"};
-#define SRadio_Off sizeof(Radio_Off)	
-void UsartSend4(uint8_t ch)
+void Uart6_SendBytes(const uint8_t *data, uint16_t length)
 {
-while(USART_GetFlagStatus(UART4, USART_FLAG_TXE) == RESET);
-USART_SendData(UART4, ch); 
+	uint16_t i;
+	for (i = 0; i < length; i++)
+		UsartSend6(data[i]);
 }
 
-void radio_off(void){
-char i=0;
-	for(i=0;i<SRadio_Off;i++)
+void Uart6_SendString(const char *str)
+{
+	while (*str)
+		UsartSend6((uint8_t)*str++);
+}
+
+uint16_t Uart6_Available(void)
+{
+	uint16_t head = uart6_rx_head;
+	uint16_t tail = uart6_rx_tail;
+	if (head >= tail)
+		return (uint16_t)(head - tail);
+	return (uint16_t)(UART6_RX_RING_SIZE - tail + head);
+}
+
+uint16_t Uart6_Read(uint8_t *data, uint16_t max_len)
+{
+	uint16_t cnt = 0;
+	while (cnt < max_len && uart6_rx_tail != uart6_rx_head)
 	{
-	UsartSend3(Radio_Off[i]);
+		data[cnt++] = uart6_rx_ring[uart6_rx_tail];
+		uart6_rx_tail = (uint16_t)((uart6_rx_tail + 1) % UART6_RX_RING_SIZE);
 	}
+	return cnt;
 }
-	
 
-void radio_control(char sel,float dt)
+int fputc(int ch, FILE *f)
 {
-	char i=0;
-	static char state=0;
-	static char flag_tx=0,flag_finish=0;
-	static float timer=0;
-	static char ocu_reg,gait_mode_reg;
-	char ocu_mode=ocu.cmd_robot_state;
-	static float time_check;
-	static int size;
-	static u8 *Radio;
-	
-	switch(state){
-		case 0:
-			if(ocu_reg==0&&(ocu_mode==1||ocu_mode==12))//??????
-			{
-				flag_finish=0;timer=0;
-				flag_tx=1;
-				size=SRadio_Start;
-				Radio=&Radio_Start[0];
-				time_check=Radio_Startt;
-				state=1;
-			}
-			else if(ocu_reg==0&&ocu_mode)//?????
-			{
-				flag_finish=0;timer=0;
-				flag_tx=1;
-				size=SRadio_Slow;
-				Radio=&Radio_Slow[0];
-				time_check=Radio_Slowt;
-				state=2;
-			}
-		break;
-		case 1:
-			timer+=dt;
-			if(timer>Radio_Startt)
-			{
-				flag_finish=1;
-			}
-			if(flag_finish){
-				flag_finish=0;timer=0;
-				state=2;
-				flag_tx=1;
-				size=SRadio_Slow;
-				Radio=&Radio_Slow[0];
-				time_check=Radio_Slowt;
-			}
-		break;	
-		case 2://????????
-			timer+=dt;
-			if(gait_mode_reg!=F_TROT&&vmc_all.gait_mode==F_TROT)
-			{
-				flag_finish=0;timer=0;
-				flag_tx=1;
-				size=SRadio_Fast;
-				Radio=&Radio_Fast[0];
-				time_check=Radio_Fastt;
-			}
-			if(gait_mode_reg==TROT&&vmc_all.gait_mode!=TROT)
-			{
-				flag_finish=0;timer=0;
-				flag_tx=1;
-				size=SRadio_Slow;
-				Radio=&Radio_Slow[0];
-				time_check=Radio_Slowt;
-			}	
-			if(ocu_mode==0)
-			{
-				flag_finish=0;timer=0;
-				flag_tx=1;
-				size=SRadio_Down;
-				Radio=&Radio_Down[0];
-				time_check=Radio_Downt;
-				state=3;
-			}	
-			
-			if(timer>time_check/2&&time_check>0){//???????
-				flag_finish=0;timer=0;
-				flag_tx=1;
-			}		
-		break;
-		case 3:
-			timer+=dt;
-			if(timer>time_check)
-			{
-				flag_finish=1;
-			}
-			if(flag_finish){
-				flag_finish=0;timer=0;
-				state=0;
-			}
-		break;
-		
-	}
-	
-	gait_mode_reg=vmc_all.gait_mode;
-	ocu_reg=ocu.cmd_robot_state;
-	if(flag_tx){
-	flag_tx=0;
-		for(i=0;i<size;i++)
+	(void)f;
+	if (ch == '\n')
+		UsartSend6('\r');
+	UsartSend6((uint8_t)ch);
+	return ch;
+}
+
+void USART6_IRQHandler(void)
+{
+	uint8_t data;
+	uint16_t next_head;
+
+	if (USART6->SR & USART_SR_ORE)
+		(void)USART6->DR;
+	if (USART_GetITStatus(USART6, USART_IT_RXNE))
+	{
+		USART_ClearITPendingBit(USART6, USART_IT_RXNE);
+		data = (uint8_t)USART6->DR;
+		next_head = (uint16_t)((uart6_rx_head + 1) % UART6_RX_RING_SIZE);
+		if (next_head != uart6_rx_tail)
 		{
-		UsartSend3(*(Radio+i));
+			uart6_rx_ring[uart6_rx_head] = data;
+			uart6_rx_head = next_head;
 		}
 	}
 }
 
-//??????????
-void Data_LEG_CMD(u8 *data_buf,u8 num)
-{ static u8 cnt[4];
-	u8 id;
-	vs16 rc_value_temp;
-	u8 sum = 0,sum_rx=0;
-	u8 i;
-	for( i=0;i<(num-1);i++)
-		sum += *(data_buf+i);
-	sum_rx=*(data_buf+num-1);
-	if(!(sum==*(data_buf+num-1))&&*(data_buf+2)!=MODE_FACE)		return;		//???sum
-	//if(!(sum==*(data_buf+num-1)))		return;		//???sum
-	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//?????
-  if(*(data_buf+2)==MODE_CUBE)//Cube
-  { 
-	  pi.connect=MODE_CUBE;
-		pi.lost_cnt=0;
-		pi.cube.check=*(data_buf+4);
-	  pi.cube.x=((int16_t)(*(data_buf+5)<<8)|*(data_buf+6))-320/2;
-		pi.cube.y=-(((int16_t)(*(data_buf+7)<<8)|*(data_buf+8))-240/2);
-		pi.cube.s=((int16_t)(*(data_buf+9)<<8)|*(data_buf+10));
-		
-		pi.cube.pos[Xr]=(float)((int16_t)(*(data_buf+11)<<8)|*(data_buf+12))/100.;
-		pi.cube.pos[Yr]=(float)((int16_t)(*(data_buf+13)<<8)|*(data_buf+14))/100.;
-		pi.cube.pos[Zr]=(float)((int16_t)(*(data_buf+15)<<8)|*(data_buf+16))/100.;
-		
-		pi.cube.att[Xr]=(float)((int16_t)(*(data_buf+17)<<8)|*(data_buf+18))/100.;
-		pi.cube.att[Yr]=(float)((int16_t)(*(data_buf+19)<<8)|*(data_buf+20))/100.;
-		pi.cube.att[Zr]=(float)((int16_t)(*(data_buf+21)<<8)|*(data_buf+22))/100.;
-	}	
-  else if(*(data_buf+2)==MODE_COLOR)//Color Ball
-  { 
-	  pi.connect=MODE_COLOR;
-		pi.lost_cnt=0;
-		pi.color.check=*(data_buf+4);
-	  pi.color.x=((int16_t)(*(data_buf+5)<<8)|*(data_buf+6))-320/2;
-		pi.color.y=-(((int16_t)(*(data_buf+7)<<8)|*(data_buf+8))-240/2);
-		pi.color.s=((int16_t)(*(data_buf+9)<<8)|*(data_buf+10));
-		
-		pi.color.pos[Xr]=(float)((int16_t)(*(data_buf+11)<<8)|*(data_buf+12))/100.;
-		pi.color.pos[Yr]=(float)((int16_t)(*(data_buf+13)<<8)|*(data_buf+14))/100.;
-		pi.color.pos[Zr]=(float)((int16_t)(*(data_buf+15)<<8)|*(data_buf+16))/100.;
-		
-		pi.color.att[Xr]=(float)((int16_t)(*(data_buf+17)<<8)|*(data_buf+18))/100.;
-		pi.color.att[Yr]=(float)((int16_t)(*(data_buf+19)<<8)|*(data_buf+20))/100.;
-		pi.color.att[Zr]=(float)((int16_t)(*(data_buf+21)<<8)|*(data_buf+22))/100.;
-	}	
-	else if(*(data_buf+2)==MODE_LINE)//LINE
-  { 
-	  pi.connect=MODE_LINE;
-		pi.lost_cnt=0;
-		pi.line.check=*(data_buf+4);
-	  pi.line.x=-(((int16_t)(*(data_buf+5)<<8)|*(data_buf+6))-250/2);
-		pi.line.y=-(((int16_t)(*(data_buf+7)<<8)|*(data_buf+8))-120/2);
-		pi.line.angle=(float)((int16_t)(*(data_buf+9)<<8)|*(data_buf+10))/100.;
-	}	
-	else if(*(data_buf+2)==MODE_FACE)//Face
-  { 
-	  pi.connect=MODE_FACE;
-		pi.lost_cnt=0;
-		pi.face.check=*(data_buf+4);
-	  pi.face.x=*(data_buf+5)-256/2;
-		pi.face.y=-(*(data_buf+6)-192/2);
-		pi.face.s=*(data_buf+7);
-	}	
-	else if(*(data_buf+2)==MODE_CMD)//CMD
-  { 
-	  pi.connect=MODE_CMD;
-		pi.lost_cnt=0;
-	  pi.cmd_mode=*(data_buf+4);
-		pi.cmd_spd[Xr]=(float)((int16_t)(*(data_buf+5)<<8)|*(data_buf+6))/100.;
-		pi.cmd_spd[Yr]=(float)((int16_t)(*(data_buf+7)<<8)|*(data_buf+8))/100.;
-		pi.cmd_spd[Zr]=(float)((int16_t)(*(data_buf+9)<<8)|*(data_buf+10))/100.*57.3;
-		
-		pi.cmd_att[PITr]=(float)((int16_t)(*(data_buf+11)<<8)|*(data_buf+12))/10.;
-		pi.cmd_att[ROLr]=(float)((int16_t)(*(data_buf+13)<<8)|*(data_buf+14))/10.;
-		pi.cmd_att[YAWr]=(float)((int16_t)(*(data_buf+15)<<8)|*(data_buf+16))/10.;
-		
-		pi.cmd_pos[Xr]=(float)((int16_t)(*(data_buf+17)<<8)|*(data_buf+18))/100.;
-		pi.cmd_pos[Yr]=(float)((int16_t)(*(data_buf+19)<<8)|*(data_buf+20))/100.;
-		pi.cmd_pos[Zr]=(float)((int16_t)(*(data_buf+21)<<8)|*(data_buf+22))/100.;
-		
-		pi.cmd_spd[Xr]=LIMIT(pi.cmd_spd[Xr],-MAX_SPD,MAX_SPD);
-		pi.cmd_spd[Yr]=LIMIT(pi.cmd_spd[Yr],-MAX_SPD,MAX_SPD);
-		pi.cmd_spd[Zr]=LIMIT(pi.cmd_spd[Zr],-MAX_SPD_RAD,MAX_SPD_RAD);
-		pi.cmd_att[PITr]=LIMIT(pi.cmd_att[PITr],-25,25);
-		pi.cmd_att[ROLr]=LIMIT(pi.cmd_att[ROLr],-25,25);
-		pi.cmd_att[YAWr]=LIMIT(pi.cmd_att[YAWr],-180,180);
-	}			
-}
+#define UART6_LINE_MAX 64
+static char uart6_line[UART6_LINE_MAX];
+static uint8_t uart6_line_len;
 
-//????????????
-_LINK_CMD o_cmd;
-void Anal_Outter_CMD(u8 *data_buf,u8 num)
-{ static u8 cnt[4];
-	u8 id;
-	vs16 rc_value_temp;
-	u8 sum = 0;
-	u8 i;
-	for( i=0;i<(num-1);i++)
-		sum += *(data_buf+i);
-	if(!(sum==*(data_buf+num-1)))		return;		//???sum
-	if(!(*(data_buf)==0xAA && *(data_buf+1)==0xAF))		return;		//?????
-  if(*(data_buf+2)==1)//
-  { 
-	  o_cmd.connect=1;
-		o_cmd.lost_cnt=0;
-		o_cmd.mode=*(data_buf+4);
-	  o_cmd.spd[Xr]=(float)((int16_t)(*(data_buf+5)<<8)|*(data_buf+6))/100.;
-		o_cmd.spd[Yr]=(float)((int16_t)(*(data_buf+7)<<8)|*(data_buf+8))/100.;
-		o_cmd.spd[Zr]=(float)((int16_t)(*(data_buf+9)<<8)|*(data_buf+10))/100.;
-		o_cmd.att[PITr]=(float)((int16_t)(*(data_buf+11)<<8)|*(data_buf+12))/10.;
-		o_cmd.att[ROLr]=(float)((int16_t)(*(data_buf+13)<<8)|*(data_buf+14))/10.;
-		o_cmd.att[YAWr]=(float)((int16_t)(*(data_buf+15)<<8)|*(data_buf+16))/10.;
-		o_cmd.pos[Xr]=(float)((int16_t)(*(data_buf+17)<<8)|*(data_buf+18))/100.;
-		o_cmd.pos[Yr]=(float)((int16_t)(*(data_buf+19)<<8)|*(data_buf+20))/100.;
-		o_cmd.pos[Zr]=(float)((int16_t)(*(data_buf+21)<<8)|*(data_buf+22))/100.;
-		
-		o_cmd.spd[Xr]=LIMIT(o_cmd.spd[Xr],-MAX_SPD,MAX_SPD);
-		o_cmd.spd[Yr]=LIMIT(o_cmd.spd[Yr],-MAX_SPD,MAX_SPD);
-		o_cmd.spd[Zr]=LIMIT(o_cmd.spd[Zr],-MAX_SPD_RAD,MAX_SPD_RAD);
-		o_cmd.att[PITr]=LIMIT(o_cmd.att[PITr],-25,25);
-		o_cmd.att[ROLr]=LIMIT(o_cmd.att[ROLr],-25,25);
-		o_cmd.att[YAWr]=LIMIT(o_cmd.att[YAWr],-180,180);
-	}
-}
+void Uart6_PollCommandLine(void)
+{
+	uint8_t b;
 
-
-u8 UART_RX_BUF[16];
-char isUartRxCompleted = 0;
-#if defined(USE_SERIAL_SERVO)
-void USART1_IRQHandler(void)
-{ OSIntEnter(); 
-	uint8_t Res;
-	static char isGotFrameHeader = 0;
-	static uint8_t frameHeaderCount = 0;
-	static uint8_t dataLength = 2;
-	static uint8_t dataCount = 0;
-	if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) { //??????
-		Res = USART_ReceiveData(USART1);//(USART1->DR);	//?????????
-		if (!isGotFrameHeader) {  //????
-			if (Res == 0x55) {
-				frameHeaderCount++;
-				if (frameHeaderCount == 2) {
-					frameHeaderCount = 0;
-					isGotFrameHeader = 1;
-					dataCount = 1;
-				}
-			} else {
-				isGotFrameHeader = 0;
-				dataCount = 0;
-				frameHeaderCount = 0;
-			}
+	while (Uart6_Available())
+	{
+		if (Uart6_Read(&b, 1) != 1) {
+			break;
 		}
-		if (isGotFrameHeader) { //????????
-			UART_RX_BUF[dataCount] = Res;
-			if (dataCount == 3) {
-				dataLength = UART_RX_BUF[dataCount];
-				if (dataLength < 3 || dataLength > 7) {
-					dataLength = 3;
-					isGotFrameHeader = 0;
-				}
-			}
-			dataCount++;
-			if (dataCount == dataLength + 3) {
-				if (isUartRxCompleted == false) {
-					isUartRxCompleted = true;
-				}
-				isGotFrameHeader = false;
-			}
-		}
-		
-	}
-	OSIntExit(); 
-}
+
+		if (b == '\r' || b == '\n')
+		{
+			int cmd;
+
+			uart6_line[uart6_line_len] = '\0';
+			cmd = (uart6_line_len > 0 && strcmp(uart6_line, "test") == 0);
+			uart6_line_len = 0;
+			uart6_line[0] = '\0';
+			if (cmd)
+			{
+				printf("test\n");
+#if defined(EN_BEEP)
+				Play_Music_Direct(MEMS_GPS_RIGHT);
 #endif
-
-char isRxCompleted(void)
-{
-	if(isUartRxCompleted == 1){
-		isUartRxCompleted = 0;
-		return 1;
-	}else{
-		return 0;
-	}
-}
-
-u8 TxBuffer1[256];
-u8 TxCounter1=0;
-u8 count1=0; 
-u8 RxBuffer1[50];
-char RxBuffer1c[50];
-u8 RxState1 = 0;
-u8 RxBufferNum1 = 0;
-int RxBufferCnt1 = 0;
-u8 RxLen1 = 0;
-static u8 _data_len1 = 0,_data_cnt1 = 0;
-int _data_cnt11=0;
-int RxBufferCnt11=0;
- 
-void USART1_IRQHandler(void)//Radio  mavlink
-{ //OSIntEnter(); 
-	u8 com_data,crc_byte=0,i=0;
-	_OCU ocu_rx;
-	uint8_t c,t;
-	char crc_check=0;
-	if(USART1->SR & USART_SR_ORE)//ORE???
-	{
-		com_data = USART1->DR;
-	}
-
-  //???????
-	if( USART_GetITStatus(USART1,USART_IT_RXNE) )
-	{
-		USART_ClearITPendingBit(USART1,USART_IT_RXNE);//????????
-
-		com_data = USART1->DR;
-		if(RxState1==0&&com_data==0xAA)
-		{
-			RxState1=1;
-			RxBuffer1[0]=com_data;
-		}
-		else if(RxState1==1)
-		{
-			if(com_data==0xBB){
-				RxBuffer1[1]=com_data;
-				RxState1=2;
-				_data_cnt1=0;
 			}
-			else
-				RxState1=0;
+			continue;
 		}
-		else if(RxState1==2)
-		{
-			RxBuffer1[2+_data_cnt1++]=com_data;
-			
-			if(_data_cnt1>17-1)
-			{	
-				for(int i=0;i<18;i++)
-					crc_check+=RxBuffer1[i];
-				if(crc_check==RxBuffer1[18]){
-					ocu.key_st=RxBuffer1[9]-1;
-					ocu.key_back=RxBuffer1[8]-1;
-					ocu.key_lr=-(RxBuffer1[3]-1);
-					ocu.key_ud=RxBuffer1[2]-1;
-					ocu.key_x=RxBuffer1[10]-1;
-					ocu.key_a=RxBuffer1[12]-1;
-					ocu.key_b=RxBuffer1[13]-1;
-					ocu.key_y=RxBuffer1[11]-1;
-					ocu.key_ll=RxBuffer1[4]-1;
-					ocu.key_rr=RxBuffer1[5]-1;
-					ocu.rc_spd_w[Xr]=my_deathzoom((float)(RxBuffer1[14]-125)/125.0,0.05);
-					ocu.rc_spd_w[Yr]=my_deathzoom(-(float)(RxBuffer1[15]-125)/125.0,0.05);
-					ocu.rc_att_w[PITr]=my_deathzoom((float)(RxBuffer1[16]-125)/125.0,0.05);
-					ocu.rc_att_w[ROLr]=my_deathzoom(-(float)(RxBuffer1[17]-125)/125.0,0.05);
-					ocu.rate_yaw_w=-(RxBuffer1[6]*-0.5+RxBuffer1[7]*0.5);
-						
-					ocu.connect=1;ocu.loss_cnt=0;
-					ocu.mode=2;
-				}				
-				
-			RxState1=_data_len1=0;
-			}
-		}
+		if (uart6_line_len < UART6_LINE_MAX - 1)
+			uart6_line[uart6_line_len++] = (char)b;
 		else
-			RxState1 = 0;
-		
-		if(!wsled.led_lock&&0){
-			if(RxState1==0&&(com_data==0+WHEEL_ID_OFF||com_data==1+WHEEL_ID_OFF||com_data==2+WHEEL_ID_OFF||com_data==3+WHEEL_ID_OFF))// ???ID?????10 11
-			{
-				RxState1=1;
-				RxBuffer1c[0]=com_data;
-			}
-			else if(RxState1==1&&com_data==0x02)//????? 
-			{
-				RxState1=2;
-				RxBuffer1c[1]=com_data;
-				_data_len1 = 8;
-				_data_cnt11 = 0;
-			}
-			else if(RxState1==2)//doghomewx
-			{
-				RxBuffer1c[2+_data_cnt11++]=com_data;
-				RxBufferCnt11++;
-				if(_data_cnt11>7){
-					RxState1=0;
-					RxBufferCnt1++;
-					crc_check=PY_CRC_8_T(RxBuffer1c,9);
-					if(crc_check==RxBuffer1c[9]){//??????
-						int id=LIMIT(RxBuffer1c[0]-WHEEL_ID_OFF,0,99);
-						_wheel_wx[id].connect=1;
-						_wheel_wx[id].dt_rx=Get_Cycle_T(30+(id)); 
-						_wheel_wx[id].rx_cnt++;
-						_wheel_wx[id].loss_cnt=0;
-						_wheel_wx[id].mode=RxBuffer1c[1];
-						_wheel_wx[id].current=(float)((int16_t)(*(RxBuffer1c+2)<<8)|*(RxBuffer1c+3))/32767.*8.0*_wheel_wx[id].cmd_flag;
-						_wheel_wx[id].rad_now=(float)((int16_t)(*(RxBuffer1c+4)<<8)|*(RxBuffer1c+5))*(2.0 * M_PI / 60.0)*_wheel_wx[id].cmd_flag;
-						_wheel_wx[id].q_now=(float)((u16)(*(RxBuffer1c+6)<<8)|*(RxBuffer1c+7))/32767.*360*_wheel_wx[id].cmd_flag;
-						_wheel_wx[id].tau_now=_wheel_wx[id].current*_wheel_wx[id].i_2_tau;
-						_wheel_wx[id].v_now=_wheel_wx[id].rad_now*_wheel_wx[id].r;
-						_wheel_wx[id].err=RxBuffer1c[8];
-					}
-				}
-			}else
-				RxState1=0;
-		}
-	 
-	}
-//??????? 
-	 
-  if(USART_GetITStatus(USART1, USART_IT_TXE) != RESET)
-  {   		
-      USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
-  }		
-}
-
-
-u8 TxBuffer2[256];
-u8 TxCounter2=0;
-u8 count2=0; 
-u8 RxBuffer2[80];
-u8 RxState2 = 0;
-u8 RxBufferNum2 = 0;
-u8 RxBufferCnt2 = 0;
-u8 RxLen2 = 0;
-static u8 _data_len2 = 0,_data_cnt2 = 0;
-void USART2_IRQHandler(void)//GPS
-{ //OSIntEnter(); 
-	u8 com_data;
-	
-	if(USART2->SR & USART_SR_ORE)//ORE???
-	{
-		com_data = USART2->DR;
-	}
-
-  //???????
-	if( USART_GetITStatus(USART2,USART_IT_RXNE) )
-	{
-		USART_ClearITPendingBit(USART2,USART_IT_RXNE);//????????
-
-		com_data = USART2->DR;
-		if(RxState2==0&&com_data==0xAA)
-		{
-			RxState2=1;
-			RxBuffer2[0]=com_data;
-		}
-		else if(RxState2==1&&com_data==0xAF)
-		{
-			RxState2=2;
-			RxBuffer2[1]=com_data;
-		}
-		else if(RxState2==2&&com_data>0&&com_data<0XF1)
-		{
-			RxState2=3;
-			RxBuffer2[2]=com_data;
-		}
-		else if(RxState2==3&&com_data<80)
-		{
-			RxState2 = 4;
-			RxBuffer2[3]=com_data;
-			_data_len2 = com_data;
-			_data_cnt2 = 0;
-		}
-		else if(RxState2==4&&_data_len2>0)
-		{
-			_data_len2--;
-			RxBuffer2[4+_data_cnt2++]=com_data;
-			if(_data_len2==0)
-				RxState2= 5;
-		}
-		else if(RxState2==5)
-		{
-			RxState2 = 0;
-			RxBuffer2[4+_data_cnt2]=com_data;
-   
-		}
-		else
-			RxState2 = 0;
-	}
-
-	//?????????????????
-	if( USART_GetITStatus(USART2,USART_IT_TXE ) )
-	{
-				
-		USART2->DR = TxBuffer2[TxCounter2++]; //?DR????????          
-		if(TxCounter2 == count2)
-		{
-			USART2->CR1 &= ~USART_CR1_TXEIE;		//???TXE?????????????
-		}
+			uart6_line_len = 0;
 	}
 }
 
-
-
-
-u8 TxBuffer3[256];
-u8 TxCounter3=0;
-u8 count3=0; 
-u8 Rx_Buf3[256];	//??????????
-u8 RxBuffer3[255];
-u8 RxState3 = 0;
-u8 RxBufferNum3 = 0;
-u8 RxBufferCnt3 = 0;
-u8 RxLen3 = 0;
-static u8 _data_len3 = 0,_data_cnt3 = 0;
-void USART3_IRQHandler(void)//extcan
-{ // OSIntEnter();  
-	u8 com_data;
-	
-	if(USART3->SR & USART_SR_ORE)//ORE???
-	{
-		com_data = USART3->DR;
-	}
-
-  //???????
-	if( USART_GetITStatus(USART3,USART_IT_RXNE) )
-	{
-		USART_ClearITPendingBit(USART3,USART_IT_RXNE);//????????
-
-		com_data = USART3->DR;
-		
-		if(RxState3==0&&com_data==0xBA)
-		{
-			RxState3=1;
-			RxBuffer3[0]=com_data;
-		}
-		else if(RxState3==1&&com_data==0xBF)
-		{
-			RxState3=2;
-			RxBuffer3[1]=com_data;
-		}
-		else if(RxState3==2&&com_data>0&&com_data<0XF1)
-		{
-			RxState3=3;
-			RxBuffer3[2]=com_data;
-		}
-		else if(RxState3==3&&com_data<80)
-		{
-			RxState3 = 4;
-			RxBuffer3[3]=com_data;
-			_data_len3 = com_data;
-			_data_cnt3 = 0;
-		}
-		else if(RxState3==4&&_data_len3>0)
-		{
-			_data_len3--;
-			RxBuffer3[4+_data_cnt3++]=com_data;
-			if(_data_len3==0)
-				RxState3 = 5;
-		}
-		else if(RxState3==5)
-		{
-			RxState3 = 0;
-			RxBuffer3[4+_data_cnt3]=com_data;
-		}
-		else
-			RxState3 = 0;
-	
-	}
-	//?????????????????
-	if( USART_GetITStatus(USART3,USART_IT_TXE ) )
-	{
-				
-		USART3->DR = TxBuffer2[TxCounter3++]; //?DR????????          
-		if(TxCounter3 == count3)
-		{
-			USART3->CR1 &= ~USART_CR1_TXEIE;		//???TXE?????????????
-		}
-	}      
-}
-
-u8 TxBuffer4[256];
-u8 TxCounter4=0;
-u8 count4=0; 
-u8 RxBuffer4[50];
-u8 RxState4 = 0;
-u8 RxBufferNum4 = 0;
-u8 RxBufferCnt4 = 0;
-u8 RxLen4= 0;
-_FLOW optical_flow;
-static u8 _data_len4 = 0,_data_cnt4 = 0;
-void UART4_IRQHandler(void)//FLOW
-{ //OSIntEnter(); 
-	u8 com_data;
-	
-	if(UART4->SR & USART_SR_ORE)//ORE???
-	{
-		com_data = UART4->DR;
-	}
-
-  //???????
-	if( USART_GetITStatus(UART4,USART_IT_RXNE) )
-	{
-		USART_ClearITPendingBit(UART4,USART_IT_RXNE);//????????
-
-		com_data = UART4->DR;
-		
-		if(RxState4==0)
-		{
-			if(com_data==0xAA){
-			RxState4=1;
-			RxBuffer4[0]=com_data;}
-		}
-		else if(RxState4==1&&com_data==0x55)
-		{
-			if(com_data==0x55){
-			RxState4=2;
-			RxBuffer4[1]=com_data;
-			_data_cnt4=0;
-			}else RxState4=0;
-		}
-		else if(RxState4==2)
-		{
-			RxBuffer4[2+_data_cnt4++]=com_data;
-			if(_data_cnt4>5-1)
-				RxState4 =3;
-		}
-		else if(RxState4==3)
-		{
-			RxBuffer4[7]=RxBuffer4[0]+RxBuffer4[1]+RxBuffer4[2]+
-				RxBuffer4[3]+RxBuffer4[4]+RxBuffer4[5]+RxBuffer4[6];
-      if(RxBuffer4[7]==com_data)
-			{
-				 optical_flow.connect=1;
-			   optical_flow.loss_cnt=0;
-			   optical_flow.pix[Xr]=(int8_t)RxBuffer4[2];
-				 optical_flow.pix[Yr]=(int8_t)RxBuffer4[3];
-				 optical_flow.height=(float)(RxBuffer4[5]+(RxBuffer4[6]<<8))/1000.;
-				 optical_flow.spd_o[Xr] += optical_flow.pix[Xr];
-				 optical_flow.spd_o[Yr] += optical_flow.pix[Yr];
-			}
-			RxState4=_data_len4=0;
-		}
-		else
-			RxState4 = 0;
-	}
-
-	//?????????????????
-	if( USART_GetITStatus(UART4,USART_IT_TXE ) )
-	{
-				
-		UART4->DR = TxBuffer4[TxCounter4++]; //?DR????????          
-		if(TxCounter4 == count4)
-		{
-			UART4->CR1 &= ~USART_CR1_TXEIE;		//???TXE?????????????
-		}
-	}
-}
-
-
-RC_GETDATA Rc_Get_PWM,Rc_Get_SBUS;
-void UART5_IRQHandler(void)
-{ 
-	if(UART5->SR & USART_SR_ORE)
-		(void)UART5->DR;
-	if(USART_GetITStatus(UART5,USART_IT_RXNE))
-	{
-		USART_ClearITPendingBit(UART5,USART_IT_RXNE);
-		(void)UART5->DR;
-	}
-}
-
-
-void Anal_UART6(u8 *data_buf,u8 num)
-{ static u8 cnt[4];
-	u8 id;
-	vs16 rc_value_temp;
-	u8 sum = 0;
-	u8 i;
-	int anal_cnt = 4;
-	float temp_imu[3];
-	for( i=0;i<(num-1);i++)
-		sum += *(data_buf+i);
-	if(!(sum==*(data_buf+num-1)))		return;		//???sum
-	if(!(*(data_buf)==0xBA && *(data_buf+1)==0xBF))		return;		//?????
-	if(*(data_buf+2)==0x01&&USE_IMU_O)//
-  { 
-	  imuo.connect=1;
-		imuo.cnt_loss=0;
-		imuo.dt=Get_Cycle_T(20); 	
-		imuo.att[1]=(float)((int16_t)(*(data_buf+4)<<8)|*(data_buf+5))/100.;
-		imuo.att[0]=-(float)((int16_t)(*(data_buf+6)<<8)|*(data_buf+7))/100.;
-		imuo.att[2]=-(float)((int16_t)(*(data_buf+8)<<8)|*(data_buf+9))/100.;
-		imuo.rate[1]=(float)((int16_t)(*(data_buf+10)<<8)|*(data_buf+11))/100.;
-		imuo.rate[0]=(float)((int16_t)(*(data_buf+12)<<8)|*(data_buf+13))/100.;
-		imuo.rate[2]=(float)((int16_t)(*(data_buf+14)<<8)|*(data_buf+15))/100.;
-		imuo.acc_b[1]=(float)((int16_t)(*(data_buf+16)<<8)|*(data_buf+17))/100./9.81;
-		imuo.acc_b[0]=(float)((int16_t)(*(data_buf+18)<<8)|*(data_buf+19))/100./9.81;
-		imuo.acc_b[2]=-(float)((int16_t)(*(data_buf+20)<<8)|*(data_buf+21))/100./9.81;
-		temp_imu[0]=(float)((int16_t)(*(data_buf+22)<<8)|*(data_buf+23))/100.;
-		temp_imu[1]=(float)((int16_t)(*(data_buf+24)<<8)|*(data_buf+25))/100.;
-		temp_imu[2]=(float)((int16_t)(*(data_buf+26)<<8)|*(data_buf+27))/100.;
-		
-		imuo.acc_n[0]=-temp_imu[0]*sind(-imuo.att[2])+temp_imu[1]*cosd(-imuo.att[2]);
-		imuo.acc_n[1]= temp_imu[0]*cosd(-imuo.att[2])+temp_imu[1]*sind(-imuo.att[2]);
-		imuo.acc_n[2]= temp_imu[2];
-	}
-}
-
-
-u8 TxBuffer6[256];
-u8 TxCounter6=0;
-u8 count6=0; 
-u8 Rx_Buf6[256];	//??????????
-u8 RxBuffer6[50];
-u8 RxState6 = 0;
-u8 RxBufferNum6 = 0;
-u8 RxBufferCnt6 = 0;
-u8 RxLen6 = 0;
-static u8 _data_len6= 0,_data_cnt6 = 0;
-u8 RxBuffer6_check[50];
-void USART6_IRQHandler(void)//GPS----------------------
-{ //OSIntEnter(); 
-	u8 com_data;
-	static int cnt_rx=0;
-	if(USART6->SR & USART_SR_ORE)//ORE???
-	{
-		com_data = USART6->DR;
-	}
-
-  //???????
-	if( USART_GetITStatus(USART6,USART_IT_RXNE) )
-	{
-		USART_ClearITPendingBit(USART6,USART_IT_RXNE);//????????
-
-		com_data = USART6->DR;
-		RxBuffer6_check[cnt_rx++]=com_data;
-		if(cnt_rx>50)
-			cnt_rx=0;
-		if(RxState6==0&&com_data==0xBA)
-		{
-			RxState6=1;
-			RxBuffer6[0]=com_data;
-		}
-		else if(RxState6==1&&com_data==0xBF)
-		{
-			RxState6=2;
-			RxBuffer6[1]=com_data;
-		}
-		else if(RxState6==2&&com_data>0&&com_data<0XF1)
-		{
-			RxState6=3;
-			RxBuffer6[2]=com_data;
-		}
-		else if(RxState6==3&&com_data<80)
-		{
-			RxState6 = 4;
-			RxBuffer6[3]=com_data;
-			_data_len6 = com_data;
-			_data_cnt6 = 0;
-		}
-		else if(RxState6==4&&_data_len6>0)
-		{
-			_data_len6--;
-			RxBuffer6[4+_data_cnt6++]=com_data;
-			if(_data_len6==0)
-				RxState6= 5;
-		}
-		else if(RxState6==5)
-		{
-			RxState6 = 0;
-			RxBuffer6[4+_data_cnt6]=com_data;
-			Anal_UART6(RxBuffer6,_data_cnt6+5);
-   
-		}
-		else
-			RxState6 = 0;
-	}
-}
-u8 SendBuff1_cnt;
-u8 SendBuff3_cnt;
-u8 SendBuff6_cnt;
-u8 SendBuff1[SEND_BUF_SIZE1];
-u8 SendBuff2[SEND_BUF_SIZE2];
-u8 SendBuff3[SEND_BUF_SIZE3];
-u8 SendBuff6[SEND_BUF_SIZE6];
-u16 leg_uart_cnt;
-void GOL_LINK_TASK_DMA(void)//5ms
-{
-static u8 cnt[10];
-static u8 flag[10];
-u8 i;
-
-end_gol_link1:;
-}
-
-void clear_leg_uart(void)
-{
-	u16 i;
-	leg_uart_cnt=0;
-	for(i=0;i<SEND_BUF_SIZE1;i++)
-	SendBuff1[i]=0;
-}
-
-void Usart1_Send_DMA(u8 *dataToSend , u8 length)
-{
-	u8 i;
-	for	(i=0;i<length;i++)
-	SendBuff1[SendBuff1_cnt++]=dataToSend[i];
-}
-
-//???????
-//???????????-32767~32767 ???????-8~8A(???????????)??????????????? 16 ?
-//?????????-330~330????? rpm??????????????? 16 ?
-//?????????0~32767 ??? 0??~360??????????????? 16 ?
-char PY_CRC_8_T(char *di, uint32_t len)
-{
-  uint8_t crc_poly = 0x8C; //Bit sequence inversion of 0x31
-	uint8_t data_t = 0; //CRC register
-
-    for(uint32_t i = 0; i < len; i++)
-    {
-    	data_t ^= di[i]; //8-bit data
-
-        for (uint8_t j = 0; j < 8; j++)
-        {
-            if (data_t & 0x01)
-            	data_t = (data_t >> 1) ^ crc_poly;
-            else
-            	data_t >>= 1;
-        }
-    }
-    return data_t;
-}
- 
-void Set_motor_cmd(char id,int16_t cmd,int sys_mode)
-{ char i;	char sum = 0;
-	vs16 _temp;
-  char data_to_send[50];
-	char _cnt=0;
-	char crc=0;
-  data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=id;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0x64;
-	_temp = cmd;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=BYTE1(_temp);
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=BYTE0(_temp);
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;//??????
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=sys_mode;//???
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	SendBuff1[SendBuff1_cnt++]=PY_CRC_8_T(data_to_send,9);
-}
-
-void Get_motor_fb(char id)
-{ char i;	char sum = 0;
-	vs16 _temp;
-  char data_to_send[50];
-	char _cnt=0;
-	char crc=0;
-  data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=id;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0x74;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	SendBuff1[SendBuff1_cnt++]=PY_CRC_8_T(data_to_send,9);
-}
-//?????
-//0x01???????????
-//0x02?????????
-//0x03?????????
-void Set_motor_mode(char id,char mode)
-{ char i;	char sum = 0;
-	vs16 _temp;
-  char data_to_send[50];
-	char _cnt=0;
-	char crc=0;
-  data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=id;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0xA0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	SendBuff1[SendBuff1_cnt++]=mode;
-}
-
-//????ID????????????????????????????????????????????????5??ID????????????????
-void Set_motor_id(char id)
-{ char i;	char sum = 0;
-	vs16 _temp;
-  char data_to_send[50];
-	char _cnt=0;
-	char crc=0;
-  data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0xAA;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0x55;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0x53;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=id;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	data_to_send[_cnt++]=SendBuff1[SendBuff1_cnt++]=0;
-	SendBuff1[SendBuff1_cnt++]=0;
-}
-//???????????-32767~32767 ???????-8~8A(???????????)??????????????? 16 ?
-//?????????-330~330????? rpm??????????????? 16 ?
-//?????????0~32767 ??? 0??~360??????????????? 16 ?
-void set_motor_spd(char id,float rad_set){//rpm
-	int16_t rpm=0;
-	rpm= rad_set/(2.0 * M_PI / 60.0);
-	Set_motor_cmd( id, rpm,0);
-}
-
-void set_motor_current(char id,float i_set){// 
-	int16_t cmd=0;
-	i_set=LIMIT(i_set,-2,2);
-	cmd=i_set/8*32766/2;
-	Set_motor_cmd( id, cmd,0);
-}
-
-void set_wheel_null(char len)
-{   
-  int i;
-	for(i=0;i<len;i++)
-		SendBuff1[SendBuff1_cnt++]=0x00;
-}
-
-//01 64 00 00 00 00 00 FF 00 D1 ??????
-void wheel_motor_loop(char id,float dt){
-	#if 0 //1~4 1FL FR2 HL3 HR
-		static int init[10]={0};
-		if(!init[id]){
-			//test_wheel(1);
-			for(int i=0;i<15;i++)
-			{
-				Set_motor_id(WHEEL_ID_OFF+3);
-				delay_ms(10);
-			}
-			
-			_wheel_wx[0].rad_set=0;
-			_wheel_wx[1].rad_set=0;
-			_wheel_wx[2].rad_set=0;
-			_wheel_wx[3].rad_set=0;
-			
-			_wheel_wx[0].cmd_flag=1;
-			_wheel_wx[1].cmd_flag=-1;
-			_wheel_wx[2].cmd_flag=1;
-			_wheel_wx[3].cmd_flag=-1;
-			
-			_wheel_wx[id].r=0.1/2;//m ???
-			
-			Set_motor_mode(id+WHEEL_ID_OFF,2);//????????
-			init[id]=1;
-		}else{
-		
-		//Get_motor_fb(id);
-			_wheel_wx[id].rad_set=LIMIT(_wheel_wx[id].rad_set,-15,15);
-			set_motor_spd(id+WHEEL_ID_OFF,_wheel_wx[id].rad_set*_wheel_wx[id].cmd_flag);
-		}
-	#else
-		static int init[10]={0};
-		if(!init[id]){
-		
-			_wheel_wx[0].rad_set=0;
-			_wheel_wx[1].rad_set=0;
-			_wheel_wx[2].rad_set=0;
-			_wheel_wx[3].rad_set=0;
-			
-			_wheel_wx[0].cmd_flag=1;
-			_wheel_wx[1].cmd_flag=-1;
-			_wheel_wx[2].cmd_flag=1;
-			_wheel_wx[3].cmd_flag=-1;
-			
-			_wheel_wx[id].r=0.1/2;//m ???
-			_wheel_wx[id].i_2_tau=0.75;//Nm/A
-			Set_motor_mode(id+WHEEL_ID_OFF,2);//????????
-			init[id]=1;
-		}else{
-			_wheel_wx[id].rad_set=LIMIT(_wheel_wx[id].rad_set,-20,20)*_wheel_wx[id].connect;
-			set_motor_spd(id+WHEEL_ID_OFF,_wheel_wx[id].rad_set*_wheel_wx[id].cmd_flag*_wheel_wx[id].connect);
-		}
-	#endif
-}
-
-float rad_set[4]={0};
-void wheel_2d_loop(float dt){
-  static int init=0;
-	if(!init)
-	{
-		init=1;
-		_wheel_2d.h=0.3;//m ?????????
-		_wheel_2d.w=0.303;//m  ?????????????
-    _wheel_2d.v_set=0;
-		_wheel_2d.w_set=0;
-	}
-
-	DigitalLPF( _wheel_2d.v_set, &_wheel_2d.v_set_flt,0.6,dt);
-	DigitalLPF( _wheel_2d.w_set, &_wheel_2d.w_set_flt,0.6,dt);
-
-	float wheel_dq_exp[4]={0};
-	wheel_dq_exp[0]=_wheel_2d.v_set_flt/_wheel_wx[0].r;
-	wheel_dq_exp[1]=_wheel_2d.v_set_flt/_wheel_wx[1].r;
-	wheel_dq_exp[2]=_wheel_2d.v_set_flt/_wheel_wx[2].r;
-	wheel_dq_exp[3]=_wheel_2d.v_set_flt/_wheel_wx[3].r;
-
-	float d_w=_wheel_2d.w_set_flt/(_wheel_2d.w/2);
- 
-  wheel_dq_exp[0]-=d_w;
-  wheel_dq_exp[1]+=d_w;
-  wheel_dq_exp[2]-=d_w;
-  wheel_dq_exp[3]+=d_w;
-  if(spi_master_connect_pi){//-------------??????????????????????
-		for(int i=0;i<4;i++)
-				rad_set[i]=wheel_dq_exp[i];
-	}else{//---------??????????????????
-		for(int i=0;i<4;i++)
-				rad_set[i]=wheel_dq_exp[i];
-	}
-
-		
-	DigitalLPF( rad_set[0], &_wheel_wx[0].rad_set,50,dt);
-  DigitalLPF( rad_set[1], &_wheel_wx[1].rad_set,50,dt);
-	DigitalLPF( rad_set[2], &_wheel_wx[2].rad_set,50,dt);
-	DigitalLPF( rad_set[3], &_wheel_wx[3].rad_set,50,dt);	
-	
-	//-----------------state est??????---------------
-	float temp= _wheel_wx[0].v_now
-						 +_wheel_wx[1].v_now 
-						 +_wheel_wx[2].v_now
-						 +_wheel_wx[3].v_now;
-	 
-	DigitalLPF(LIMIT(temp/4, -3, 3), &_wheel_2d.v_now, 10, dt);
-
-	float w_l=_wheel_wx[0].v_now+_wheel_wx[2].v_now;
-	w_l/=2;
-	float w_r=_wheel_wx[1].v_now+_wheel_wx[3].v_now;
-	w_r/=2;
-	float w_now=(w_r-w_l)*_wheel_2d.w;
-	DigitalLPF(LIMIT(w_now, -3, 3), &_wheel_2d.w_now, 10, dt);
-	
-	if((_wheel_wx[0].dt_rx<0.1&&_wheel_wx[1].dt_rx<0.1&&_wheel_wx[2].dt_rx<0.1&&_wheel_wx[3].dt_rx<0.1)&&
-		(_wheel_wx[0].connect&&_wheel_wx[1].connect&&_wheel_wx[2].connect&&_wheel_wx[3].connect))
-		LEDRGB_ST(BLUE,1);
-	else{
-		LEDRGB_ST(BLUE,0);
-	}
-	if(spi_master_connect_pi&&spi_dt[1]<0.001)
-		LEDRGB_ST(RED,1);
-	else
-		LEDRGB_ST(RED,0);	
-
-}
-
-//--------------------??????
-/*
-0 ?????? 1????? 2??? 4??????? 5 ???????
-*/
-
-int pwm_dj[5]={1500,1500,1500,1500,1500};
-int time_dj[5]={0,0,0,0,0};
-void set_dj_pwm(int id,int pwm,int time){
-	char cmd_return[100];//?????cmd_return???????????????????????????????? = 15*????+10
-	int i=0;
-	SendBuff6_cnt=0;
-	pwm=LIMIT(pwm,500,2500);	
-	int len=sprintf(cmd_return, "#%03dP%04dT%04d!", id, pwm, time);
-	for(i=0;i<len;i++)
-		SendBuff6[SendBuff6_cnt++]=cmd_return[i];
-	delay_ms(1);						//???1??
-}
-		
-void set_dj_pwm_all(int pwm[5],int time[5]){
-	char cmd_return[100];//?????cmd_return???????????????????????????????? = 15*????+10
-	char i;
-	SendBuff6_cnt=0;
-	for(i=0;i<5;i++)
-		pwm[i]=LIMIT(pwm[i],500,2500);	
-	int len=sprintf(cmd_return, "{#%03dP%04dT%04d!#%03dP%04dT%04d!#%03dP%04dT%04d!#%03dP%04dT%04d!#%03dP%04dT%04d!}", 0, pwm[0], time[0], 1, pwm[1], time[1] ,2, pwm[2], time[2]  ,4, pwm[3], time[3]  ,5, pwm[4], time[4]);
-	for(i=0;i<len;i++)
-		SendBuff6[SendBuff6_cnt++]=cmd_return[i];
- 
-	delay_ms(1);						//???1??
-}
-
-
-void dj_control_loop(float dt){
-	(void)dt;
-	set_dj_pwm(id_test,pwm_dj_test,0);
-}
-
-//play audio set
-#define AUDIO_SYSTEM0 0x88
-#define AUDIO_SYSTEM1 0x82
-#define AUDIO_LINK 0x8c
-#define AUDIO_NAG_LINK 0x8d
-#define AUDIO_NUM 0xe1
-#define AUDIO_POINT 0xe0
-void Audio_play_ip(void)
-{
-	const char ipPrefix_ip[] = "192.168";
-	float ipThirdPart = robot.ip1;
-	float ipFourthPart = robot.ip2;
-	Write_Audio_Data(0x8e);
-	delay_ms(1600);
-	Write_Audio_Data(AUDIO_NUM+1);delay_ms(300);
-	Write_Audio_Data(AUDIO_NUM+9);delay_ms(300);
-	Write_Audio_Data(AUDIO_NUM+2);delay_ms(300);
-	Write_Audio_Data(AUDIO_POINT);delay_ms(300);
-	Write_Audio_Data(AUDIO_NUM+1);delay_ms(300);
-	Write_Audio_Data(AUDIO_NUM+6);delay_ms(300);
-	Write_Audio_Data(AUDIO_NUM+8);delay_ms(300);
-	Write_Audio_Data(AUDIO_POINT);delay_ms(300);
-	
-	if((100<=ipThirdPart)&&(ipThirdPart<=255))
-	{
-		Write_Audio_Data(AUDIO_NUM+(int)ipThirdPart/100%10);delay_ms(300);
-		Write_Audio_Data(AUDIO_NUM+(int)ipThirdPart/10%10);delay_ms(300);
-		Write_Audio_Data(AUDIO_NUM+(int)ipThirdPart%10);delay_ms(300);
-		Write_Audio_Data(AUDIO_POINT);delay_ms(500);
-	}
-	else if((10<=ipThirdPart)&&(ipThirdPart<100))
-	{
-		Write_Audio_Data(AUDIO_NUM+(int)ipThirdPart/10%10);delay_ms(300);
-		Write_Audio_Data(AUDIO_NUM+(int)ipThirdPart%10);delay_ms(300);
-		Write_Audio_Data(AUDIO_POINT);delay_ms(500);
-	}
-	else
-	{
-		Write_Audio_Data(AUDIO_NUM+(int)ipThirdPart%10);delay_ms(300);
-		Write_Audio_Data(AUDIO_POINT);delay_ms(300);
-	}
-	
-	if((100<=ipFourthPart)&&(ipFourthPart<=255))
-	{
-		Write_Audio_Data(AUDIO_NUM+(int)ipFourthPart/100%10);delay_ms(300);
-		Write_Audio_Data(AUDIO_NUM+(int)ipFourthPart/10%10);delay_ms(300);
-		Write_Audio_Data(AUDIO_NUM+(int)ipFourthPart%10);delay_ms(300);
-
-	}
-	else if((10<=ipFourthPart)&&(ipFourthPart<100))
-	{
-  Write_Audio_Data(AUDIO_NUM+(int)ipFourthPart/10%10);delay_ms(300);
-  Write_Audio_Data(AUDIO_NUM+(int)ipFourthPart%10);delay_ms(300);
-	}
-	else
-	{
-		Write_Audio_Data(AUDIO_NUM+(int)ipFourthPart%10);delay_ms(300);
-
-	}
-}
-
-void Audio_system(void)
-{
-	//spi
-	Write_Audio_Data(AUDIO_SYSTEM0);
-	delay_ms(2200);
-	if(robot.spi_link)
-		Write_Audio_Data(AUDIO_LINK);
-	else
-		Write_Audio_Data(AUDIO_NAG_LINK);
-	delay_ms(1200);
-	//bldc extcan
-	Write_Audio_Data(AUDIO_SYSTEM1);
-	delay_ms(2200);
-	if(robot.extcan_link)
-		Write_Audio_Data(AUDIO_NUM+robot.extcan_link);
-	else
-		Write_Audio_Data(AUDIO_NAG_LINK);
-	delay_ms(1200);
-	Audio_bldc();
-	delay_ms(200);
-	Audio_play_ip();
-}
-
-void Audio_bldc(void)
-{
-	//bldc1
-	Write_Audio_Data(0x83);
-	delay_ms(2500);
-	Write_Audio_Data(AUDIO_NUM+robot.can1_link);
-	delay_ms(250);
-	//bldc2
-	Write_Audio_Data(0x84);
-	delay_ms(2500);
-	Write_Audio_Data(AUDIO_NUM+robot.can2_link);
-	delay_ms(250);
-}
-
+#if USE_AUDIO
 void Write_Audio_Data(uint8_t dat)
 {
-	char cmd[10];
-	cmd[0] = 0xAA;
-	cmd[1] = 0x55;
-	cmd[2] = 0xFF;
-	cmd[3] = dat;  // ??????????????
-	cmd[4] = 0xFB;
-
-	for(int j = 0; j<5 ;j++)
-	{
-		  UsartSend1(cmd[j]);
-	}
-
+	(void)dat;
 }
-
-//---------------------YI Dian Audio
-#define FRAME_HEAD 0xFD
-#define COMMAND_BYTE 0x01
-#define ENCODING_GBK 0x01
-
-typedef struct {
-    uint32_t utf8_code;
-    uint16_t gbk_code;
-} utf8_to_gbk_mapping_t;
-
-
-utf8_to_gbk_mapping_t utf8_to_gbk_mapping[] = {
-    {0x00000041, 0x0041}, // A
-    {0x00000042, 0x0042}, // B
-
-    {0, 0} 
-};
-
-size_t encode_gbk(const char* utf8_str, unsigned char* out_buf, size_t out_buf_size) {
-    size_t i = 0;
-    size_t out_pos = 0;
-
-    while (utf8_str[i] != '\0' && out_pos < out_buf_size) {
-        uint32_t utf8_code = 0;
-        uint8_t bytes_needed = 0;
-
-        // ?? UTF-8 ??
-        if ((utf8_str[i] & 0x80) == 0x00) {
-            // ??? UTF-8
-            utf8_code = utf8_str[i];
-            bytes_needed = 1;
-        } else if ((utf8_str[i] & 0xE0) == 0xC0) {
-            // ??? UTF-8
-            utf8_code = (utf8_str[i] & 0x1F) << 6;
-            utf8_code |= (utf8_str[i + 1] & 0x3F);
-            bytes_needed = 2;
-        } else if ((utf8_str[i] & 0xF0) == 0xE0) {
-            // ??? UTF-8
-            utf8_code = (utf8_str[i] & 0x0F) << 12;
-            utf8_code |= (utf8_str[i + 1] & 0x3F) << 6;
-            utf8_code |= (utf8_str[i + 2] & 0x3F);
-            bytes_needed = 3;
-        } else {
-            // ???? UTF-8 ??
-            return 0;
-        }
-
-        // ????? GBK ??
-        for (int j = 0; utf8_to_gbk_mapping[j].utf8_code != 0; j++) {
-            if (utf8_to_gbk_mapping[j].utf8_code == utf8_code) {
-                // ????? GBK ??
-                if (out_pos + 2 <= out_buf_size) {
-                    out_buf[out_pos++] = (utf8_to_gbk_mapping[j].gbk_code >> 8) & 0xFF;
-                    out_buf[out_pos++] = utf8_to_gbk_mapping[j].gbk_code & 0xFF;
-                } else {
-                    // ???????
-                    return 0;
-                }
-                break;
-            }
-        }
-
-        i += bytes_needed;
-    }
-
-    return out_pos;
-}
-
-void send_custom_text(const char* text) {
-    unsigned char encoded_data[512];
-    size_t data_len = encode_gbk(text, encoded_data, sizeof(encoded_data));
-
-    if (data_len == 0) {
-        printf("Encoding failed.\n");
-        return;
-    }
-
-    uint16_t total_data_len = (uint16_t)(data_len + 2);
-    unsigned char frame[1024];
-    size_t idx = 0;
-
-    frame[idx++] = FRAME_HEAD;
-    frame[idx++] = (total_data_len >> 8) & 0xFF;
-    frame[idx++] = total_data_len & 0xFF;
-    frame[idx++] = COMMAND_BYTE;
-    frame[idx++] = ENCODING_GBK;
-    memcpy(frame + idx, encoded_data, data_len);
-    idx += data_len;
-}
-
-void Audio_system_yd(void)
-{
- 
-
-}
-
+#endif
