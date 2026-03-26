@@ -11,7 +11,7 @@
 #define 		SIG_0  		0XE0
 
 
-//       颜色     GRB
+// порядок байт: GRB
 #define	C_Red		  0x00FF00
 #define	C_Green		0xFF0000
 #define	C_Blue		0x0000FF
@@ -75,6 +75,6 @@ void wslled_loop(float dt);
 
 
 /************************************************************
-											Peivate Function
+											Внутренние функции
 ************************************************************/
 void __brightnessAdjust(float percent, RGB_Color RGB);

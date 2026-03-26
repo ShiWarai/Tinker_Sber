@@ -199,7 +199,7 @@ void IMU_Data_Prepare(float T)
     u8 i;
     s32 FILT_TMP[ITEMS] = {0,0,0,0,0,0,0};
     float Gyro_tmp[3];
-    MEMS_Data_Offset(); //校准函数
+    MEMS_Data_Offset(); /* калибровка смещений */
 		#if 0
 		mems.Acc_I16.x=lis3mdl_cov.Acc_I16.x ;
 		mems.Acc_I16.y=lis3mdl_cov.Acc_I16.y ;
@@ -236,7 +236,7 @@ void IMU_Data_Prepare(float T)
 		if(fabs(mems.Off_3d.x)>10||fabs(mems.Off_3d.y)>10||fabs(mems.Off_3d.z)>10)
 			mems.Cali_3d=1;
 		int en_off_3d_off=0;
-    /* 得出校准后的数据 */
+    /* данные после калибровки */
 		if(mems.Cali_3d){
 				mems_tmp[A_X] = (mems.Acc_I16.x - mems.Off_3d.x)*mems.Gain_3d.x - mems.Acc_Offset.x*en_off_3d_off;
 				mems_tmp[A_Y] = (mems.Acc_I16.y - mems.Off_3d.y)*mems.Gain_3d.y - mems.Acc_Offset.y*en_off_3d_off;
@@ -253,7 +253,7 @@ void IMU_Data_Prepare(float T)
     mems_tmp[G_Z] = Gyro_tmp[2] - mems.Gyro_Offset.z ;//
 
 
-    /* 更新滤波滑动窗口数组 */
+    /* обновить окно скользящего фильтра */
     FILT_BUF[A_X][filter_cnt] = mems_tmp[A_X];
     FILT_BUF[A_Y][filter_cnt] = mems_tmp[A_Y];
     FILT_BUF[A_Z][filter_cnt] = mems_tmp[A_Z];
@@ -281,7 +281,7 @@ void IMU_Data_Prepare(float T)
     mpu_fil_tmp[G_Z] = (float)( FILT_TMP[G_Z] )/(float)FILTER_NUM;
 
 
-    /*坐标转换*/
+    /* преобразование координат */
     Transform(mpu_fil_tmp[A_X],mpu_fil_tmp[A_Y],mpu_fil_tmp[A_Z],&mems.Acc.x,&mems.Acc.y,&mems.Acc.z);
     Transform(mpu_fil_tmp[G_X],mpu_fil_tmp[G_Y],mpu_fil_tmp[G_Z],&mems.Gyro.x,&mems.Gyro.y,&mems.Gyro.z);
 

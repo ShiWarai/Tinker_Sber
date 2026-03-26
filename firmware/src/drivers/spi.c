@@ -11,7 +11,7 @@ void SPI3_Init(void)
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, ENABLE);
 	
-	// RS485 transiver
+	// RS485 трансивер
 	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_12; 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -19,7 +19,7 @@ void SPI3_Init(void)
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-	// Not used
+	// не используется
 //	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4; //ce
 //	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz; 
 //	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
@@ -75,10 +75,10 @@ void SPI3_Init(void)
 
 void SPI_SetSpeed(u8 SPI_BaudRatePrescaler)
 {
-  assert_param(IS_SPI_BAUDRATE_PRESCALER(SPI_BaudRatePrescaler));//�ж���Ч��
-	SPI3->CR1&=0XFFC7;//λ3-5���㣬�������ò�����
-	SPI3->CR1|=SPI_BaudRatePrescaler;	//����SPI1�ٶ� 
-	SPI_Cmd(SPI3,ENABLE); //ʹ��SPI1
+	assert_param(IS_SPI_BAUDRATE_PRESCALER(SPI_BaudRatePrescaler));// проверка делителя
+	SPI3->CR1&=0XFFC7;// биты 3..5 — делитель
+	SPI3->CR1|=SPI_BaudRatePrescaler;	// новая скорость SPI3
+	SPI_Cmd(SPI3,ENABLE);
 } 
 
 u8 SPI3_RW(u8 dat) 
@@ -89,7 +89,7 @@ u8 SPI3_RW(u8 dat)
 	SPI_I2S_SendData(SPI3, dat); 
 
 	while (SPI_I2S_GetFlagStatus(SPI3, SPI_I2S_FLAG_RXNE) == RESET); 
-	/* Return the byte read from the SPI bus */ 
+	/* Прочитанный байт с шины SPI */
 	return SPI_I2S_ReceiveData(SPI3); 
 }
 
@@ -159,42 +159,40 @@ static void spi_dma_init(void)
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);
 	
-	/* DMA RX config */
-	DMA_InitStructure.DMA_Channel = DMA_Channel_3;                                     // DMA  ͨ�� RX
-	DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_ADDR;                   //  �����ַ
-	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)SPI_RX_BUFFER;     // ���ջ��������ڴ��е���һ�����飩
-	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;                    //DMA ���䷽��
-	DMA_InitStructure.DMA_BufferSize = RX_LEN;                                                     //  DMA ���������    ������ڻ������ٸ�
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;             //  �����ַ����  ȡ��
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                    // �ڴ��ַ����  ʹ��
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;     //  ����� ��λ ��byte  8bit��
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;// ����� ��λ ��byte  8bit��
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                                   //  ��ͨģʽ  �������һ�ξ��Զ�����
-	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;                              // ���ȼ� �е�
-	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;                   //��ʹ�� FIFO
-	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;             //
-	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;              //
-	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;        //
-	DMA_Init(DMA1_Stream3, &DMA_InitStructure);                                            //��ʼ��
-	                                                                                                                   //
-	/* DMA TX Config */                                                                                      //
-	DMA_InitStructure.DMA_Channel = DMA_Channel_4;                                     // DMA  ͨ�� TX
-	DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_ADDR;                   //   �����ַ 
-	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)SPI_TX_BUFFER;     // ���ջ��������ڴ��е���һ�����飩
-	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;                    // DMA ���䷽�� 
-	DMA_InitStructure.DMA_BufferSize = TX_LEN;                                                     //  DMA ���������    ������ڻ������ٸ�
-	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;             //  �����ַ����  ȡ��
-	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                    // �ڴ��ַ����  ʹ��
-	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;     //   ����� ��λ ��byte  8bit�� 
-	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;// ����� ��λ ��byte  8bit��
-//	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;                                   //   ��ͨģʽ  �������һ�ξ��Զ����� 
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;                                   //   ��ͨģʽ  �������һ�ξ��Զ����� 
-	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;                              // ���ȼ� �е�
-	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;                   //
-	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;             //
-	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;              //
-	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;        //
-	DMA_Init(DMA1_Stream4, &DMA_InitStructure);                                            //��ʼ��
+	/* DMA RX: периферия -> память */
+	DMA_InitStructure.DMA_Channel = DMA_Channel_3;
+	DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_ADDR;
+	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)SPI_RX_BUFFER;
+	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
+	DMA_InitStructure.DMA_BufferSize = RX_LEN;
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
+	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
+	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+	DMA_Init(DMA1_Stream3, &DMA_InitStructure);
+	/* DMA TX: память -> периферия */
+	DMA_InitStructure.DMA_Channel = DMA_Channel_4;
+	DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_ADDR;
+	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)SPI_TX_BUFFER;
+	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+	DMA_InitStructure.DMA_BufferSize = TX_LEN;
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
+	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
+	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+	DMA_Init(DMA1_Stream4, &DMA_InitStructure);
 }
 
 
@@ -285,8 +283,8 @@ static int intFromData_spi(unsigned char *data,int* anal_cnt)
 	return i;
 }
 
-//for slave
-void slave_send(char sel)//���͵�Odroid
+// Ведомый: ответ на запрос Odroid
+void slave_send(char sel)
 {
   int i;
 	char id=0;
@@ -300,7 +298,7 @@ void slave_send(char sel)//���͵�Odroid
 	spi_tx_buf[spi_tx_cnt++]=0;
 	switch(sel)
 	{
-		case 26://STM32�����巢�͵�Odrid  tinker human  �Ƕ�����̬
+		case 26:// телеметрия для Odroid: углы/угл. скорости/ускорения/суставы
 
 				setDataFloat_spi(robotwb.now_att.pitch);
 				setDataFloat_spi(robotwb.now_att.roll);
@@ -310,15 +308,15 @@ void slave_send(char sel)//���͵�Odroid
 				setDataFloat_spi(robotwb.now_rate.roll);
 				setDataFloat_spi(robotwb.now_rate.yaw);	
 			
-				setDataFloat_spi(vmc_all.acc_b.x);//������ٶ�
+				setDataFloat_spi(vmc_all.acc_b.x);// ускорение в СК тела
 				setDataFloat_spi(vmc_all.acc_b.y);
 				setDataFloat_spi(vmc_all.acc_b.z);
 			
 				for(id=0;id<10;id++){
-					setDataFloat_spi_int(leg_motor.q_now[id],CAN_POS_DIV);//�ؽڽǶ�
-					setDataFloat_spi_int(leg_motor.qd_now[id],CAN_DPOS_DIV);//�ؽڽ��ٶ�
-					setDataFloat_spi_int(leg_motor.t_now[id],CAN_T_DIV);//�ؽ�Ť��
-					spi_tx_buf[spi_tx_cnt++]=leg_motor.connect*100+leg_motor.connect_motor[id]*10+leg_motor.ready[id];//����״̬
+					setDataFloat_spi_int(leg_motor.q_now[id],CAN_POS_DIV);// угол сустава
+					setDataFloat_spi_int(leg_motor.qd_now[id],CAN_DPOS_DIV);// скорость сустава
+					setDataFloat_spi_int(leg_motor.t_now[id],CAN_T_DIV);// момент
+					spi_tx_buf[spi_tx_cnt++]=leg_motor.connect*100+leg_motor.connect_motor[id]*10+leg_motor.ready[id];// связь/готовность
 				}		
 		break;
 	}
@@ -334,7 +332,7 @@ void slave_send(char sel)//���͵�Odroid
 float test_spi_rx[2]={0};
 int sum_spi_err=0;
 int temp_sel[4][128]={0};
-void slave_rx(u8 *data_buf,u8 num)//---------------------------��Linux����������ָ��
+void slave_rx(u8 *data_buf,u8 num)// команды от Linux (RPi)
 { 
 	static u8 cnt[4];
 	u8 id;

@@ -35,12 +35,12 @@ typedef struct
 	xyz_f_t Gain_3d;
 	xyz_f_t Off_3d;
  	char Mag_CALIBRATE,Mag_Have_Param,Mag_ERR,Mag_update;
-	xyz_s16_t Mag_Adc,Mag_Adc_o;			//采样值
-	xyz_f_t   Mag_Offset,Mag_Offseto;		//偏移值
-	xyz_f_t   Mag_Offset_c,Mag_Offset_co;		//偏移值
-	xyz_f_t   Mag_Gain,Mag_Gaino;		//偏移值
-	xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			//比例缩放	
-	xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			//纠正后的值
+	xyz_s16_t Mag_Adc,Mag_Adc_o;			// АЦП магнитометра
+	xyz_f_t   Mag_Offset,Mag_Offseto;		// смещение
+	xyz_f_t   Mag_Offset_c,Mag_Offset_co;		// смещение (копии)
+	xyz_f_t   Mag_Gain,Mag_Gaino;		// усиление
+	xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			// масштаб
+	xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			// скорректированные значения
 	float hmlOneMAG,hmlOneACC;
   float Yaw_Mag;
 	float Ftempreature;

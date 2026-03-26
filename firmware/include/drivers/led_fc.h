@@ -3,8 +3,8 @@
 
 #include "stm32f4xx.h"
 
-#define LED1_OFF         ANO_GPIO_LED->BSRRL = ANO_Pin_LED1   //H
-#define LED1_ON          ANO_GPIO_LED->BSRRH = ANO_Pin_LED1		//L
+#define LED1_OFF         ANO_GPIO_LED->BSRRL = ANO_Pin_LED1   // высокий
+#define LED1_ON          ANO_GPIO_LED->BSRRH = ANO_Pin_LED1		// низкий
 #define LED2_OFF         ANO_GPIO_LED->BSRRL = ANO_Pin_LED2
 #define LED2_ON          ANO_GPIO_LED->BSRRH = ANO_Pin_LED2
 #define LED3_OFF         ANO_GPIO_LED->BSRRL = ANO_Pin_LED3
@@ -12,7 +12,7 @@
 #define LED4_OFF         ANO_GPIO_LED->BSRRL = ANO_Pin_LED4
 #define LED4_ON          ANO_GPIO_LED->BSRRH = ANO_Pin_LED4
 
-/***************LED GPIO定义******************/
+/*************** Назначение выводов LED ******************/
 #define ANO_RCC_LED			RCC_AHB1Periph_GPIOC
 #define ANO_GPIO_LED		GPIOC
 #define ANO_Pin_LED1		GPIO_Pin_1
@@ -32,7 +32,7 @@ int KEY_DOG(void);
 extern u8 LED_Brightness[4],LED[3];
 extern int dj_sel;
 
-		//带参宏，可以像内联函数一样使用
+		/* параметризованные макросы вкл/выкл */
 #define LED1S(a)	if (a)	\
 					GPIO_SetBits(GPIOE,GPIO_Pin_0);\
 					else		\

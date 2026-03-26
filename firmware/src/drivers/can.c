@@ -5,7 +5,7 @@
 #include "gait_math.h"
 #include "Custom_SPI_DEVICE.h"
 
-/* ???????? ?????? USB (can_write_flash, can_cmd_usb_disable, ocu_connect, ocu_loss_cnt) */
+/* Флаги/счётчики для USB-логики (can_write_flash, can_cmd_usb_disable, ocu_connect, ocu_loss_cnt) */
 int can_write_flash = 0;
 int can_cmd_usb_disable = 0;
 int ocu_connect = 0;
@@ -18,10 +18,10 @@ int can_rx_over[5],can_rx_cnt[5];
 u8 canbuft1[8],canbufr1[8];
 
 #define USE_ID_CHECK1 0
-#if CAN_NART_SEL== DISABLE || CAN_FB_SYNC //unuse
-int  CAN_SAFE_DELAY=166;//us  ????????????????11
+#if CAN_NART_SEL== DISABLE || CAN_FB_SYNC // не используется
+int  CAN_SAFE_DELAY=166;// мкс
 #else
-int  CAN_SAFE_DELAY=130;//us  ????????????????11
+int  CAN_SAFE_DELAY=130;// мкс
 #endif
 
 u32  slave_id1 = 99 ; 
@@ -36,17 +36,17 @@ void CAN_motor_init(void)
 	{
 		leg_motor.connect=0;
 		leg_motor.motor_en=0;
-		leg_motor.motor_mode=MOTOR_MODE_T;	//  ????????????
+		leg_motor.motor_mode=MOTOR_MODE_T;	// режим по крутящему моменту
 		
 		reset_current_cmd(i);
 		
-		motor_chassis[i].max_t=leg_motor.max_t[i]=120;//Nm ???????
+		motor_chassis[i].max_t=leg_motor.max_t[i]=120;// лимит момента, Н·м
 		
 		motor_chassis[i].stiff=1.0;
 		motor_chassis[i].kp=0.5;
 		motor_chassis[i].kd=0.1;
 
-		motor_chassis[i].param.q_reset_angle = 0.0f; //to right set_zero_pos
+		motor_chassis[i].param.q_reset_angle = 0.0f; // ноль при set_zero_pos
 	}
 }
 
@@ -74,14 +74,14 @@ static void Float2Bytes(float pfValue,unsigned char* bytes)
 }
 
 static int float_to_uint(float x, float x_min, float x_max, int bits){
-    /// Converts a float to an unsigned int, given range and number of bits ///
+    /// float -> uint по диапазону и битам ///
     float span = x_max - x_min;
     float offset = x_min;
     return (int) ((x-offset)*((float)((1<<bits)-1))/span);
     }
 
 static float uint_to_float(int x_int, float x_min, float x_max, int bits){
-    /// converts unsigned int to float, given range and number of bits ///
+    /// uint -> float по диапазону и битам ///
     float span = x_max - x_min;
     float offset = x_min;
     return ((float)x_int)*span/((float)((1<<bits)-1)) + offset;
@@ -96,57 +96,54 @@ u8 CAN1_Mode_Init(u8 tsjw,u8 tbs2,u8 tbs1,float brp,u8 mode)
 #if CAN1_RX0_INT_ENABLE 
    	NVIC_InitTypeDef  NVIC_InitStructure;
 #endif
-    //?????????
-	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);//???PORTA???	                   											 
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);//???CAN1???	
+    /* GPIOB + CAN1 */
+	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
 	  
-    //?????GPIO
+    /* PB8/PB9 — CAN1_RX/TX */
 	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8| GPIO_Pin_9;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//???�???
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//???????
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//????
-    GPIO_Init(GPIOB, &GPIO_InitStructure);//?????PA11,PA12
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
 	
-	  //??????????????
-	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource8,GPIO_AF_CAN1); //GPIOA11?????CAN1
-	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource9,GPIO_AF_CAN1); //GPIOA12?????CAN1
+	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource8,GPIO_AF_CAN1);
+	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource9,GPIO_AF_CAN1);
 	  
-  	//CAN???????
-   	CAN_InitStructure.CAN_TTCM=DISABLE;	//????????????   
+   	CAN_InitStructure.CAN_TTCM=DISABLE;
 		#if !CAN_ABOM_E
-		CAN_InitStructure.CAN_ABOM=DISABLE;	//??????????????	  
+		CAN_InitStructure.CAN_ABOM=DISABLE;
 		#else
-  	CAN_InitStructure.CAN_ABOM=ENABLE;	//??????????????	  
+  	CAN_InitStructure.CAN_ABOM=ENABLE;
 		#endif
-  	CAN_InitStructure.CAN_AWUM=ENABLE;//????????????????(???CAN->MCR??SLEEP?)
-  	CAN_InitStructure.CAN_NART=CAN_NART_SEL;//DISABLE;	//?????????????? 
-  	CAN_InitStructure.CAN_RFLM=DISABLE;	//?????????,?�??????  
-  	CAN_InitStructure.CAN_TXFP=DISABLE;	//?????????????????? 
-  	CAN_InitStructure.CAN_Mode= mode;	 //?????? 
-  	CAN_InitStructure.CAN_SJW=tsjw;	//??????????????(Tsjw)?tsjw+1?????? CAN_SJW_1tq~CAN_SJW_4tq
-  	CAN_InitStructure.CAN_BS1=tbs1; //Tbs1???CAN_BS1_1tq ~CAN_BS1_16tq
-  	CAN_InitStructure.CAN_BS2=tbs2;//Tbs2???CAN_BS2_1tq ~	CAN_BS2_8tq
-  	CAN_InitStructure.CAN_Prescaler=brp;  //??????(Fdiv)?brp+1	
-  	CAN_Init(CAN1, &CAN_InitStructure);   // ?????CAN1 
+  	CAN_InitStructure.CAN_AWUM=ENABLE;
+  	CAN_InitStructure.CAN_NART=CAN_NART_SEL;
+  	CAN_InitStructure.CAN_RFLM=DISABLE;
+  	CAN_InitStructure.CAN_TXFP=DISABLE;
+  	CAN_InitStructure.CAN_Mode= mode;
+  	CAN_InitStructure.CAN_SJW=tsjw;
+  	CAN_InitStructure.CAN_BS1=tbs1;
+  	CAN_InitStructure.CAN_BS2=tbs2;
+  	CAN_InitStructure.CAN_Prescaler=brp;
+  	CAN_Init(CAN1, &CAN_InitStructure);
     
-	//???�?????
- 	  CAN_FilterInitStructure.CAN_FilterNumber=0;	  //??????0
+ 	  CAN_FilterInitStructure.CAN_FilterNumber=0;
   	CAN_FilterInitStructure.CAN_FilterMode=CAN_FilterMode_IdMask; 
-  	CAN_FilterInitStructure.CAN_FilterScale=CAN_FilterScale_32bit; //32? 
-  	CAN_FilterInitStructure.CAN_FilterIdHigh=0x0000;////32?ID
+  	CAN_FilterInitStructure.CAN_FilterScale=CAN_FilterScale_32bit;
+  	CAN_FilterInitStructure.CAN_FilterIdHigh=0x0000;
   	CAN_FilterInitStructure.CAN_FilterIdLow=0x0000;
-  	CAN_FilterInitStructure.CAN_FilterMaskIdHigh=0x0000;//32?MASK
+  	CAN_FilterInitStructure.CAN_FilterMaskIdHigh=0x0000;
   	CAN_FilterInitStructure.CAN_FilterMaskIdLow=0x0000;
-   	CAN_FilterInitStructure.CAN_FilterFIFOAssignment=CAN_Filter_FIFO0;//??????0??????FIFO0
-  	CAN_FilterInitStructure.CAN_FilterActivation=ENABLE; //?????????0
-  	CAN_FilterInit(&CAN_FilterInitStructure);//??????????
+   	CAN_FilterInitStructure.CAN_FilterFIFOAssignment=CAN_Filter_FIFO0;
+  	CAN_FilterInitStructure.CAN_FilterActivation=ENABLE;
+  	CAN_FilterInit(&CAN_FilterInitStructure);
 		
 #if CAN1_RX0_INT_ENABLE
-	  CAN_ITConfig(CAN1,CAN_IT_FMP0,ENABLE);//FIFO0?????????????.		    
+	  CAN_ITConfig(CAN1,CAN_IT_FMP0,ENABLE);
   	NVIC_InitStructure.NVIC_IRQChannel = CAN1_RX0_IRQn;
-  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;     // ????????1
-  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;            // ????????0
+  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   	NVIC_Init(&NVIC_InitStructure);
 #endif
@@ -154,8 +151,8 @@ u8 CAN1_Mode_Init(u8 tsjw,u8 tbs2,u8 tbs1,float brp,u8 mode)
 		CAN_ITConfig(CAN1,CAN_IT_ERR,DISABLE);
 	#endif
 	CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
-	CAN_ClearITPendingBit(CAN1, CAN_IT_FMP0);//??????????
-	CAN_ClearITPendingBit(CAN1, CAN_IT_TME);//?????????  
+	CAN_ClearITPendingBit(CAN1, CAN_IT_FMP0);
+	CAN_ClearITPendingBit(CAN1, CAN_IT_TME);
 	return 0;
 }   
 
@@ -177,9 +174,7 @@ void CAN1_RX0_IRQHandler(void)
 		can_rx_t1[7]=RxMessage.Data[6];
 		can_rx_t1[8]=RxMessage.Data[7];
 	 
-		// Frame DMG
-		// CMD    | nodeID
-		// 7 bits | 4 bits
+		/* Разбор кадра: CMD (7 бит) | node ID (4 бита) */
 		uint32_t frameID = RxMessage.StdId;
 		uint32_t cmd = (frameID >> 4);
 		uint32_t nodeID = (frameID & 0xF)-1;
@@ -258,8 +253,8 @@ u8 CAN1_Receive_Msg(u8 *buf)
 	CAN_Receive(CAN1, 0, &RxMessage);
 	cnt_rst1=0;
 	
-	if( CAN_MessagePending(CAN1,CAN_FIFO0)==0)return 0;		//�??????????,?????? 
-	CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);//???????	
+	if( CAN_MessagePending(CAN1,CAN_FIFO0)==0)return 0;		/* FIFO0 пуст */
+	CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);
 	for(i=0;i<RxMessage.DLC;i++)
 	buf[i]=RxMessage.Data[i]; 
 	can1_rx_id=RxMessage.StdId;	
@@ -283,51 +278,48 @@ u8 CAN2_Mode_Init(u8 tsjw,u8 tbs2,u8 tbs1,float brp,u8 mode)
 #if CAN2_RX0_INT_ENABLE 
    	NVIC_InitTypeDef  NVIC_InitStructure;
 #endif
-    //?????????
-	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);//???PORTA???	                   											 
-  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN2, ENABLE);//???CAN1???	
+    /* GPIOB + CAN2 */
+	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+  	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN2, ENABLE);
 	
-    //?????GPIO
+    /* PB5/PB6 — CAN2 */
 	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5| GPIO_Pin_6;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//???�???
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//???????
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//????
-    GPIO_Init(GPIOB, &GPIO_InitStructure);//?????PA11,PA12
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
 	
-	  //??????????????
-	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource5,GPIO_AF_CAN2); //GPIOA11?????CAN1
-	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource6,GPIO_AF_CAN2); //GPIOA12?????CAN1
+	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource5,GPIO_AF_CAN2);
+	  GPIO_PinAFConfig(GPIOB,GPIO_PinSource6,GPIO_AF_CAN2);
 	  
-  	//CAN???????
-   	CAN_InitStructure.CAN_TTCM=DISABLE;	//????????????   
+   	CAN_InitStructure.CAN_TTCM=DISABLE;
 		#if !CAN_ABOM_E
-		CAN_InitStructure.CAN_ABOM=DISABLE;	//??????????????	  
+		CAN_InitStructure.CAN_ABOM=DISABLE;
 		#else
-  	CAN_InitStructure.CAN_ABOM=ENABLE;	//??????????????	  
+  	CAN_InitStructure.CAN_ABOM=ENABLE;
 		#endif
-  	CAN_InitStructure.CAN_AWUM=ENABLE;//????????????????(???CAN->MCR??SLEEP?)
-  	CAN_InitStructure.CAN_NART=CAN_NART_SEL;//DISABLE	//?????????????? 
-  	CAN_InitStructure.CAN_RFLM=DISABLE;	//?????????,?�??????  
-  	CAN_InitStructure.CAN_TXFP=DISABLE;	//?????????????????? 
-  	CAN_InitStructure.CAN_Mode= mode;	 //?????? 
-  	CAN_InitStructure.CAN_SJW=tsjw;	//??????????????(Tsjw)?tsjw+1?????? CAN_SJW_1tq~CAN_SJW_4tq
-  	CAN_InitStructure.CAN_BS1=tbs1; //Tbs1???CAN_BS1_1tq ~CAN_BS1_16tq
-  	CAN_InitStructure.CAN_BS2=tbs2;//Tbs2???CAN_BS2_1tq ~	CAN_BS2_8tq
-  	CAN_InitStructure.CAN_Prescaler=brp;  //??????(Fdiv)?brp+1	
-  	CAN_Init(CAN2, &CAN_InitStructure);   // ?????CAN1 
+  	CAN_InitStructure.CAN_AWUM=ENABLE;
+  	CAN_InitStructure.CAN_NART=CAN_NART_SEL;
+  	CAN_InitStructure.CAN_RFLM=DISABLE;
+  	CAN_InitStructure.CAN_TXFP=DISABLE;
+  	CAN_InitStructure.CAN_Mode= mode;
+  	CAN_InitStructure.CAN_SJW=tsjw;
+  	CAN_InitStructure.CAN_BS1=tbs1;
+  	CAN_InitStructure.CAN_BS2=tbs2;
+  	CAN_InitStructure.CAN_Prescaler=brp;
+  	CAN_Init(CAN2, &CAN_InitStructure);
     
-	//???�?????
- 	  CAN_FilterInitStructure.CAN_FilterNumber=14;	  //??????0
+ 	  CAN_FilterInitStructure.CAN_FilterNumber=14;
   	CAN_FilterInitStructure.CAN_FilterMode=CAN_FilterMode_IdMask; 
-  	CAN_FilterInitStructure.CAN_FilterScale=CAN_FilterScale_32bit; //32? 
-  	CAN_FilterInitStructure.CAN_FilterIdHigh=0x0000;////32?ID
+  	CAN_FilterInitStructure.CAN_FilterScale=CAN_FilterScale_32bit;
+  	CAN_FilterInitStructure.CAN_FilterIdHigh=0x0000;
   	CAN_FilterInitStructure.CAN_FilterIdLow=0x0000;
-  	CAN_FilterInitStructure.CAN_FilterMaskIdHigh=0x0000;//32?MASK
+  	CAN_FilterInitStructure.CAN_FilterMaskIdHigh=0x0000;
   	CAN_FilterInitStructure.CAN_FilterMaskIdLow=0x0000;
-   	CAN_FilterInitStructure.CAN_FilterFIFOAssignment=CAN_Filter_FIFO0;//??????0??????FIFO0
-  	CAN_FilterInitStructure.CAN_FilterActivation=ENABLE; //?????????0
-  	CAN_FilterInit(&CAN_FilterInitStructure);//??????????
+   	CAN_FilterInitStructure.CAN_FilterFIFOAssignment=CAN_Filter_FIFO0;
+  	CAN_FilterInitStructure.CAN_FilterActivation=ENABLE;
+  	CAN_FilterInit(&CAN_FilterInitStructure);
 		
 #if CAN2_RX0_INT_ENABLE
 	  CAN_ITConfig(CAN2,CAN_IT_FMP0,ENABLE);//FIFO0?????????????.		    
@@ -432,15 +424,15 @@ u8 CAN2_Receive_Msg(u8 *buf)
 {		   		   
  	u32 i;
 	CanRxMsg RxMessage;
-    if( CAN_MessagePending(CAN2,CAN_FIFO0)==0)return 0;		//�??????????,?????? 
-    CAN_Receive(CAN2, CAN_FIFO0, &RxMessage);//???????	
+    if( CAN_MessagePending(CAN2,CAN_FIFO0)==0)return 0;		/* FIFO0 пуст */
+    CAN_Receive(CAN2, CAN_FIFO0, &RxMessage);
     for(i=0;i<RxMessage.DLC;i++)
     buf[i]=RxMessage.Data[i];  
 	  can2_rx_id=RxMessage.StdId;	
 	return RxMessage.DLC;	
 }
 //----------------------------------------------------------------------------------------------------------------------
-void reset_current_cmd(char id)//???????
+void reset_current_cmd(char id)/* сброс задания по приводу */
 {
 	leg_motor.set_t[id]=0;
 	leg_motor.set_i[id]=0;

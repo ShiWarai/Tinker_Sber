@@ -17,17 +17,17 @@ float T_MIN_CAN_MIT[10] ={-12.0f,-12.0f,-12.0f};
 float T_MAX_CAN_MIT[10] ={12.0f,12.0f,12.0f};
 
 float fmaxf_mit(float x, float y){
-    /// Returns maximum of x, y ///
+    /// max(x, y) ///
     return (((x)>(y))?(x):(y));
     }
 
 float fminf_mit(float x, float y){
-    /// Returns minimum of x, y ///
+    /// min(x, y) ///
     return (((x)<(y))?(x):(y));
     }
 
 int float_to_uint_mit(float x, float x_min, float x_max, int bits){
-    /// Converts a float to an unsigned int, given range and number of bits ///
+    /// float -> uint по диапазону и числу бит ///
     float span = x_max - x_min;
     float offset = x_min;
 		x=LIMIT(x,x_min,x_max);
@@ -35,7 +35,7 @@ int float_to_uint_mit(float x, float x_min, float x_max, int bits){
     }
 
 float uint_to_float_mit(int x_int, float x_min, float x_max, int bits){
-    /// converts unsigned int to float, given range and number of bits ///
+    /// uint -> float по диапазону и числу бит ///
     float span = x_max - x_min;
     float offset = x_min;
     return ((float)x_int)*span/((float)((1<<bits)-1)) + offset;

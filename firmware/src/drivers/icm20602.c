@@ -56,14 +56,13 @@ void icm20602_accel_calibrate_start(void)
 	icm_acc_sum[0] = icm_acc_sum[1] = icm_acc_sum[2] = 0;
 }
 
-//PIT???? y- ROL????x- ACC
-//PIT???? x-600  ROL????  y+300  YAW?-z
+/* Оси IMU: pitch/roll/yaw и привязка к осям платы */
 LIS3MDL_S lis3mdl;
 LIS3MDL_S lis3mdl_cov;
 #define DS33_WHO_AM_I_ID     0x69  
 #define DS33_SA0_HIGH_ADDRESS 0x6b
 #define DS33_SA0_LOW_ADDRESS  0x6a
-// Reads the 3 mag channels and stores them in vector m
+/* Чтение магнитометра (3 канала) */
 #define DS33_ADDRESS1  (DS33_SA0_HIGH_ADDRESS << 1)
 #define DS33_ADDRESS2  (DS33_SA0_LOW_ADDRESS << 1)
 #define DS33_IIC_ID DS33_ADDRESS1
@@ -138,7 +137,7 @@ float converRT_float(float xn,float yn,float zn,
 	*zb=z;
 }
 
-// Reads the 3 accelerometer channels and stores them in vector a
+/* Данные акселерометра (3 канала) */
 xyz_s16_t data_acc;
 
 //uint8_t id[3];
@@ -162,7 +161,7 @@ xyz_s16_t data_acc;
 //}
 
 
-// Reads the 3 gyro channels and stores them in vector g
+/* Данные гироскопа (3 канала) */
   xyz_s16_t data_g;
 //void LSM6_readGyro(u8 fast)
 //{
@@ -451,8 +450,7 @@ uint8_t icm20602_set_gyro_fullscale(uint8_t fs)
 	
 }
 
-//PIT???? y- ROL????x- ACC
-//PIT???? x-600  ROL????  y+300  YAW?-z
+/* Оси IMU: pitch/roll/yaw и привязка к осям платы */
 uint8_t icm20602_get_accel_adc(void)
 {
 	uint8_t buf[6];

@@ -7,20 +7,19 @@ HSV_Color  hsv_color;
 _WS_LED wsled;
 float led_k=1.0;
 int base_led_delay[3]={3,35,280};
-void delay(unsigned int us)  //300ns
+void delay(unsigned int us)  // ~300 нс на итерацию
 {
 	while(us--);
 }
 
 void init_gpio_ws(void)
 {
-	GPIO_InitTypeDef  GPIO_InitStructure;            //GPIO结构体设置
+	GPIO_InitTypeDef  GPIO_InitStructure;
 
-	//使能时钟
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1;          //LED9 在PF9引脚
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;       //初始化的复用功能（因为本引脚还要用到PWM输出功能）
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
@@ -296,19 +295,18 @@ void wslled_loop(float dt)
 }
 
 //----------------------------------------------------------
-//将三原色单独数据合并为24位数据
+// RGB -> 24-битное слово (GRB порядок в протоколе)
 uint32_t ws281x_color(uint8_t red, uint8_t green, uint8_t blue)
 {
   return green << 16 | red << 8 | blue;
 }
 
 /**
- * @Description  	WS2812 设置第n个灯珠的颜色
-* @Param     n:第几个灯珠   red:0-255   green:0-255    blue:0-255 	   eg:yellow:255 255 0
- * @Return    	  
-*/
+ * WS2812: цвет светодиода n (RGB 0..255).
+ * Пример жёлтого: 255,255,0
+ */
 
-//设定第n个灯珠的颜色
+// Задать цвет пикселя n
 void ws281x_setPixelRGB(uint16_t n ,uint8_t red, uint8_t green, uint8_t blue)
 {
   uint8_t i;
@@ -326,10 +324,8 @@ void ws281x_setPixelRGB(uint16_t n ,uint8_t red, uint8_t green, uint8_t blue)
 
 
 /**
- * @Description  	WS2812 设置灯珠颜色（固定的）
-* @Param       		 n:第几个灯珠   color:哪种颜色（0-7）
- * @Return    	  
-*/
+ * WS2812: цвет из перечисления Color (0..7).
+ */
 void set_pixel_rgb(uint16_t n,u8 color)
 {
 	switch(color)
@@ -365,7 +361,7 @@ void set_pixel_rgb(uint16_t n,u8 color)
 
 
 
-//设置关闭第n个灯珠
+// Погасить пиксель n
 void ws281x_ShutoffPixel(uint16_t n)
 {
   uint8_t i;
@@ -384,11 +380,8 @@ void ws281x_ShutoffPixel(uint16_t n)
 
 
 /**
- * @Description  	WS2812关闭所有灯光		1. 发送WS2812_LED_NUM * 24位的 0 码
-																
- * @Param     	  {void}
- * @Return    	  {void}
-*/
+ * WS2812: выключить все (последовательность нулевых битов).
+ */
 void ws2812_AllShutOff(void){
 	uint16_t i;
   uint8_t j;
@@ -406,10 +399,8 @@ void ws2812_AllShutOff(void){
 
 
 /**
- * @Description  	WS2812设置某一位的LED的颜色 但不发送
- * @Param     	  {uint16_t LED_index ,uint32_t GRB_color}
- * @Return    	  {void}
-*/
+ * WS2812: записать цвет в буфер без немедленной отправки.
+ */
 void ws2812_Set_one_LED_Color(uint16_t LED_index ,uint32_t GRB_color){
   uint8_t i = 0;
 	uint32_t cnt = 0x800000;
@@ -428,10 +419,8 @@ void ws2812_Set_one_LED_Color(uint16_t LED_index ,uint32_t GRB_color){
 
 
 /**
- * @Description  	WS2812 色环转化 0-255灰度值转换为GRB值
- * @Param     	  {uint8_t LED_gray}
- * @Return    	  {uint32_t}
-*/
+ * WS2812: позиция 0..255 на цветовом кольце -> GRB.
+ */
 uint32_t ws2812_LED_Gray2GRB(uint8_t LED_gray){
 	LED_gray = 0xFF - LED_gray;
 	if(LED_gray < 85){
@@ -447,10 +436,8 @@ uint32_t ws2812_LED_Gray2GRB(uint8_t LED_gray){
 
 
 /**
- * @Description  	WS2812 灰度值驱动渐变效果 沿色环转动
- * @Param     	  {uint16_t interval_time} 渐变间隔时间
- * @Return    	  {void}
-*/
+ * WS2812: плавный обход цветового кольца, шаг interval_time (мс).
+ */
 void ws2812_Roll_on_Color_Ring(uint16_t interval_time){
 	uint8_t i = 0;
 	uint16_t j = 0;
@@ -464,10 +451,8 @@ void ws2812_Roll_on_Color_Ring(uint16_t interval_time){
 }
 
 /**
- * @Description  	WS2812 单色呼吸灯 暗->亮->暗
- * @Param     	  {uint16_t interval_time, uint32_t GRB_color} 渐变间隔时间
- * @Return    	  {void}
-*/
+ * WS2812: «дыхание» одним цветом (темнее–ярче–темнее).
+ */
 void ws2812_All_LED_one_Color_breath(uint16_t interval_time, uint32_t GRB_color){
 	uint8_t i = 0;
 	uint16_t j = 0;
@@ -493,10 +478,8 @@ void ws2812_All_LED_one_Color_breath(uint16_t interval_time, uint32_t GRB_color)
 }
 
 /**
- * @Description  	跑马灯效果
-* @Param     interval_time:间隔时间
- * @Return    	NONE  
-*/
+ * Эффект «бегущие огни».
+ */
 void horse_race_lamp(uint16_t interval_time)
 {
 	u8 i,color;
@@ -506,7 +489,7 @@ void horse_race_lamp(uint16_t interval_time)
   {
 //		ws281x_setPixelRGB(i,255,255,0);
 		color = rand()%7;
-		set_pixel_rgb(i,color);//随机颜色
+		set_pixel_rgb(i,color);// случайный цвет
 		ws281x_ShutoffPixel(i-1);
 		delay_ms(interval_time);
   }
@@ -516,10 +499,8 @@ void horse_race_lamp(uint16_t interval_time)
 
 
 /**
- * @Description  	流水灯效果
-* @Param     interval_time:间隔时间  red:0-255 green:0-255 blue:0-255
- * @Return    	NONE  
-*/
+ * «Водопад»: заполнение линейки цветом RGB.
+ */
 void Running_water_lamp( uint8_t red ,uint8_t green ,uint8_t blue, uint16_t interval_time )
 {
 	uint16_t i;
@@ -537,10 +518,8 @@ void Running_water_lamp( uint8_t red ,uint8_t green ,uint8_t blue, uint16_t inte
 
 
 /**
- * @Description  	随机点亮RGB灯
-* @Param     interval_time:间隔时间
- * @Return    	NONE  
-*/
+ * Случайное зажигание пикселей (без повторов подряд).
+ */
 uint8_t tmp_flag[WS2812_LED_NUM];
 
 
@@ -551,7 +530,7 @@ void srand_lamp(uint16_t interval_time)
 
 	tmp = rand()%(WS2812_LED_NUM);
 	color = rand()%7;
-	if(i==0) //只做一次
+	if(i==0) // инициализация один раз
 	{
 		memset(tmp_flag,50,WS2812_LED_NUM);
 		tmp_flag[i] = tmp;
@@ -567,14 +546,14 @@ void srand_lamp(uint16_t interval_time)
 		
 	for(k=0;k<i;k++)
 	{
-		if(tmp == tmp_flag[k])//相同就退出
+		if(tmp == tmp_flag[k])// уже был такой индекс
 		{
 			return ;
 		}
 		
 	}
 
-	//遍历完成
+	// следующий уникальный индекс
 	tmp_flag[i] = tmp;
 	set_pixel_rgb(tmp,color);
 	delay_ms(interval_time);
@@ -589,32 +568,26 @@ void srand_lamp(uint16_t interval_time)
 
 
 /***********************************************************
-										Private Function
+										Вспомогательные функции
 ************************************************************/
 /**
- * @Description  	获得两数最大值
- * @Param     	  {float a,float b}
- * @Return    	  {float}
-*/
+ * max(a,b)
+ */
 float __getMaxValue(float a, float b){
 	return a>=b?a:b;
 }
 
 /**
- * @Description  	获得两数最小值
- * @Param     	  {void}
- * @Return    	  {void}
-*/
+ * min(a,b)
+ */
 float __getMinValue(float a, float b){
 	return a<=b?a:b;
 }
 
 
 /**
- * @Description  	RGB 转为 HSV
- * @Param     	  {RGB_Color RGB, HSV_Color *HSV}
- * @Return    	  {void}
-*/
+ * RGB -> HSV
+ */
 void __RGB_2_HSV(RGB_Color RGB, HSV_Color *HSV){
 	float r,g,b,minRGB,maxRGB,deltaRGB;
 	
@@ -659,10 +632,8 @@ void __RGB_2_HSV(RGB_Color RGB, HSV_Color *HSV){
 
 
 /**
- * @Description  	HSV 转为 RGB
- * @Param     	  {void}
- * @Return    	  {void}
-*/
+ * HSV -> RGB
+ */
 void __HSV_2_RGB(HSV_Color HSV, RGB_Color *RGB){
 	float R,G,B,aa,bb,cc,f;
   int k;
@@ -718,10 +689,8 @@ void __HSV_2_RGB(HSV_Color HSV, RGB_Color *RGB){
 
 
 /**
- * @Description  	亮度调节
- * @Param     	  {void}
- * @Return    	  {void}
-*/
+ * Изменение яркости через HSV (множитель percent).
+ */
 void __brightnessAdjust(float percent, RGB_Color RGB){
 	if(percent < 0.01f){
 		percent = 0.01f;
@@ -734,6 +703,6 @@ void __brightnessAdjust(float percent, RGB_Color RGB){
 	__HSV_2_RGB(hsv_color, &rgb_color);
 }
 /************************************************************
-														EOF
+														конец файла
 *************************************************************/
 

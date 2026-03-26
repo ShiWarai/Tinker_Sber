@@ -35,8 +35,8 @@ float MAX_X=0.15;
 float MAX_SPD=0;
 float MAX_SPD_RAD=50;
 
-// Debug helper for ST-Link: value of the calculated z in the Test section.
-// `volatile` чтобы отладчик стабильно видел изменение даже при оптимизациях.
+// Отладка ST-Link: значение вычисленного z в тестовом блоке.
+// volatile — чтобы в отладчике значение не «исчезало» при -O.
 volatile float debug_z = 0.0f;
 
 _SYSTEM_DT system_dt;
@@ -44,7 +44,7 @@ s16 loop_cnt;
 loop_t loop;
 float leg_dt[GET_TIME_NUM];
 float trig_test_dt[3]={0};
-void Loop_check()  // TIME INTTERRUPT
+void Loop_check()  // прерывание таймера
 {
 	loop.time++; //u16
 	loop.cnt_2ms++;
@@ -70,11 +70,11 @@ void Loop_check()  // TIME INTTERRUPT
 	
 	if( loop.check_flag == 1)
 	{
-		loop.err_flag ++;     //每累加一次，证明代码在预定周期内没有跑完。
+		loop.err_flag ++;     // цикл не успел завершиться за отведённое время
 	}
 	else
 	{	
-		loop.check_flag = 1;	//该标志位在循环的最后被清零
+		loop.check_flag = 1;	// сбрасывается в конце основного цикла
 	}
 	if(loop.err_flag>9999)loop.err_flag=0;
 	
@@ -96,7 +96,7 @@ float FLT_ATT_RT=0;//20;//15;//1.68*2;
 char att_fusion_use[2]={1,1};
 Vect3 vect_n_test,vect_b_test;
 float FLT_ATT_RATE=0;//WS
-void Duty_Att_Fushion()//姿态解算 100Hz
+void Duty_Att_Fushion()// оценка ориентации (AHRS), ~100 Гц
 {  
 	u8 i;
 	static u8 init;	
@@ -214,7 +214,7 @@ void Duty_Att_Fushion()//姿态解算 100Hz
   }				
 }
 
-void Duty_System()//遥控 保护
+void Duty_System()// система: RC, защиты, звук
 {  
 	u8 i;	
 	static u16 cnt_1,cnt_2;	
@@ -224,9 +224,9 @@ void Duty_System()//遥控 保护
 	float T;
 	system_dt.system_task=T=leg_dt[7] = Get_Cycle_T(7); 
 	
-	//板载LED
+	// светодиоды на плате
 	LEDRGB_STATE(0.05);
-	//扩展LED显示机器人状态
+	// внешние LED — индикация состояния
 	LED_SCP(io_sel_scp_scl[0]);
   LED_SCL(io_sel_scp_scl[1]);
 
@@ -363,7 +363,7 @@ void Duty_System()//遥控 保护
 }
 
 int time_scale=1;
-void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需要小于1ms。
+void Duty_Loop()   					// тик 1 мс; обработчик должен укладываться в период
 {
 	int id=0;				
 	static u8 mav_state;
@@ -391,12 +391,12 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 			}
 		}
 		
-		if( loop.cnt_2ms >= 2*time_scale ) // 500Hz
+		if( loop.cnt_2ms >= 2*time_scale ) // 500 Гц
 		{
 			loop.cnt_2ms = 0;
-			Duty_Att_Fushion(); // IMU	
+			Duty_Att_Fushion(); // IMU
 
-			// // Test
+			// // тест
 			// if(motor_chassis[0].en_cmd==1) {
 			// 	debug_z = fabsf(motor_chassis[9].q_now - motor_chassis[9].set_q);
 			// 	if(debug_z > 0.5) {
@@ -406,18 +406,18 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 			// }
 		}	
 
-		if( loop.cnt_5ms >= 5 )// 200Hz
+		if( loop.cnt_5ms >= 5 )// 200 Гц
 		{
 			loop.cnt_5ms = 0;
 		}
 		
-		if( loop.cnt_10ms >= 10 )// 100Hz
+		if( loop.cnt_10ms >= 10 )// 100 Гц
 		{
 			loop.cnt_10ms = 0;
 			Duty_Servo();
 		}
 		
-		if( loop.cnt_20ms >= 20)// 50Hz
+		if( loop.cnt_20ms >= 20)// 50 Гц
 		{
 			loop.cnt_20ms = 0;
 		}
@@ -449,6 +449,6 @@ void Duty_Loop()   					//最短任务周期为1ms，总的代码执行时间需
 		//   }
 		// }
 		
-		loop.check_flag = 0;		//循环运行完毕标志
+		loop.check_flag = 0;		// цикл за 1 мс обработан
 	}
 }

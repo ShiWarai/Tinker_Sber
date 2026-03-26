@@ -7,7 +7,7 @@ u8 fly_ready;
 static xyz_f_t reference_v;
 static ref_t 	ref;
 float reference_vr[3];
-float Roll,Pitch,Yaw;    				//?????
+float Roll,Pitch,Yaw;    				// углы Эйлера, градусы
 static float q0=1,q1,q2,q3;
 static float ref_q[4] = {1,0,0,0};
 static float norm_acc,norm_q;
@@ -33,12 +33,10 @@ float accConfidence      = 1.0f;
 #define accelOneG 9.8
 void calculateAccConfidence(float accMag_in)
 {
-	// G.K. Egan (C) computes confidence in accelerometers when
-	// aircraft is being accelerated over and above that due to gravity
-
+	/* Доверие к акселерометру: ниже, если |a| заметно отличается от 1 g */
 	static float accMagP = 1.0f;
   float accMag=accMag_in;
-	accMag /= accelOneG;  // HJI Added to convert MPS^2 to G's
+	accMag /= accelOneG;  /* м/с² -> g */
 
 	accMagP  = HardFilter(accMagP, accMag );
 

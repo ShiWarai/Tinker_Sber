@@ -165,10 +165,10 @@ enum
 
 float Get_Cycle_T(u8 item)	
 {
-	Cycle_T[item][OLD] = Cycle_T[item][NOW];	//????��????
-	Cycle_T[item][NOW] = (float)GetSysTime_us()/1000000.0f; //GetSysTime_us()/1000000.0f; //???��????
+	Cycle_T[item][OLD] = Cycle_T[item][NOW];	/* предыдущий замер */
+	Cycle_T[item][NOW] = (float)GetSysTime_us()/1000000.0f; /* время цикла, с */
 	if(Cycle_T[item][NOW]>Cycle_T[item][OLD]){
-		Cycle_T[item][NEW] = ( ( Cycle_T[item][NOW] - Cycle_T[item][OLD] ) );//?????????????
+		Cycle_T[item][NEW] = ( ( Cycle_T[item][NOW] - Cycle_T[item][OLD] ) );/* dt */
 		Cycle_T[item][DT_LAST] = Cycle_T[item][NEW];
   }
 	else
@@ -197,21 +197,21 @@ void TIM3_Int_Init(u16 arr,u16 psc)
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);  ///???TIM3???
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);  /* тактирование TIM3 */
 	
-  TIM_TimeBaseInitStructure.TIM_Period = arr; 	//?????????
-	TIM_TimeBaseInitStructure.TIM_Prescaler=psc;  //????????
-	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up; //?????????
+  TIM_TimeBaseInitStructure.TIM_Period = arr; 	/* период (ARR) */
+	TIM_TimeBaseInitStructure.TIM_Prescaler=psc;  /* делитель */
+	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up; /* счёт вверх */
 	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1; 
 	
-	TIM_TimeBaseInit(TIM3,&TIM_TimeBaseInitStructure);//?????TIM3
+	TIM_TimeBaseInit(TIM3,&TIM_TimeBaseInitStructure);
 	
-	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE); //?????????3?????��?
-	TIM_Cmd(TIM3,ENABLE); //???????3
+	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE); /* прерывание по обновлению */
+	TIM_Cmd(TIM3,ENABLE);
 	
-	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn; //?????3?��?
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=2; //????????1
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority=3; //???????3
+	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=3;
 	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 	

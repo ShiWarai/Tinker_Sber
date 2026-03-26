@@ -62,12 +62,12 @@ s16 Tempreature;
 float TEM_LPF;
 float Ftempreature;
 
-xyz_s16_t Mag_Adc;			//采样值
-xyz_f_t   Mag_Offset,Mag_Offseto;		//偏移值
-xyz_f_t   Mag_Offset_c,Mag_Offset_co;		//偏移值
-xyz_f_t   Mag_Gain,Mag_Gaino;		//偏移值
-xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			//比例缩放	
-xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			//纠正后的值
+xyz_s16_t Mag_Adc;			// АЦП магнитометра
+xyz_f_t   Mag_Offset,Mag_Offseto;		// смещение
+xyz_f_t   Mag_Offset_c,Mag_Offset_co;		// смещение
+xyz_f_t   Mag_Gain,Mag_Gaino;		// усиление
+xyz_f_t 	Mag_Gain_c,Mag_Gain_co;			// масштаб
+xyz_f_t 	Mag_Val,Mag_Val_t,Mag_Valo,Mag_Val_to;			// скорректированные значения
 u8 Mag_CALIBRATED;
 float yaw;
 float Pressure;
@@ -133,25 +133,23 @@ void LSM6_readGyro(u8 fast);
 
 //-
 
-//========ICM20602寄存器地址========================
+//======== Адреса регистров ICM20602 ========================
 /********************************************
-*复位后所有寄存器地址都为0，除了
-*Register 26  CONFIG				= 0x80
-*Register 107 Power Management 1 	= 0x41
-*Register 117 WHO_AM_I 				= 0x12
+* После сброса регистры 0, кроме:
+* CONFIG = 0x80, PWR_MGMT_1 = 0x41, WHO_AM_I = 0x12
 *********************************************/
-//陀螺仪温度补偿
+// Температурная компенсация гироскопа
 #define	ICM20_XG_OFFS_TC_H				0x04
 #define	ICM20_XG_OFFS_TC_L				0x05
 #define	ICM20_YG_OFFS_TC_H				0x07
 #define	ICM20_YG_OFFS_TC_L				0x08
 #define	ICM20_ZG_OFFS_TC_H				0x0A
 #define	ICM20_ZG_OFFS_TC_L				0x0B
-//加速度自检输出(出产时设置，用于与用户的自检输出值比较）
+// Самотест акселерометра (заводские значения)
 #define	ICM20_SELF_TEST_X_ACCEL			0x0D
 #define	ICM20_SELF_TEST_Y_ACCEL			0x0E
 #define	ICM20_SELF_TEST_Z_ACCEL			0x0F
-//陀螺仪静态偏移
+// Статическое смещение гироскопа
 #define	ICM20_XG_OFFS_USRH				0x13
 #define	ICM20_XG_OFFS_USRL				0x14
 #define	ICM20_YG_OFFS_USRH				0x15
@@ -166,7 +164,7 @@ void LSM6_readGyro(u8 fast);
 #define	ICM20_ACCEL_CONFIG2				0x1D
 #define	ICM20_LP_MODE_CFG				0x1E
 
-//运动唤醒加速度阈值
+// Порог ускорения для wake-on-motion
 #define	ICM20_ACCEL_WOM_X_THR			0x20
 #define	ICM20_ACCEL_WOM_Y_THR			0x21
 #define	ICM20_ACCEL_WOM_Z_THR			0x22
@@ -179,24 +177,24 @@ void LSM6_readGyro(u8 fast);
 #define	ICM20_FIFO_WM_INT_STATUS		0x39
 #define	ICM20_INT_STATUS				0x3A
 
-//加速度输出
+// Выход акселерометра
 #define	ICM20_ACCEL_XOUT_H				0x3B
 #define	ICM20_ACCEL_XOUT_L				0x3C
 #define	ICM20_ACCEL_YOUT_H				0x3D
 #define	ICM20_ACCEL_YOUT_L				0x3E
 #define	ICM20_ACCEL_ZOUT_H				0x3F
 #define	ICM20_ACCEL_ZOUT_L				0x40
-//温度输出
+// Температура
 #define	ICM20_TEMP_OUT_H				0x41
 #define	ICM20_TEMP_OUT_L				0x42
-//角速度输出
+// Выход гироскопа
 #define	ICM20_GYRO_XOUT_H				0x43
 #define	ICM20_GYRO_XOUT_L				0x44
 #define	ICM20_GYRO_YOUT_H				0x45
 #define	ICM20_GYRO_YOUT_L				0x46
 #define	ICM20_GYRO_ZOUT_H				0x47
 #define	ICM20_GYRO_ZOUT_L				0x48
-//陀螺仪自检输出
+// Самотест гироскопа
 #define	ICM20_SELF_TEST_X_GYRO			0x50
 #define	ICM20_SELF_TEST_Y_GYRO			0x51
 #define	ICM20_SELF_TEST_Z_GYRO			0x52
@@ -206,7 +204,7 @@ void LSM6_readGyro(u8 fast);
 #define	ICM20_SIGNAL_PATH_RESET			0x68
 #define	ICM20_ACCEL_INTEL_CTRL 			0x69
 #define	ICM20_USER_CTRL					0x6A
-//电源控制
+// Питание
 #define	ICM20_PWR_MGMT_1				0x6B
 #define	ICM20_PWR_MGMT_2				0x6C
 
@@ -216,7 +214,7 @@ void LSM6_readGyro(u8 fast);
 #define	ICM20_FIFO_R_W					0x74
 
 #define	ICM20_WHO_AM_I 					0x75
-//加速度静态偏移
+// Статическое смещение акселерометра
 #define	ICM20_XA_OFFSET_H				0x77
 #define	ICM20_XA_OFFSET_L				0x78
 #define	ICM20_YA_OFFSET_H				0x7A
@@ -226,12 +224,12 @@ void LSM6_readGyro(u8 fast);
 //===========================================================
 
 
-//加速度量程
+// Диапазон акселерометра
 #define ICM20_ACCEL_FS_2G			(0<<3)
 #define ICM20_ACCEL_FS_4G			(1<<3)
 #define ICM20_ACCEL_FS_8G			(2<<3)
 #define ICM20_ACCEL_FS_16G			(3<<3)
-//角速度量程
+// Диапазон гироскопа
 #define ICM20_GYRO_FS_250			(0<<3)
 #define ICM20_GYRO_FS_500			(1<<3)
 #define ICM20_GYRO_FS_1000			(2<<3)
@@ -261,9 +259,9 @@ void LSM6_readGyro(u8 fast);
 #define ACCEL_DLPF_BW_420           0x06	
 
 
-#define GRAVITY_MSS 9.7833f                                //重力加速度
-#define _ACCEL_SCALE_1G    (GRAVITY_MSS / 2048.0f)			//加计量程16G
-#define _DEG_TO_RAD    0.0174532f 							//度转弧度
+#define GRAVITY_MSS 9.7833f                                // g
+#define _ACCEL_SCALE_1G    (GRAVITY_MSS / 2048.0f)			// шкала 16g
+#define _DEG_TO_RAD    0.0174532f 							// градусы -> радианы
 
 
 uint8_t icm20602_init(void);

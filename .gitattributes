@@ -1,4 +1,3 @@
-# Исходники C: единый перевод строк в индексе (LF). Keil MDK с ними нормально работает.
-# Если принципиально CRLF под Windows-only — замените на: eol=crlf
-*.c text eol=lf
-*.h text eol=lf
+# Исходники C: CRLF — удобно для Keil на Windows (меньше «шума» в diff с локальными файлами).
+*.c text eol=crlf
+*.h text eol=crlf
