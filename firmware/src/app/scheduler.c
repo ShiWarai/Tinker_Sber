@@ -170,7 +170,7 @@ void Duty_Att_Fushion()//姿态解算 100Hz
 	//sx sz + cx sy cz
 	
 	vmc_all.Rn_b[0][1] =  cosd(-att_rt_use[PITr])*sind(-att_rt_use[YAWr]);			
-//cy sz	
+	//cy sz	
 	vmc_all.Rn_b[1][1] =  cosd(-att_rt_use[ROLr])*cosd(-att_rt_use[YAWr])+sind(-att_rt_use[ROLr])*sind(-att_rt_use[PITr])*sind(-att_rt_use[YAWr])  ;	
 //cx cz + sx sy sz	
 	vmc_all.Rn_b[2][1] = -sind(-att_rt_use[ROLr])*cosd(-att_rt_use[YAWr])+cosd(-att_rt_use[ROLr])*sind(-att_rt_use[PITr])*sind(-att_rt_use[YAWr])  ;			
