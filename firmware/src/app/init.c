@@ -59,10 +59,6 @@ u8 All_Init()
 	W25QXX_Init();
 	Delay_ms(100);		
 	READ_PARM();Delay_ms(100);
-	#if !FLASH_USE_STM32
-	
-	 READ_WAY_POINTS();
-	#endif
 	#if defined(EN_BEEP)
 	if(spi_master_connect_pi)
 		Beep_Init(0,84-1);

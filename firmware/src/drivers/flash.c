@@ -1,80 +1,11 @@
 
 #include "include.h"
 #include "flash.h"
-#include "flash_nav.h"
 #include "mems.h"	
 #include "flash_w25.h"
 #include "icm20602.h"	
 #include "gait_math.h"
 #include "can.h"
-u32 STMFLASH_ReadWord(u32 faddr)
-{
-	return *(vu32*)faddr; 
-}  
-uint16_t STMFLASH_GetFlashSector(u32 addr)
-{
-	if(addr<ADDR_FLASH_SECTOR_1)return FLASH_Sector_0;
-	else if(addr<ADDR_FLASH_SECTOR_2)return FLASH_Sector_1;
-	else if(addr<ADDR_FLASH_SECTOR_3)return FLASH_Sector_2;
-	else if(addr<ADDR_FLASH_SECTOR_4)return FLASH_Sector_3;
-	else if(addr<ADDR_FLASH_SECTOR_5)return FLASH_Sector_4;
-	else if(addr<ADDR_FLASH_SECTOR_6)return FLASH_Sector_5;
-	else if(addr<ADDR_FLASH_SECTOR_7)return FLASH_Sector_6;
-	else if(addr<ADDR_FLASH_SECTOR_8)return FLASH_Sector_7;
-	else if(addr<ADDR_FLASH_SECTOR_9)return FLASH_Sector_8;
-	else if(addr<ADDR_FLASH_SECTOR_10)return FLASH_Sector_9;
-	else if(addr<ADDR_FLASH_SECTOR_11)return FLASH_Sector_10; 
-	return FLASH_Sector_11;	
-}
-
-void STMFLASH_Write(u32 WriteAddr,u32 *pBuffer,u32 NumToWrite)	
-{ 
-  FLASH_Status status = FLASH_COMPLETE;
-	u32 addrx=0;
-	u32 endaddr=0;	
-  if(WriteAddr<STM32_FLASH_BASE||WriteAddr%4)return;	//??????
-	FLASH_Unlock();									//???? 
-  FLASH_DataCacheCmd(DISABLE);//FLASH???????,?????????????
- 		
-	addrx=WriteAddr;				//??????????
-	endaddr=WriteAddr+NumToWrite*4;	//??????????
-	if(addrx<0X1FFF0000)			//?????????,???????????????!!
-	{
-		while(addrx<endaddr)		//?????????.(???FFFFFFFF????,?????)
-		{
-			if(STMFLASH_ReadWord(addrx)!=0XFFFFFFFF)//???0XFFFFFFFF????,????????????
-			{   
-				status=FLASH_EraseSector(STMFLASH_GetFlashSector(addrx),VoltageRange_3);//VCC=2.7~3.6V???!!
-				if(status!=FLASH_COMPLETE)break;	//??????????
-			}else addrx+=4;
-		} 
-	}
-	if(status==FLASH_COMPLETE)
-	{
-		while(WriteAddr<endaddr)//?????
-		{
-			if(FLASH_ProgramWord(WriteAddr,*pBuffer)!=FLASH_COMPLETE)//???????
-			{ 
-				break;	//?????
-			}
-			WriteAddr+=4;
-			pBuffer++;
-		} 
-	}
-  FLASH_DataCacheCmd(ENABLE);	//FLASH????????,???????????
-	FLASH_Lock();//????
-} 
-
-
-void STMFLASH_Read(u32 ReadAddr,u32 *pBuffer,u32 NumToRead)   	
-{
-	u32 i;
-	for(i=0;i<NumToRead;i++)
-	{
-		pBuffer[i]=STMFLASH_ReadWord(ReadAddr);//???4?????.
-		ReadAddr+=4;//???4?????.	
-	}
-}
 int flash_cnt=0;
 float isnan_checkf(float in)
 {
@@ -172,11 +103,7 @@ u8 need_init=0;
 int i=0,j=0,temp=0;
 int anal_cnt=0;
 module.flash_lock=1;
-#if FLASH_USE_STM32
-STMFLASH_Read(FLASH_SAVE_ADDR,(u32*)FLASH_Buffer,SIZE);	
-#else	
-W25QXX_Read(FLASH_Buffer,FLASH_SIZE-(SIZE_PARAM+10),SIZE_PARAM);					//???????100??????????,????SIZE?????
-#endif
+W25QXX_Read(FLASH_Buffer,FLASH_SIZE-(SIZE_PARAM+10),SIZE_PARAM);
 module.flash_lock=0;
 mems.Gyro_Offset.x=intFromDataf(FLASH_Buffer,&anal_cnt);
 mems.Gyro_Offset.y=intFromDataf(FLASH_Buffer,&anal_cnt);
@@ -301,69 +228,6 @@ FLASH_Buffer[flash_cnt++]=99;
 
 //????
 module.flash_lock=1;
-#if FLASH_USE_STM32
-STMFLASH_Write(FLASH_SAVE_ADDR,(u32*)FLASH_Buffer,SIZE);
-#else
-W25QXX_Write((u8*)FLASH_Buffer,FLASH_SIZE-(SIZE_PARAM+10),SIZE_PARAM);		//???????100??????????,???SIZE?????????
-#endif
+W25QXX_Write((u8*)FLASH_Buffer,FLASH_SIZE-(SIZE_PARAM+10),SIZE_PARAM);
 module.flash_lock=0;
-}
-
-
-#define FRAM_SIZE 16
-#define SIZE_WAY FRAM_SIZE*(NAV_MAX_MISSION_LEGS+1)
-navStruct_t navData;
-void WRITE_PARM_WAY_POINTS(void)
-{ 
-int16_t _temp;
-int32_t	_temp32;
-u16 cnt=0,i;
-u8 FLASH_Bufferw[SIZE_WAY]={0};		
-int max_num=LIMIT(SIZE_WAY/FRAM_SIZE-2,0,NAV_MAX_MISSION_LEGS);
-FLASH_Bufferw[cnt++]=navData.Leg_num;
-for(i=0;i<LIMIT(navData.Leg_num,0,max_num);i++){
-_temp32=(int32_t)(navData.missionLegs[i].targetLat*10000000);
-FLASH_Bufferw[cnt++]=BYTE0(_temp32);
-FLASH_Bufferw[cnt++]=BYTE1(_temp32);
-FLASH_Bufferw[cnt++]=BYTE2(_temp32);
-FLASH_Bufferw[cnt++]=BYTE3(_temp32);
-_temp32=(int32_t)(navData.missionLegs[i].targetLon*10000000);
-FLASH_Bufferw[cnt++]=BYTE0(_temp32);
-FLASH_Bufferw[cnt++]=BYTE1(_temp32);
-FLASH_Bufferw[cnt++]=BYTE2(_temp32);
-FLASH_Bufferw[cnt++]=BYTE3(_temp32);
-_temp=(int16_t)(navData.missionLegs[i].targetAlt*10);
-FLASH_Bufferw[cnt++]=BYTE0(_temp);
-FLASH_Bufferw[cnt++]=BYTE1(_temp);
-_temp=(int16_t)(navData.missionLegs[i].poiHeading*1000);
-FLASH_Bufferw[cnt++]=BYTE0(_temp);
-FLASH_Bufferw[cnt++]=BYTE1(_temp);
-_temp=(int16_t)(navData.missionLegs[i].maxHorizSpeed*100);
-FLASH_Bufferw[cnt++]=BYTE0(_temp);
-FLASH_Bufferw[cnt++]=BYTE1(_temp);
-_temp=(int16_t)(navData.missionLegs[i].loiterTime*100);
-FLASH_Bufferw[cnt++]=BYTE0(_temp);
-FLASH_Bufferw[cnt++]=BYTE1(_temp);
-}
-W25QXX_Write((u8*)FLASH_Bufferw,FLASH_SIZE-(SIZE_WAY+10+SIZE_PARAM+10),SIZE_WAY);		//???????100??????????,???SIZE?????????
-}
-
-void READ_WAY_POINTS(void)
-{
-u16 i;
-u8 FLASH_Bufferw[SIZE_WAY]={0};	
-W25QXX_Read(FLASH_Bufferw,FLASH_SIZE-(SIZE_WAY+10+SIZE_PARAM+10),SIZE_WAY);					//???????100??????????,????SIZE?????
-navData.Leg_num=LIMIT(FLASH_Bufferw[0],0,NAV_MAX_MISSION_LEGS);
-for(i=0;i<navData.Leg_num;i++){
-navData.missionLegs[i].targetLat=(float)((vs32)(FLASH_Bufferw[4+i*FRAM_SIZE]<<24|FLASH_Bufferw[3+i*FRAM_SIZE]<<16|
-	FLASH_Bufferw[2+i*FRAM_SIZE]<<8|FLASH_Bufferw[1+i*FRAM_SIZE]))/10000000.;
-navData.missionLegs[i].targetLon=(float)((vs32)(FLASH_Bufferw[8+i*FRAM_SIZE]<<24|FLASH_Bufferw[7+i*FRAM_SIZE]<<16|
-	FLASH_Bufferw[6+i*FRAM_SIZE]<<8|FLASH_Bufferw[5+i*FRAM_SIZE]))/10000000.;
-navData.missionLegs[i].targetAlt=(float)((vs16)(FLASH_Bufferw[10+i*FRAM_SIZE]<<8|FLASH_Bufferw[9+i*FRAM_SIZE]))/10.;
-navData.missionLegs[i].poiHeading=(float)((vs16)(FLASH_Bufferw[12+i*FRAM_SIZE]<<8|FLASH_Bufferw[11+i*FRAM_SIZE]))/1000.;
-navData.missionLegs[i].maxHorizSpeed=(float)((vs16)(FLASH_Bufferw[14+i*FRAM_SIZE]<<8|FLASH_Bufferw[13+i*FRAM_SIZE]))/100.;
-navData.missionLegs[i].loiterTime=(float)((vs16)(FLASH_Bufferw[16+i*FRAM_SIZE]<<8|FLASH_Bufferw[15+i*FRAM_SIZE]))/100.;
-	if(navData.missionLegs[i].targetLat>20&&navData.missionLegs[i].targetLon>20)
-		navData.missionLegs[i].type=2;
-	}
 }
