@@ -48,7 +48,7 @@ pyocd gdbserver --probe stlink: --connect attach --persist --reset-run --cbuild-
 ## Структура проекта
 
 - `src/app/` — `main`, `scheduler`, `init`, обработчики прерываний.
-- `src/drivers/` — CAN, SPI, Flash, USART, LED.
+- `src/drivers/` — CAN, SPI, Flash, UART, LED.
 - `src/math/` — математика (`common_math`, `fliter_math`, `RT_math`).
 - `src/sensors/` — IMU.
 - `src/system/` — системные модули (`sys`, `delay`).
