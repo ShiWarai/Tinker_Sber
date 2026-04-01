@@ -22,6 +22,8 @@
 /*********************************************/
 void POWER_INIT(void);
 void leg_power_control(u8 sel);
+/** PB3/PB4 и PA0/PA1 как выходы для индикации (вызвать до мигания и после драйверов, трогающих GPIOB). */
+void LED_ConfigIndicatorPins(void);
 void LED_Init(void);
 void LED_Display(u8[]);
 void LED_Duty(void);

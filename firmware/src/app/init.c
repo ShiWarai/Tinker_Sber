@@ -76,6 +76,9 @@ u8 All_Init()
 
 	CAN_motor_init();
 
+	/* После SPI3/CAN снова вывести PB3/PB4 (и PA0/PA1) в GPIO OUT: ранний LED_Init был до такта GPIOB. */
+	LED_ConfigIndicatorPins();
+
 #if USE_AUDIO
 	Write_Audio_Data(0x6); // max audio sound
 #endif

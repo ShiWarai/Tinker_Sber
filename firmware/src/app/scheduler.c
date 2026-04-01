@@ -109,6 +109,33 @@ float FLT_ATT_RT = 0; // 20;//15;//1.68*2;
 char att_fusion_use[2] = {1, 1};
 Vect3 vect_n_test, vect_b_test;
 float FLT_ATT_RATE = 0; // WS
+
+static void copy_imu_to_robotwb(float dt)
+{
+	char i, j;
+	robotwb.IMU_now.pitch = vmc_all.att[PITr];
+	robotwb.IMU_now.roll = vmc_all.att[ROLr];
+	robotwb.IMU_now.yaw = vmc_all.att[YAWr];
+
+	for (i = 0; i < 3; i++)
+	{
+		for (j = 0; j < 3; j++)
+		{
+			robotwb.Rb_n[i][j] = vmc_all.Rb_n[i][j];
+			robotwb.Rn_b[i][j] = vmc_all.Rn_b[i][j];
+			robotwb.Rb_n_noroll[i][j] = vmc_all.Rb_n_noroll[i][j];
+			robotwb.Rn_b_noroll[i][j] = vmc_all.Rn_b_noroll[i][j];
+		}
+	}
+
+	DigitalLPF_Double(vmc_all.att_rate[PITr], &robotwb.IMU_dot.pitch, FLT_ATT_RATE, dt);
+	DigitalLPF_Double(vmc_all.att_rate[ROLr], &robotwb.IMU_dot.roll, FLT_ATT_RATE, dt);
+	DigitalLPF_Double(vmc_all.att_rate[YAWr], &robotwb.IMU_dot.yaw, FLT_ATT_RATE, dt);
+
+	robotwb.now_att = robotwb.IMU_now;
+	robotwb.now_rate = robotwb.IMU_dot;
+}
+
 void Duty_Att_Fushion() // оценка ориентации (AHRS), ~100 Гц
 {
 	u8 i;
@@ -231,7 +258,7 @@ void Duty_Att_Fushion() // оценка ориентации (AHRS), ~100 Гц
 		DigitalLPF(-acc_temp[1] * 9.8, &vmc_all.acc[Yr], FLT_ACC, T);
 		DigitalLPF(acc_temp[2] * 9.8, &vmc_all.acc[Zr], FLT_ACC, T);
 
-		// copy_imu_to_robotwb(T);
+		copy_imu_to_robotwb(T);
 	}
 }
 
@@ -244,9 +271,7 @@ void Duty_System() // система: RC, защиты, звук
 	static char state_sdk = 0;
 	float T;
 	system_dt.system_task = T = leg_dt[7] = Get_Cycle_T(7);
-
-	// светодиоды на плате
-	LEDRGB_STATE(0.05);
+	LEDRGB_STATE(0.05f);
 	// внешние LED — индикация состояния
 	LED_SCP(io_sel_scp_scl[0]);
 	LED_SCL(io_sel_scp_scl[1]);

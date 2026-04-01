@@ -363,7 +363,7 @@ void slave_rx(u8 *data_buf, u8 num) // команды от Linux (RPi)
 		spi_master_loss_pi = 0;
 		spi_master_connect_pi = 1;
 		IWDG_Feed();
-		spi_rx_cnt_all++;
+		/* spi_rx_cnt_all считается в DMA1_Stream3_IRQHandler после slave_rx — не дублировать */
 
 		rc_value_temp = charFromData_spi(data_buf, &anal_cnt);
 		leg_motor.motor_en = rc_value_temp / 100;                            // ���ʹ��
