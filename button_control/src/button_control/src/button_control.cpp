@@ -27,11 +27,11 @@ ButtonControl::ButtonControl()
     };
 
     control_cmd_publisher_ = this->create_publisher<tinker_msgs::msg::ControlCmd>(
-        "tinker_msgs/controlcmd", 20);
+        "/control_command", 20);
     low_cmd_publisher_ = this->create_publisher<tinker_msgs::msg::LowCmd>(
-        "tinker_msgs/lowcmd", 20);
+        "/low_level_command", 20);
     low_state_subscriber_ = this->create_subscription<tinker_msgs::msg::LowState>(
-        "tinker_msgs/lowstate", 20, low_state_callback);
+        "/low_level_state", 20, low_state_callback);
     
     // Таймер для обновления плавного движения (100 Гц)
     motion_timer_ = this->create_wall_timer(
