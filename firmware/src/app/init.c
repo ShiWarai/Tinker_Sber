@@ -64,8 +64,8 @@ u8 All_Init()
 	READ_PARM();
 	Delay_ms(100);
 #if defined(EN_BEEP)
-	if (spi_master_connect_pi)
-		Beep_Init(0, 84 - 1);
+	/* Раньше: только при spi_master_connect_pi — на старте флаг 0, зуммер не инициализировался, мелодии не играли */
+	Beep_Init(0, 84 - 1);
 #endif
 
 	LED_Init_SCL_SDA(); //???LED

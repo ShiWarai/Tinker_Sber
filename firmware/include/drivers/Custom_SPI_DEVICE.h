@@ -49,6 +49,8 @@ void Custom_SPI_DMABufferWait(void);
 void Custom_SPI_DMABufferConfig(void);
 
 void Custom_SPI_DEVICE_Init(void);
+/** Перезапуск SPI2+DMA slave (если зависли до появления мастера) — вызывать из главного цикла, не из IRQ. */
+void Custom_SPI_Slave_RecoverDma(void);
 
 /* Exported constants --------------------------------------------------------*/
 

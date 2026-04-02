@@ -108,6 +108,14 @@ void Custom_SPI_DMABufferConfig(void)
 	DMA_InitStructure_Slave.DMA_Channel = DMA_Channel_0;
 }
 
+void Custom_SPI_Slave_RecoverDma(void)
+{
+	__disable_irq();
+	Custom_SPI_DMABufferWait();
+	Custom_SPI_DMABufferStart();
+	__enable_irq();
+}
+
 void Custom_SPI_DEVICE_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -174,6 +182,13 @@ void DMA1_Stream3_IRQHandler(void) // rx
 		/* Clear DMA Stream Transfer Complete interrupt pending bit */
 		DMA_ClearITPendingBit(DMA1_Stream3, DMA_IT_TCIF3);
 		DMA_ITConfig(DMA1_Stream3, DMA_IT_TCIF3, DISABLE);
+		/*
+		 * Каждый блок DMA — одна транзакция мастера (DataSize байт). Сброс ФСМ после удаления
+		 * EXTI по CS (c017aa2): иначе state_spi остаётся в середине кадра из шума до старта RPi.
+		 */
+		state_spi = 0;
+		_data_len2_spi = 0;
+		_data_cnt2_spi = 0;
 		if (!wsled.led_lock)
 		{
 			for (i = 0; i < (DataSize + CheckSumSize); i++)

@@ -311,6 +311,23 @@ void Duty_System() // система: RC, защиты, звук
 		spi_master_loss_pi_all++;
 	}
 
+#if defined(BOARD_FOR_CAN) && !USE_USE_COMM
+	/* После удаления EXTI по CS slave-DMA мог зависать, если плата стартует без RPi; переинициализация ~1.25 с без связи */
+	{
+		static uint16_t spi_dma_recover_tick;
+		if (!spi_master_connect_pi)
+		{
+			if (++spi_dma_recover_tick >= 25u)
+			{
+				spi_dma_recover_tick = 0;
+				Custom_SPI_Slave_RecoverDma();
+			}
+		}
+		else
+			spi_dma_recover_tick = 0;
+	}
+#endif
+
 	for (i = 0; i < 10; i++)
 	{
 		leg_motor.connect_motor[i] = motor_chassis[i].param.connect;
