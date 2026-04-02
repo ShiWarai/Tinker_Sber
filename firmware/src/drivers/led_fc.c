@@ -207,7 +207,7 @@ void LEDRGB_COLOR(u8 color)
 
 int dj_sel = 0;
 
-/* Красный: связь со SBC по SPI (slave_rx); синий: хотя бы один мотор на CAN с param.connect */
+/* Красный (PB3/PA0): только при spi_master_connect_pi; синий (PB4/PA1): CAN motor_chassis[].param.connect — независимо от SPI */
 void LEDRGB_STATE(float dt)
 {
 	(void)dt;
@@ -229,7 +229,11 @@ void LEDRGB_STATE(float dt)
 			LEDRGB_RED(0);
 	}
 	else
+	{
+		main_state_red = 0;
+		spi_rx_cnt_all = 0;
 		LEDRGB_RED(0);
+	}
 
 	for (i = 0; i < 10; i++)
 	{
