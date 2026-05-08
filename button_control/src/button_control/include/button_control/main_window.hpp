@@ -19,19 +19,19 @@ public:
     explicit MainWindow(std::shared_ptr<ButtonControl> node, QWidget *parent = nullptr);
     
 private slots:
-    void moveZeroPositionButtonClicked();
     void lyingDownButtonClicked();
     void standingButtonClicked();
     void setZeroPositionButtonClicked();
-    void activateMotorsButtonClicked();
+    void startMotorsButtonClicked();
+    void stopMotorsButtonClicked();
     
 private:
     std::shared_ptr<ButtonControl> ros_node_;
-    QPushButton *button_move_zero_pos_;
+    QPushButton *button_start_motors_;
+    QPushButton *button_stop_motors_;
     QPushButton *button_lying_down_;
     QPushButton *button_standing_;
     QPushButton *button_set_zero_pos_;
-    QPushButton *button_activate_motors_;
 
     QLabel * label_status_;
 

@@ -16,6 +16,9 @@
   <depend>rviz_ogre_vendor</depend>
   <depend>rviz_rendering</depend>
   <depend>tinker_msgs</depend>
+
+  <exec_depend>rclpy</exec_depend>
+
   <depend>qtbase5-dev</depend>
   <depend>libqt5-core</depend>
   <depend>libqt5-widgets</depend>

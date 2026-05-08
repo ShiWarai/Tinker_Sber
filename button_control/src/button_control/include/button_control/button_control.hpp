@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include <array>
+#include <cstdint>
 #include <optional>
 
 namespace button_control {
@@ -25,11 +26,19 @@ namespace button_control {
 class ButtonControl : public rclcpp::Node {
 public:
     explicit ButtonControl();
+
+    enum class PoseMotionKind { None, Standing, Lying };
     
     //Публикации из GUI
     void publishSetZeroCmdMessage();
-    void publishMoveZeroCmdMessage();
-    void publishActivateMotorsCmdMessage();
+    /** Smooth motion to standing pose (motors 0–4 and mirrored 5–9). */
+    void publishStandingPose();
+    /** Smooth motion to lying pose (all joint angles zero). */
+    void publishLyingPose();
+    /** ControlCmd 252 (enable) for motors 0–9. */
+    void publishStartMotorsCmdMessage();
+    /** ControlCmd 253 (disable) for motors 0–9. */
+    void publishStopMotorsCmdMessage();
 
     void updateSmoothMotion();
     
@@ -58,6 +67,7 @@ private:
         int elapsed_steps = 0;                  // Счётчик шагов
         int total_steps = 0;                    // Общее количество шагов
         float control_freq_hz = 100.0f;         // Частота обновления (Гц)
+        PoseMotionKind pose_motion = PoseMotionKind::None;
     };
     
     MotionParams motion_params_;
@@ -69,7 +79,11 @@ private:
     
     // Callback для получения обратной связи
     void lowStateCallback(const tinker_msgs::msg::LowState::SharedPtr msg);
-    
+
+    void beginSmoothMotionToTargets(const std::array<float, 10>& targets, PoseMotionKind pose_motion);
+
+    void publishControlCmdForAllMotors(uint8_t cmd);
+
     // Вспомогательная функция интерполяции
     static float interpolate(float start, float target, float progress, bool smooth = true);
 };
