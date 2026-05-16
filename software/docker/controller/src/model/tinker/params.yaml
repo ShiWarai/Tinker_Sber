@@ -1,5 +1,5 @@
 TinkerCfg:
-  loop_frequency: 50
+  loop_frequency: 100
   joint_names:
     - "J_L0"
     - "J_L1"
@@ -27,17 +27,17 @@ TinkerCfg:
       J_R4_ankle: 0.57
 
   control:
-    # PD Drive parameters:
-    stiffness: 13.0
-    damping: 0.65
-    action_scale_pos: 0.25
-    decimation: 4
+    stiffness: 25.0
+    damping: 0.5
+    # BDControllerCfg.control.actuation_scale = 1.0
+    action_scale_pos: 1.0
+    decimation: 10
     user_torque_limit: 60
 
   normalization:
     clip_scales:
       clip_observations: 100.
-      clip_actions: 100.
+      clip_actions: 1.0
     obs_scales:
       lin_vel: 1.0
       ang_vel: 1.0
@@ -46,7 +46,8 @@ TinkerCfg:
 
   size:
     actions_size: 10
-    observations_size: 44   # 27 was for pointfoot, +4 DOF: {+4 qpos +4 qvel +4 actions}
+    # 1+3+3+4+4+4+4+3+1+1+10+10 = 48
+    observations_size: 48
     commands_size: 3
 
   stand_mode:

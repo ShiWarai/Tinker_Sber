@@ -1,6 +1,6 @@
 <mujocoinclude>
-    <option timestep='0.005' iterations="50" tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/>
-    
+    <!-- <option timestep='0.001' iterations="500000000" tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/> -->
+    <option timestep='0.001' tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/>    
     <asset>
         <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="512" height="512"/>
         <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
@@ -14,7 +14,7 @@
     </visual>
 
     <worldbody>
-        <geom name="floor" pos="0 0 -0.505" size="0 0 0.05" type="plane" material="grid" condim="3"/>
+        <geom name="floor" pos="0 0 -0.505" size="0 0 0.05" type="plane" material="grid" condim="3" friction="0.95 0.005 0.0001"/>
          
         <light castshadow="false" directional='true' diffuse='.3 .3 .3' specular='0.3 0.3 0.3' pos='-1 -1 1'
                dir='1 1 -1'/>

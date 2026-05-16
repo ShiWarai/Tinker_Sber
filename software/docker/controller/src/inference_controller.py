@@ -1,244 +1,157 @@
 import os
-import sys
-import copy
 import numpy as np
 import yaml
 import onnxruntime as ort
 from scipy.spatial.transform import Rotation as R
-from functools import partial
 from rclpy.node import Node
-from collections import deque
-# import limxsdk
-# import limxsdk.robot.Rate as Rate
-# import limxsdk.robot.Robot as Robot
-# import limxsdk.robot.RobotType as RobotType
-# import limxsdk.datatypes as datatypes
+
 
 class InferenceController:
-    def __init__(self, node: Node, model_dir, robot_type):
-        # super().__init__(node)
-        self.node = node
-        # Initialize robot and type information
-        self.robot_type = robot_type
-        # Load configuration and model file paths based on robot type
-        # self.config_file = f'{model_dir}/{self.robot_type}/params.yaml'
-        # self.model_file = f'{model_dir}/{self.robot_type}/policy/policy.onnx'
-        self.config_file = f'{model_dir}/params.yaml'
-        self.model_file = f'{model_dir}/policy/policy.onnx'
 
-        # Load configuration settings from the YAML file
+    def __init__(self, node: Node, model_dir: str, robot_type: str):
+        self.node = node
+
+        self.config_file = os.path.join(model_dir, 'params.yaml')
+        self.model_file  = os.path.join(model_dir, 'policy', 'policy.onnx')
+
         self.load_config(self.config_file)
 
-        # Load the ONNX model and set up input and output names
-        self.policy_session = ort.InferenceSession(self.model_file)
-        self.policy_input_names = [self.policy_session.get_inputs()[0].name]
-        self.policy_output_names = [self.policy_session.get_outputs()[0].name]
-        self.node.get_logger().info(f'ONNX model loaded: input {self.policy_input_names[0]} with shape {self.policy_session.get_inputs()[0].shape}, output {self.policy_output_names[0]}')
+        self.policy_session      = ort.InferenceSession(self.model_file)
+        self.policy_input_name   = self.policy_session.get_inputs()[0].name
+        self.policy_output_name  = self.policy_session.get_outputs()[0].name
 
-        self.history_length = 5
-        self.loop_count = 0
-        self.gait_command = np.array([2.0, 0.5, 0.5])  # freq, offset, contact_duration
-        
-        self.obs_queue = deque(maxlen=self.history_length)
+        inp = self.policy_session.get_inputs()[0]
+        self.node.get_logger().info(
+            f'ONNX loaded: input={self.policy_input_name} shape={inp.shape}')
 
-        self.base_ang_vel_queue = deque(maxlen=self.history_length)
-        self.projected_gravity_queue = deque(maxlen=self.history_length)
-        self.joint_positions_queue = deque(maxlen=self.history_length)
-        self.joint_velocities_queue = deque(maxlen=self.history_length)
-        self.actions_queue = deque(maxlen=self.history_length)
-        self.scaled_commands_queue = deque(maxlen=self.history_length)
-        self.gait_phase_queue = deque(maxlen=self.history_length)
-        self.gait_command_queue = deque(maxlen=self.history_length)
+        # Infer expected observation size from the ONNX model
+        self._expected_obs_size = int(inp.shape[0])
+        # Infer whether the model expects a batch dim (old policy: [1, N]) or flat (new: [N])
+        self._obs_needs_batch = (len(inp.shape) == 2)
 
-        self.node.get_logger().info('Inference model initialized')
+        self.actions      = np.zeros(self.actions_size)
+        self.observations = np.zeros(self._expected_obs_size)
+        self._first_obs_logged = False
+        self._first_act_logged = False
+        self._pending_debug_lines = []
+
+        self.node.get_logger().info('Inference controller initialised')
 
 
-    # Load the configuration from a YAML file
-    def load_config(self, config_file):
-        with open(config_file, 'r') as f:
+    def load_config(self, config_file: str):
+        with open(config_file) as f:
             config = yaml.safe_load(f)
 
-        # Assign configuration parameters to controller variables
-        self.joint_names = config['TinkerCfg']['joint_names']
-        self.init_state = config['TinkerCfg']['init_state']['default_joint_angle']
-        self.stand_duration = config['TinkerCfg']['stand_mode']['stand_duration']
-        self.control_cfg = config['TinkerCfg']['control']
-        self.rl_cfg = config['TinkerCfg']['normalization']
-        self.obs_scales = config['TinkerCfg']['normalization']['obs_scales']
-        self.actions_size = config['TinkerCfg']['size']['actions_size']
-        self.observations_size = config['TinkerCfg']['size']['observations_size']
-        self.imu_orientation_offset = np.array(list(config['TinkerCfg']['imu_orientation_offset'].values()))
-        self.user_cmd_cfg = config['TinkerCfg']['user_cmd_scales']
-        self.loop_frequency = config['TinkerCfg']['loop_frequency']
-        
-        # Initialize variables for actions, observations, and commands
-        self.actions = np.zeros(self.actions_size)
-        self.observations = np.zeros(self.observations_size)
-        self.last_actions = np.zeros(self.actions_size)
-        self.commands = np.zeros(3)  # command to the robot (e.g., velocity, rotation)
-        self.scaled_commands = np.zeros(3)
-        self.base_lin_vel = np.zeros(3)  # base linear velocity
-        self.base_position = np.zeros(3)  # robot base position
-        self.loop_count = 0  # loop iteration count
-        self.stand_percent = 0  # percentage of time the robot has spent in stand mode
-        self.policy_session = None  # ONNX model session for policy inference
-        self.joint_num = len(self.joint_names)  # number of joints
-        self.node.get_logger().info(f'Observation size: {self.observations_size}, Actions size: {self.actions_size}')
+        cfg = config['TinkerCfg']
+        self.joint_names      = cfg['joint_names']
+        self.init_state       = cfg['init_state']['default_joint_angle']
+        self.stand_duration   = cfg['stand_mode']['stand_duration']
+        self.control_cfg      = cfg['control']
+        self.rl_cfg           = cfg['normalization']
+        self.obs_scales       = cfg['normalization']['obs_scales']
+        self.actions_size     = cfg['size']['actions_size']
+        self.observations_size = cfg['size']['observations_size']
+        self.imu_orientation_offset = np.array(
+            list(cfg['imu_orientation_offset'].values()))
+        self.user_cmd_cfg     = cfg['user_cmd_scales']
+        self.loop_frequency   = cfg['loop_frequency']
 
-        # Initialize joint angles based on the initial configuration
-        self.init_joint_angles = np.zeros(len(self.joint_names))
-        for i in range(len(self.joint_names)):
-            self.init_joint_angles[i] = self.init_state[self.joint_names[i]]
-        
-        # Set initial mode to "STAND"
-        # self.mode = "STAND"
-        self.node.get_logger().info('Inference config loaded')
-        
-    
-    def compute_gait_phase(self):
-        loop_count = self.loop_count
-        gait_indices = (loop_count / self.loop_frequency) * self.gait_command[0]
+        self.init_joint_angles = np.array(
+            [self.init_state[n] for n in self.joint_names], dtype=np.float32)
 
-        sin_phase = np.sin(2 * np.pi * gait_indices)
-        cos_phase = np.cos(2 * np.pi * gait_indices)
+        self.node.get_logger().info(
+            f'Config loaded: obs_size={self.observations_size} '
+            f'actions_size={self.actions_size}')
 
-        return np.array([sin_phase, cos_phase])
-        
-    def compute_gait_command(self):
-        return self.gait_command
-
-    def compute_observation(self,
-                            imu_quat,
-                            base_ang_vel,
-                            joint_positions,
-                            joint_velocities,
-                            last_actions,
-                            commands):
-
+    def compute_observation(
+        self,
+        imu_quat:            np.ndarray,   # (4,) wxyz
+        imu_rpy:             np.ndarray,   # (3,) [roll, pitch, yaw] from sim
+        base_ang_vel:        np.ndarray,   # (3,)
+        joint_positions:     np.ndarray,   # (10,)
+        joint_velocities:    np.ndarray,   # (10,)
+        commands:            np.ndarray,   # (3,) [vx, vy, yaw_rate]
+        foot_states_right:   np.ndarray,   # (4,) from BDKinematics
+        foot_states_left:    np.ndarray,   # (4,)
+        step_cmd_right:      np.ndarray,   # (4,) from LIPMStepPlanner
+        step_cmd_left:       np.ndarray,   # (4,)
+        phase_sin:           float,
+        phase_cos:           float,
+    ):
         try:
-            # Convert IMU orientation from quaternion to Euler angles (ZYX convention)
-            '''imu_orientation = np.array(self.imu_data_tmp.quat)'''
+            # Quaternion wxyz -> xyzw for scipy
+            q_xyzw = np.array(
+                [imu_quat[1], imu_quat[2], imu_quat[3], imu_quat[0]],
+                dtype=np.float64)
+            rot = R.from_quat(q_xyzw)
 
-            imu_quat = np.asarray(imu_quat, dtype=np.float32)
-            imu_quat_xyzw = np.array([imu_quat[1], imu_quat[2], imu_quat[3], imu_quat[0]], dtype=np.float32)
-            q_wi = R.from_quat(imu_quat_xyzw).as_euler("zyx")
 
-            # q_wi = R.from_quat(imu_quat).as_euler('zyx')  # Quaternion to Euler ZYX conversion
-            inverse_rot = R.from_euler('zyx', q_wi).inv().as_matrix()  # Get the inverse rotation matrix
+            # base_heading
+            base_heading = np.float32(imu_rpy[2])
 
-            # Project the gravity vector (pointing downwards) into the body frame
-            gravity_vector = np.array([0, 0, -1])  # Gravity in world frame (z-axis down)
-            projected_gravity = np.dot(inverse_rot, gravity_vector)  # Transform gravity into body frame
+            # projected_gravity
+            projected_gravity = rot.inv().apply(
+                np.array([0., 0., -1.])).astype(np.float32)
 
-            # Create a command scaler matrix for linear and angular velocities
-            command_scaler = np.diag([
-                self.user_cmd_cfg['lin_vel_x'],  # Scale factor for linear velocity in x direction
-                self.user_cmd_cfg['lin_vel_y'],  # Scale factor for linear velocity in y direction
-                self.user_cmd_cfg['ang_vel_yaw']  # Scale factor for yaw (angular velocity)
-            ])
+            # command scaling
+            cmd_scale = np.array([
+                self.user_cmd_cfg['lin_vel_x'],
+                self.user_cmd_cfg['lin_vel_y'],
+                self.user_cmd_cfg['ang_vel_yaw'],
+            ], dtype=np.float32)
+            scaled_commands = (commands * cmd_scale).astype(np.float32)
 
-            # Apply scaling to the command inputs (velocity commands)
-            scaled_commands = np.dot(command_scaler, commands)
+            # joint state
+            scaled_dof_pos = ( joint_positions * self.obs_scales['dof_pos']).astype(np.float32)
+            scaled_dof_vel = ( joint_velocities * self.obs_scales['dof_vel']).astype(np.float32)
+            scaled_ang_vel = ( base_ang_vel * self.obs_scales['ang_vel']).astype(np.float32)
 
-            # Compute gait phase
-            gait_phase = self.compute_gait_phase()
-            gait_command = self.gait_command
+            obs = np.concatenate([
+                [base_heading],         # 1
+                scaled_ang_vel,         # 3
+                projected_gravity,      # 3
+                foot_states_right,      # 4
+                foot_states_left,       # 4
+                step_cmd_right,         # 4
+                step_cmd_left,          # 4
+                scaled_commands,        # 3
+                [phase_sin],            # 1
+                [phase_cos],            # 1
+                scaled_dof_pos,         # 10
+                scaled_dof_vel,         # 10
+            ]).astype(np.float32)
 
-            # Scale current values
-            # scaled_base_ang_vel = base_ang_vel * self.obs_scales['ang_vel']
-            # rot = R.from_euler("zyx", self.imu_orientation_offset).as_matrix().astype(np.float32)
-            # scaled_base_ang_vel = (rot @ base_ang_vel) * self.obs_scales["ang_vel"]
-            scaled_base_ang_vel = base_ang_vel * self.obs_scales["ang_vel"]
+            self.observations = obs
 
-            # scaled_joint_pos = self.init_joint_angles * self.obs_scales['dof_pos']
-            scaled_joint_pos = (joint_positions - self.init_joint_angles) * self.obs_scales["dof_pos"]
-            scaled_joint_vel = joint_velocities * self.obs_scales['dof_vel']
-
-            obs = np.concatenate([scaled_base_ang_vel,
-                                  projected_gravity,
-                                  scaled_joint_pos, 
-                                  scaled_joint_vel, 
-                                  last_actions, 
-                                  scaled_commands, 
-                                  gait_phase,
-                                  gait_command], 
-                                axis=0).astype(np.float32)
-
-            if len(self.obs_queue) == 0:
-                for _ in range(self.history_length):
-                    self.obs_queue.appendleft(np.zeros(44))
-
-            self.obs_queue.appendleft(obs)
-            
-            # Fill the history queue with the current observation if it is empty
-            '''if len(self.obs_queue) == 0:
-                for _ in range(self.history_length):
-                    self.base_ang_vel_queue.append(base_ang_vel * self.obs_scales['ang_vel'])
-                    self.projected_gravity_queue.append(projected_gravity)
-                    self.joint_positions_queue.append((joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos'])
-                    self.joint_velocities_queue.append(joint_velocities * self.obs_scales['dof_vel'])
-                    self.actions_queue.append(last_actions)
-                    self.scaled_commands_queue.append(scaled_commands)
-                    self.gait_phase_queue.append(gait_phase)
-                    self.gait_command_queue.append(gait_command)
-
-            # Append the current observation to the history queue
-            self.base_ang_vel_queue.append(base_ang_vel * self.obs_scales['ang_vel'])
-            self.projected_gravity_queue.append(projected_gravity)
-            self.joint_positions_queue.append((joint_positions - self.init_joint_angles) * self.obs_scales['dof_pos'])
-            self.joint_velocities_queue.append(joint_velocities * self.obs_scales['dof_vel'])
-            self.actions_queue.append(last_actions)
-            self.scaled_commands_queue.append(scaled_commands)
-            self.gait_phase_queue.append(gait_phase)
-            self.gait_command_queue.append(gait_command)
-            
-            history_obs = np.concatenate([
-                np.array(self.base_ang_vel_queue).flatten(),
-                np.array(self.projected_gravity_queue).flatten(),
-                np.array(self.joint_positions_queue).flatten(),
-                np.array(self.joint_velocities_queue).flatten(),
-                np.array(self.actions_queue).flatten(),
-                np.array(self.scaled_commands_queue).flatten(),
-                np.array(self.gait_phase_queue).flatten(),
-                np.array(self.gait_command_queue).flatten()
-            ])
-            
-            self.obs_queue = np.clip(
-                history_obs,
-                -self.rl_cfg['clip_scales']['clip_observations'],
-                self.rl_cfg['clip_scales']['clip_observations']
-            )'''
-
-            # self.node.get_logger().info(f"[Inference] obs_queue: {self.obs_queue}")
-
-            self.loop_count += 1
-            
-        
         except Exception as e:
-            self.node.get_logger().error(f"\n[Inference] Error in compute_observation: {e}")
+            self.node.get_logger().error(
+                f'[Inference] compute_observation error: {e}')
 
     def compute_actions(self):
-        """
-        Computes the actions based on the current observations using the policy session.
-        """
         try:
-            history_obs = np.concatenate(list(self.obs_queue), axis=0).astype(np.float32)
-            # history_obs = self.obs_queue.astype(np.float32)
+            clip = float(self.rl_cfg['clip_scales']['clip_observations'])
+            obs  = np.clip(self.observations, -clip, clip).astype(np.float32)
 
-            clip = float(self.rl_cfg["clip_scales"]["clip_observations"])
-            history_obs = np.clip(history_obs, -clip, clip).astype(np.float32)
 
-            input_tensor = history_obs.reshape(1, -1)
+            if self._obs_needs_batch:
+                inp = obs.reshape(1, -1)
+            else:
+                inp = obs.flatten()
 
-            # self.node.get_logger().info(f"[Inference] input_tensor::\n{np.round(input_tensor, 2)}")
+            output = self.policy_session.run(
+                [self.policy_output_name],
+                {self.policy_input_name: inp})
 
-            inputs = {self.policy_input_names[0]: input_tensor}
-            output = self.policy_session.run(self.policy_output_names, inputs)
-
-            # self.actions = np.array(output).flatten()
             self.actions = np.asarray(output[0], dtype=np.float32).flatten()
-            # print(self.actions)
-            
-            
+
+            if not self._first_act_logged:
+                lines = getattr(self, '_pending_debug_lines', [])
+                lines += ['=== First actions ===']
+                for i, val in enumerate(self.actions):
+                    lines.append(f'  [{i:2d}] action[{i}] = {val:.6f}')
+                print('\n'.join(lines), flush=True)
+                self._first_act_logged = True
+
         except Exception as e:
-            self.node.get_logger().error(f"[Inference] Error in compute_actions: {e}")
+            self.node.get_logger().error(
+                f'[Inference] compute_actions error: {e}')
