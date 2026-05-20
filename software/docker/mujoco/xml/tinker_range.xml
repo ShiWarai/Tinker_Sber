@@ -28,7 +28,7 @@
                             <inertial pos="0.0118 -0.0068 -0.0296" quat="1 0 0 0" mass="0.171742682777178" diaginertia="0.0001 0.0003 0.0003" />
                             <joint name="joint_l_ankle" pos="0 0 0" axis="0 -1 0" limited="true" range="-0.6 0.7" />
                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="link_l_ankle" />
-                            <geom type="box" size="0.065 0.023 0.005" pos="0.02 0 -0.046" rgba="1 0.90588 0.91765 1" />
+                            <geom type="box" size="0.07 0.025 0.009" pos="0.015 0 -0.040" rgba="1 0.90588 0.91765 1" />
                         </body> 
                     </body>
                 </body>
@@ -57,7 +57,7 @@
                             <inertial pos="0.0118 0.0067 -0.0296" quat="1 0 0 0" mass="0.17174" diaginertia="0.0001 0.0003 0.0003" />
                             <joint name="joint_r_ankle" pos="0 0 0" axis="0 1 0" limited="true" range="-0.7 0.6" />
                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="link_r_ankle" />
-                            <geom type="box" size="0.065 0.023 0.005" pos="0.02 0 -0.046" rgba="1 1 1 1" />
+                            <geom type="box" size="0.07 0.025 0.009" pos="0.015 0 -0.040" rgba="1 1 1 1" />
                         </body>
                     </body>
                 </body>

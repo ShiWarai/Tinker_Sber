@@ -12,9 +12,11 @@
 ```bash
 docker run -it --network host --ipc host \
   -e DISPLAY=$DISPLAY \
+  -e CYCLONEDDS_URI=file:///tmp/cyclone.xml \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v /usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu \
-  --device /dev/dri \
-  --group-add video \
+  -v /tmp/cyclone.xml:/tmp/cyclone.xml \
+  --device /dev/dri --group-add video \
   sim2sim:mujoco
+
 ```

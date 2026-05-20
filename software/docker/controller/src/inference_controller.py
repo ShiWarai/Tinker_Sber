@@ -90,8 +90,8 @@ class InferenceController:
             base_heading = np.float32(imu_rpy[2])
 
             # projected_gravity
-            projected_gravity = rot.inv().apply(
-                np.array([0., 0., -1.])).astype(np.float32)
+            projected_gravity = (rot.inv().apply(np.array([0., 0., -1.]))
+                                 + np.random.uniform(-0.05, 0.05, 3)).astype(np.float32)
 
             # command scaling
             cmd_scale = np.array([
@@ -101,10 +101,15 @@ class InferenceController:
             ], dtype=np.float32)
             scaled_commands = (commands * cmd_scale).astype(np.float32)
 
+            # Observation noise matching Isaac Lab training distribution (uniform, add)
+            noisy_ang_vel  = base_ang_vel    + np.random.uniform(-0.2,  0.2,  3).astype(np.float32)
+            noisy_dof_pos  = joint_positions + np.random.uniform(-0.01, 0.01, 10).astype(np.float32)
+            noisy_dof_vel  = joint_velocities + np.random.uniform(-1.5,  1.5,  10).astype(np.float32)
+
             # joint state
-            scaled_dof_pos = ( joint_positions * self.obs_scales['dof_pos']).astype(np.float32)
-            scaled_dof_vel = ( joint_velocities * self.obs_scales['dof_vel']).astype(np.float32)
-            scaled_ang_vel = ( base_ang_vel * self.obs_scales['ang_vel']).astype(np.float32)
+            scaled_dof_pos = (noisy_dof_pos * self.obs_scales['dof_pos']).astype(np.float32)
+            scaled_dof_vel = (noisy_dof_vel * self.obs_scales['dof_vel']).astype(np.float32)
+            scaled_ang_vel = (noisy_ang_vel  * self.obs_scales['ang_vel']).astype(np.float32)
 
             obs = np.concatenate([
                 [base_heading],         # 1

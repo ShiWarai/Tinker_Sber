@@ -22,8 +22,7 @@ class MujocoSim(Node):
         self.velocities = np.zeros(10)
 
         self.actions = np.zeros(10)
-        self.init_ctrl = np.array([0.0, 0.08, 0.56, -1.12, -0.57, 
-                                    0.0, -0.08, -0.56, 1.12, 0.57])
+        self.init_ctrl = np.array([0.0, 0.08, 0.56, -1.12, -0.57, 0.0, -0.08, -0.56, 1.12, 0.57])
         self.ctrl = self.init_ctrl.copy()
 
         self.IS_ACTIONS = False
@@ -51,7 +50,6 @@ class MujocoSim(Node):
 
 
     def cmd_callback(self, msg: LowCmd):
-
         cmd = [msg.motor_cmd[i].position for i in range(10)]
         for i in range(5):
             self.actions[2 * i]     = cmd[i]

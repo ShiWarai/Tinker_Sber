@@ -1,6 +1,8 @@
 <mujocoinclude>
     <!-- <option timestep='0.001' iterations="500000000" tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/> -->
-    <option timestep='0.001' tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/>    
+    <!-- <option timestep='0.001' tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/> -->
+    <option timestep='0.001' tolerance="1e-10" integrator="implicitfast" solver="Newton" jacobian="dense" cone="elliptic"/>    
+    <!-- <option timestep='0.001' integrator="implicitfast" solver="Newton" jacobian="dense" cone="elliptic"/>     -->
     <asset>
         <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="512" height="512"/>
         <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>

@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     libgfortran5 \
     ros-${ROS_DISTRO}-ament-cmake \
     ros-${ROS_DISTRO}-ros-workspace \
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/blas-libs && \

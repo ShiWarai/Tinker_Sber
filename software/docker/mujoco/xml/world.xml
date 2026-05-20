@@ -20,17 +20,16 @@
     </actuator> -->
     
 	<actuator>      
-		<position name="joint_l_yaw" 	joint="joint_l_yaw" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-0.3 0.3" />
-		<position name="joint_l_roll" 	joint="joint_l_roll" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-0.2 0.2" />
-		<position name="joint_l_pitch" 	joint="joint_l_pitch" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-0.57 1.57" />
-		<position name="joint_l_knee" 	joint="joint_l_knee" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-2.35 0.05" />
-		<position name="joint_l_ankle" 	joint="joint_l_ankle" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-0.6 0.7" />	
-		<position name="joint_r_yaw" 	joint="joint_r_yaw" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-0.3 0.3" />
-		<position name="joint_r_roll" 	joint="joint_r_roll" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-0.2 0.2" />
-		<position name="joint_r_pitch" 	joint="joint_r_pitch" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-0.57 1.57" />
-		<position name="joint_r_knee" 	joint="joint_r_knee" 	gear="1" ctrllimited="true" kp="20" kv="0.65" ctrlrange="-0.05 2.35" />
-		<position name="joint_r_ankle" 	joint="joint_r_ankle" 	gear="1" ctrllimited="true" kp="2 " kv="0.65" ctrlrange="-0.7 0.6" />	
-		
+		<position name="joint_l_yaw" 	joint="joint_l_yaw" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-0.3 0.3" />
+		<position name="joint_l_roll" 	joint="joint_l_roll" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-0.2 0.2" />
+		<position name="joint_l_pitch" 	joint="joint_l_pitch" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-0.57 1.57" />
+		<position name="joint_l_knee" 	joint="joint_l_knee" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-2.35 0.05" />
+		<position name="joint_l_ankle" 	joint="joint_l_ankle" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-0.6 0.7" />	
+		<position name="joint_r_yaw" 	joint="joint_r_yaw" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-0.3 0.3" />
+		<position name="joint_r_roll" 	joint="joint_r_roll" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-0.2 0.2" />
+		<position name="joint_r_pitch" 	joint="joint_r_pitch" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-0.57 1.57" />
+		<position name="joint_r_knee" 	joint="joint_r_knee" 	gear="1" ctrllimited="true" kp="20" kv="0.5" ctrlrange="-0.05 2.35" />
+		<position name="joint_r_ankle" 	joint="joint_r_ankle" 	gear="1" ctrllimited="true" kp="2.0" kv="0.5" ctrlrange="-0.7 0.6" />	
 
 		
 		<!-- <velocity name="joint_l_yawv" joint="joint_l_yaw" kv="0.50" user="1"/>
