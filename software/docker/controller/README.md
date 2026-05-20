@@ -19,7 +19,7 @@ docker run -it --net host --ipc host --gpus all \
   -e CYCLONEDDS_URI=file:///tmp/cyclone.xml \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v /tmp/cyclone.xml:/tmp/cyclone.xml \
-  gait_controller:latest
+  gait_controller:jazzy
 
 ```
 
