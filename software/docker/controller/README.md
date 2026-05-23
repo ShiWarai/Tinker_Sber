@@ -9,7 +9,7 @@
 
 **Build container** from **/software/docker/controller/** path:
 ```bash
-docker build -t gait-controller:jazzy .
+docker build -t gait_controller:jazzy .
 ```
 
 then **run it**:
