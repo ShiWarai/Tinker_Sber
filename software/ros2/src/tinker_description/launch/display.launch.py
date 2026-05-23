@@ -8,20 +8,26 @@ from launch_ros.actions import Node
 def generate_launch_description() -> LaunchDescription:
   urdf_pkg = 'tinker_description'
   urdf_share = get_package_share_directory(urdf_pkg)
-  urdf_path = os.path.join(urdf_share, 'urdf', 'tinker_urdf.urdf')
+  # urdf_path = os.path.join(urdf_share, 'urdf', 'tinker_urdf.urdf')
+  urdf_path = os.path.join(urdf_share, 'urdf', 'BD.urdf')
 
   with open(urdf_path, 'r') as f:
     robot_description = f.read()
 
-  rviz_config = os.path.join(urdf_share, 'urdf.rviz')
+  rviz_config = os.path.join(urdf_share, 'config', 'display.rviz')
 
-  joint_state_publisher_gui = Node(
-    package='joint_state_publisher_gui',
-    executable='joint_state_publisher_gui',
-    name='joint_state_publisher_gui',
+  imu_to_tf = Node(
+    package='tinker_description',
+    executable='imu_to_tf.py',
+    name='imu_to_tf',
     output='screen',
-    # Exclude this joint; it will be published by your motor node
-    parameters=[{'ignore': ['joint_l_yaw']}]
+  )
+
+  low_cmd_bridge = Node(
+    package='tinker_description',
+    executable='low_cmd_to_joint_states.py',
+    name='low_cmd_to_joint_states',
+    output='screen',
   )
 
   robot_state_publisher = Node(
@@ -29,13 +35,7 @@ def generate_launch_description() -> LaunchDescription:
     executable='robot_state_publisher',
     name='robot_state_publisher',
     output='screen',
-    parameters=[{'robot_description': robot_description}],
-    remappings=[
-            ('joint_states', '/robot_joints'),
-            # ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
-        ]
-
-    # remappings=[('/', '/')]
+    parameters=[{'robot_description': robot_description}]
   )
 
   rviz2 = Node(
@@ -43,11 +43,12 @@ def generate_launch_description() -> LaunchDescription:
     executable='rviz2',
     name='rviz2',
     output='screen',
-    # arguments=['-d', rviz_config]
+    arguments=['-d', rviz_config]
   )
 
   return LaunchDescription([
-    joint_state_publisher_gui,
+    imu_to_tf,
+    low_cmd_bridge,
     robot_state_publisher,
     rviz2,
   ])
