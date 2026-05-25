@@ -2,6 +2,7 @@
 import math
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy
 from tinker_msgs.msg import LowCmd, MotorCmd, LowState, ControlCmd
 
 class SinusoidalTrajectoryTalker(Node):
@@ -9,7 +10,7 @@ class SinusoidalTrajectoryTalker(Node):
         super().__init__('sinusoidal_trajectory_talker')
 
         self.amplitude = 0.5 # амлпитуда синусоиды
-        self.frequency = 0.33 # частоты
+        self.frequency = 1.0 # частоты
         self.offset = 0.0 # начальное отклонение от 0
 
         self.kp_little = 13.0
@@ -22,15 +23,24 @@ class SinusoidalTrajectoryTalker(Node):
         self.rate_hz = 100.0
         self.num_motors = 10
 
-        self.low_cmd_pub = self.create_publisher(LowCmd, '/low_level_command', 10)
-        self.control_cmd_pub = self.create_publisher(ControlCmd, '/control_command', 10)
+        qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            durability=DurabilityPolicy.VOLATILE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1,
+        )
+
+        self.low_cmd_pub = self.create_publisher(LowCmd, '/low_level_cmd', qos)
+        self.control_cmd_pub = self.create_publisher(ControlCmd, '/control_command', qos)
 
         self.lowstate_sub = self.create_subscription(
-            LowState, '/low_level_state', self.data_callback, 10
+            LowState, '/low_level_state', self.data_callback, qos
         )
 
         self.last_state = None
+        self._pub_count = 0
         self.timer = self.create_timer(1.0 / self.rate_hz, self.publish_message)
+        self.create_timer(1.0, self._log_publish_rate)
 
         self.get_logger().info(
             f"Started sinusoidal trajectory control:\n"
@@ -42,6 +52,10 @@ class SinusoidalTrajectoryTalker(Node):
             f"  - Publishing rate: {self.rate_hz} Hz\n"
             f"  - Controlling {self.num_motors} motors"
         )
+
+    def _log_publish_rate(self):
+        self.get_logger().info(f"Publish rate: {self._pub_count} cmd/s")
+        self._pub_count = 0
 
     def data_callback(self, msg: LowState):
         self.last_state = msg
@@ -76,6 +90,7 @@ class SinusoidalTrajectoryTalker(Node):
         low_cmd = LowCmd()
         low_cmd.motor_cmd = motor_cmds
         self.low_cmd_pub.publish(low_cmd)
+        self._pub_count += 1
 
         self.get_logger().debug(
             f"Published LowCmd: t={t:.2f}, pos[0]={motor_cmds[0].position:.3f}, "
