@@ -3,4 +3,4 @@ build/
 install/
 .vscode/
 .cursor/
-old_packages/
+old_packages

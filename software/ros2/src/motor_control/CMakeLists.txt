@@ -12,14 +12,16 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tinker_msgs REQUIRED)
 
-# Исполняемый файл: ROS-узел (motor_control_node.cpp) + протокол SPI (motor_control.cpp) + драйвер SPI (spi.cpp)
+# Исполняемый файл: ROS-узел (motor_control_node.cpp) + протокол SPI (motor_control.cpp) + драйвер SPI (spi.cpp) + IMU фильтр
 add_executable(motor_control
   src/motor_control_node.cpp
   src/motor_control.cpp
   src/spi.cpp
+  src/imu_filter/imu_filter.cpp
 )
 ament_target_dependencies(motor_control rclcpp std_msgs sensor_msgs tinker_msgs)
-include_directories(./include)
+include_directories(./include
+  ./include/imu_filter)
 
 install(TARGETS motor_control
   DESTINATION lib/${PROJECT_NAME}
