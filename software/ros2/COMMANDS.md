@@ -7,8 +7,9 @@
 | `/control_command` | `tinker_msgs/msg/ControlCmd` | Системные команды (вкл/выкл, калибровка) |
 | `/single_motor_command` | `tinker_msgs/msg/OneMotorCmd` | Команда для одного мотора |
 | `/low_level_command` | `tinker_msgs/msg/LowCmd` | Команды для всех 10 моторов |
-| `/low_level_state` | `tinker_msgs/msg/LowState` | Состояние моторов и IMU (чтение) |
-| `/imu_state` | `tinker_msgs/msg/IMUState` | Данные IMU (чтение) |
+| `/low_level_state` | `tinker_msgs/msg/LowState` | Состояние моторов (чтение) |
+| `/imu_state` | `sensor_msgs/msg/Imu` | IMU: ориентация, гироскоп, акселерометр |
+| `/imu_orientation` | `geometry_msgs/msg/Quaternion` | Ориентация фильтра `[w,x,y,z]` |
 | `/robot_joints` | `sensor_msgs/msg/JointState` | Позиции суставов для RViz |
 
 ## Коды команд ControlCmd
@@ -149,6 +150,7 @@ ros2 topic pub --once /low_level_command tinker_msgs/msg/LowCmd "{motor_cmd: [
 
 ```bash
 ros2 topic echo /imu_state
+ros2 topic echo /imu_orientation
 ```
 
 Одно сообщение:
@@ -157,7 +159,7 @@ ros2 topic echo /imu_state
 ros2 topic echo /imu_state --once
 ```
 
-### Чтение состояния всех моторов и IMU
+### Чтение состояния всех моторов
 
 ```bash
 ros2 topic echo /low_level_state

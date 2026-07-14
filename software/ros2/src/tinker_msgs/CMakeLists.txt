@@ -29,7 +29,6 @@ find_package(builtin_interfaces REQUIRED)
 # Declare ROS messages and services
 ################################################################################
 set(msg_files
-  "msg/IMUState.msg"
   "msg/LowCmd.msg"
   "msg/LowState.msg"
   "msg/MotorCmd.msg"

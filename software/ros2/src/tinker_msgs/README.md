@@ -19,6 +19,8 @@ onemotorcmd - управление одним мотором
 
 Тип: OneMotorCmd
 
-imustate - данные с IMU spi2can
+imu_state - данные IMU (ориентация фильтра, гироскоп, акселерометр)
+Тип: sensor_msgs/Imu
 
-Тип: IMUState
+imu_orientation - ориентация фильтра
+Тип: geometry_msgs/Quaternion

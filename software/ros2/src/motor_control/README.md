@@ -20,8 +20,9 @@ ros2 launch motor_control motor_control.launch.py
 - `/control_command` (`tinker_msgs/msg/ControlCmd`) - системные команды (ENABLE/DISABLE, калибровка IMU)
 
 ### Публикации
-- `/low_level_state` (`tinker_msgs/msg/LowState`) - состояние всех моторов и IMU
-- `/imu_state` (`tinker_msgs/msg/IMUState`) - данные IMU
+- `/low_level_state` (`tinker_msgs/msg/LowState`) - состояние всех моторов
+- `/imu_state` (`sensor_msgs/msg/Imu`) - ориентация (фильтр), гироскоп (rad/s), акселерометр
+- `/imu_orientation` (`geometry_msgs/msg/Quaternion`) - ориентация фильтра `[w,x,y,z]`
 - `/robot_joints` (`sensor_msgs/msg/JointState`) - состояния суставов для визуализации
 
 ## Параметры

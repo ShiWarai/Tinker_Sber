@@ -1,25 +1,25 @@
 #ifndef MOTOR_CONTROL_MOTOR_CONTROL_NODE_HPP
 #define MOTOR_CONTROL_MOTOR_CONTROL_NODE_HPP
 
-#include <memory>
 #include <atomic>
 #include <chrono>
 #include <mutex>
-#include <vector>
 #include <string>
+#include <vector>
 
+#include "geometry_msgs/msg/quaternion.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
+#include "tinker_msgs/msg/control_cmd.hpp"
 #include "tinker_msgs/msg/low_cmd.hpp"
 #include "tinker_msgs/msg/low_state.hpp"
-#include "tinker_msgs/msg/imu_state.hpp"
-#include "tinker_msgs/msg/control_cmd.hpp"
 #include "tinker_msgs/msg/one_motor_cmd.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
 
+#include "imu_filter/imu_filter.hpp"
 #include "motor_control.hpp"
 #include "spi_node.hpp"
 
-/** Лимиты параметров моторов (позиция, скорость, момент, kp, kd) */
 struct MotorLimits {
     double min_position, max_position;
     double min_velocity, max_velocity;
@@ -31,7 +31,8 @@ struct MotorLimits {
 /**
  * ROS2 узел для управления моторами через SPI.
  * Подписки: /low_level_command, /control_command, /single_motor_command.
- * Публикации: /low_level_state, /imu_state, /robot_joints.
+ * Публикации: /low_level_state, /imu_state (sensor_msgs/Imu),
+ *             /imu_orientation (geometry_msgs/Quaternion), /robot_joints.
  */
 class MotorControlNode : public rclcpp::Node
 {
@@ -43,7 +44,8 @@ private:
         float position, velocity, torque, kp, kd;
     };
 
-    LimitedMotorParams apply_limits(int motor_id, float position, float velocity, float torque, float kp, float kd);
+    LimitedMotorParams apply_limits(int motor_id, float position, float velocity,
+                                    float torque, float kp, float kd);
 
     void on_motors_commands(const tinker_msgs::msg::LowCmd::SharedPtr msg);
     void on_board_parameters(const tinker_msgs::msg::ControlCmd::SharedPtr msg);
@@ -53,7 +55,8 @@ private:
     rclcpp::Subscription<tinker_msgs::msg::LowCmd>::SharedPtr low_cmd_sub_;
     rclcpp::Subscription<tinker_msgs::msg::ControlCmd>::SharedPtr control_cmd_sub_;
     rclcpp::Subscription<tinker_msgs::msg::OneMotorCmd>::SharedPtr one_motor_sub_;
-    rclcpp::Publisher<tinker_msgs::msg::IMUState>::SharedPtr imu_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::Quaternion>::SharedPtr imu_orientation_pub_;
     rclcpp::Publisher<tinker_msgs::msg::LowState>::SharedPtr low_state_pub_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
     std::vector<std::string> joint_names_;
@@ -72,6 +75,8 @@ private:
     std::chrono::steady_clock::time_point reset_q_set_time;
     std::atomic<bool> reset_q_timer_active{false};
     rclcpp::TimerBase::SharedPtr timer_;
+
+    imu_filter::ImuFilter imu_filter_;
 };
 
 #endif /* MOTOR_CONTROL_MOTOR_CONTROL_NODE_HPP */

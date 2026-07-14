@@ -1,158 +1,80 @@
-/**
- * @file imu_filter.hpp
- * @brief Реализация IMU фильтра на основе алгоритма ошибки ориентации (Error State Kalman Filter)
- * 
- * Фильтр использует шестиосевую структуру для фильтрации гироскопа и акселерометра.
- * Алгоритм отслеживает ошибки ориентации, смещения гироскопа и линейного ускорения.
- */
-
 #ifndef IMU_FILTER_IMU_FILTER_HPP
 #define IMU_FILTER_IMU_FILTER_HPP
 
 #include <array>
-#include <cmath>
-#include <string>
-#include <memory>
 
 namespace imu_filter {
 
-/** Структура для хранения данных IMU */
-struct IMUData {
-    std::array<float, 3> gyroscope;   // угловая скорость [rad/s] по осям X, Y, Z
-    std::array<float, 3> accelerometer; // ускорение [g] по осям X, Y, Z
+struct ImuSample {
+    std::array<float, 3> gyro;   // rad/s
+    std::array<float, 3> accel;  // any linear units (tilt uses unit vector)
 };
 
-/** Структура для хранения отфильтрованных данных IMU */
-struct FilteredIMU {
-    std::array<float, 3> gyroscope;   // отфильтрованная угловая скорость
-    std::array<float, 3> accelerometer; // отфильтрованное ускорение
-    
-    /** Дополнительно: оценка смещения гироскопа */
-    std::array<float, 3> gyro_bias;
-    
-    /** Дополнительно: ошибка ориентации [rad] */
-    std::array<float, 3> orientation_error;
-};
-
-/** Параметры фильтра Калмана */
 struct ImuFilterParams {
-    // Шум процесса (процессный шум) - определяет насколько "быстрыми" мы считаем изменения состояния
-    float process_noise_orientation = 0.01f;   // шум ошибки ориентации
-    float process_noise_gyro_bias = 0.0001f;   // шум смещения гироскопа
-    float process_noise_accel = 0.01f;         // шум линейного ускорения
-    
-    // Шум измерений - определяет насколько мы доверяем сенсорам
-    float measurement_noise_gyro = 0.01f;      // шум гироскопа
-    float measurement_noise_accel = 0.1f;      // шум акселерометра
-    
-    // Частота фильтрации (Гц) - важно для корректной работы дисcretization
-    float update_frequency = 100.0f;           // частота вызова filter()
-    
-    // Количество сэмплов для калибровки гироскопа при старте
-    int calibration_samples = 500;            // 5 секунд при 100Hz
+    float kp = 2.0f;                 // Mahony proportional gain (roll/pitch)
+    float ki = 0.01f;                // Mahony integral gain (roll/pitch bias)
+    float ki_limit = 0.5f;           // rad/s, clamp on bias
+    float accel_reject_rel = 0.25f;  // |||a||/g - 1| → skip accel correction
+    int startup_bias_samples = 2000; // initial gyro bias average @ 1 kHz
+
+    // Yaw (Z) has no gravity observability — learn bias_z only when still.
+    float static_gyro_xy_max = 0.08f;   // rad/s, |ωx|,|ωy| after bias
+    float static_gyro_z_max = 0.08f;    // rad/s, |ωz| after bias (not turning)
+    float yaw_bias_alpha = 0.999f;      // LPF toward gyro_z while static
+    float yaw_deadzone = 0.01f;         // rad/s ≈ 0.6°/s
+    int static_hold_samples = 200;      // 200 ms @ 1 kHz before adapting Z
 };
 
 /**
- * Класс IMU фильтра на основе Error State Kalman Filter (ESKF).
- * 
- * Фильтр моделирует процесс ошибки с состоянием:
- * x = [θ (3×1) - ошибка ориентации, 
- *       b (3×1) - смещение гироскопа, 
- *       a (3×1) - ошибка ускорения]
+ * 6-DOF Mahony AHRS (gyro + accel).
+ * Roll/pitch observable from gravity; yaw free-integrates (no magnetometer).
  */
 class ImuFilter {
 public:
-    using Ptr = std::shared_ptr<ImuFilter>;
-    using ConstPtr = std::shared_ptr<const ImuFilter>;
-    
-    /** Конструктор с настройкой параметров по умолчанию */
     ImuFilter();
-    
-    /** Конструктор с пользовательскими параметрами */
     explicit ImuFilter(const ImuFilterParams& params);
-    
-    /** Деструктор */
-    virtual ~ImuFilter() = default;
-    
-    /**
-     * Основная функция фильтрации - принимает сырые данные IMU и возвращает отфильтрованные
-     * @param raw_imu сырые данные гироскопа и акселерометра
-     * @return отфильтрованные данные IMU
-     */
-    FilteredIMU filter(const IMUData& raw_imu);
-    
-    /** Сброс фильтра (первоначальная инициализация) */
-    void reset();
-    
-    /** Обновление параметров во время работы */
-    void setParams(const ImuFilterParams& params);
-    
-    // ====== Методы для интеграции с ROS2 ======
-    
-    /**
-     * Инициализация фильтра из параметров ros2 (для declare_parameter)
-     * @param prefix префикс параметров (например, "imu_filter")
-     */
-    void initFromRosParams(const std::string& prefix);
-    
-    /**
-     * Начинает стадию калибровки гироскопа (имеет смысл когда робот неподвижен)
-     */
-    void startGyroCalibration();
-    
-    /**
-     * Завершает стадию калибровки и применяет смещения
-     */
-    void finishGyroCalibration();
-    
-    /**
-     * Получение текущей оценки смещения гироскопа
-     * @return массив [bias_x, bias_y, bias_z]
-     */
-    std::array<float, 3> getEstimatedGyroBias() const;
-    
-    /**
-     * Проверяет, находится ли фильтр в стадии калибровки
-     */
-    bool isCalibrating() const;
-    
-    /**
-     * Получение текущей оценки ковариации состояния (для диагностики)
-     */
-    std::array<float, 81> getCovarianceMatrix() const;
 
-protected:
-    // Внутренние переменные состояния фильтра (9 элементов)
-    // State: [orientation_error(3), gyro_bias(3), accel_error(3)]
-    std::array<float, 9> state_ = {{0.0f}};
-    
-    // Матрица ковариации состояния P (9x9) - хранится в виде одномерного массива
-    // Индекс: P[i*9 + j] для элемента [i][j]
-    std::array<float, 81> covariance_ = {{0.0f}};
-    
-    // Переменные для калибровки гироскопа
-    int calibration_counter_ = 0;
-    std::array<float, 3> gyro_calibration_accum_ = {{0.0f}};
-    bool is_calibrating_ = false;
-    ImuFilterParams params_;
+    void reset();
+    void setParams(const ImuFilterParams& params);
+    const ImuFilterParams& params() const { return params_; }
+
+    void update(const ImuSample& sample, float dt,
+                std::array<float, 4>& quat_out,
+                std::array<float, 3>& rpy_out);
+
+    bool isCalibrationDone() const { return startup_done_; }
+    bool isInitialized() const { return initialized_; }
+    const std::array<float, 4>& quaternion() const { return q_; }
+    const std::array<float, 3>& gyroBias() const { return bias_; }
+    float gravityNorm() const { return gravity_; }
+
+    static std::array<float, 4> eulerToQuat(float roll, float pitch, float yaw);
+    static std::array<float, 3> quatToEuler(const std::array<float, 4>& q);
 
 private:
-    /** Предсказание состояния на следующий шаг */
-    void predict(float dt);
-    
-    /** Обновление фильтра на основе измерений */
-    void update(const IMUData& raw_imu);
-    
-    /** Вычисление матрицы усиления Калмана K = P⁻·Hᵀ·(H·P⁻·Hᵀ + R)⁻¹ */
-    std::array<float, 54> computeKalmanGain();
-    
-    /** Нормализация вектора ошибок ориентации в диапазон [-π, π] */
-    void normalizeOrientationError();
-    
-    /** Получить индекс состояния для компонента orient/bias/accel */
-    int stateIndex(int component, int axis) const;
+    static float norm3(const std::array<float, 3>& v);
+    static std::array<float, 3> cross(const std::array<float, 3>& a,
+                                      const std::array<float, 3>& b);
+    static std::array<float, 4> quatMul(const std::array<float, 4>& a,
+                                        const std::array<float, 4>& b);
+    static std::array<float, 4> quatNormalize(const std::array<float, 4>& q);
+    static std::array<float, 4> quatCanonicalize(const std::array<float, 4>& q);
+
+    void initFromAccel(const std::array<float, 3>& accel);
+    void integrateGyro(const std::array<float, 3>& omega, float dt);
+
+    ImuFilterParams params_;
+    std::array<float, 4> q_{{1.0f, 0.0f, 0.0f, 0.0f}};
+    std::array<float, 3> bias_{{0.0f, 0.0f, 0.0f}};
+    std::array<float, 3> bias_accum_{{0.0f, 0.0f, 0.0f}};
+    float gravity_ = 1.0f;
+    float gravity_accum_ = 0.0f;
+    int startup_count_ = 0;
+    int static_hold_count_ = 0;
+    bool startup_done_ = false;
+    bool initialized_ = false;
 };
 
-} // namespace imu_filter
+}  // namespace imu_filter
 
 #endif /* IMU_FILTER_IMU_FILTER_HPP */

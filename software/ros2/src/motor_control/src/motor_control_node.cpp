@@ -5,6 +5,7 @@
 
 #include "motor_control_node.hpp"
 #include "spi.hpp"
+
 #include <algorithm>
 #include <cmath>
 
@@ -37,7 +38,8 @@ MotorControlNode::MotorControlNode()
     limits_.max_kd = this->get_parameter("limits.kd.max").as_double();
 
     RCLCPP_INFO(this->get_logger(),
-                "Motor limits loaded: position=[%.3f, %.3f] rad, velocity=[%.3f, %.3f] rad/s, torque=[%.3f, %.3f] Nm, kp=[%.3f, %.3f], kd=[%.3f, %.3f]",
+                "Motor limits loaded: position=[%.3f, %.3f] rad, velocity=[%.3f, %.3f] rad/s, "
+                "torque=[%.3f, %.3f] Nm, kp=[%.3f, %.3f], kd=[%.3f, %.3f]",
                 limits_.min_position, limits_.max_position, limits_.min_velocity, limits_.max_velocity,
                 limits_.min_torque, limits_.max_torque, limits_.min_kp, limits_.max_kp,
                 limits_.min_kd, limits_.max_kd);
@@ -49,7 +51,9 @@ MotorControlNode::MotorControlNode()
         return;
     }
 
-    imu_pub_ = this->create_publisher<tinker_msgs::msg::IMUState>("/imu_state", 10);
+    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("/imu_state", 10);
+    imu_orientation_pub_ = this->create_publisher<geometry_msgs::msg::Quaternion>(
+        "/imu_orientation", 10);
     low_state_pub_ = this->create_publisher<tinker_msgs::msg::LowState>("/low_level_state", 10);
     joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/robot_joints", 10);
 
@@ -74,13 +78,17 @@ MotorControlNode::MotorControlNode()
     std::fill_n(spi_tx_.kd, 10, 0.0f);
 }
 
-MotorControlNode::LimitedMotorParams MotorControlNode::apply_limits(int motor_id, float position, float velocity, float torque, float kp, float kd)
+MotorControlNode::LimitedMotorParams MotorControlNode::apply_limits(
+    int motor_id, float position, float velocity, float torque, float kp, float kd)
 {
     (void)motor_id;
     LimitedMotorParams result;
-    result.position = std::clamp(position, static_cast<float>(limits_.min_position), static_cast<float>(limits_.max_position));
-    result.velocity = std::clamp(velocity, static_cast<float>(limits_.min_velocity), static_cast<float>(limits_.max_velocity));
-    result.torque = std::clamp(torque, static_cast<float>(limits_.min_torque), static_cast<float>(limits_.max_torque));
+    result.position = std::clamp(position, static_cast<float>(limits_.min_position),
+                                 static_cast<float>(limits_.max_position));
+    result.velocity = std::clamp(velocity, static_cast<float>(limits_.min_velocity),
+                                 static_cast<float>(limits_.max_velocity));
+    result.torque = std::clamp(torque, static_cast<float>(limits_.min_torque),
+                               static_cast<float>(limits_.max_torque));
     result.kp = std::clamp(kp, static_cast<float>(limits_.min_kp), static_cast<float>(limits_.max_kp));
     result.kd = std::clamp(kd, static_cast<float>(limits_.min_kd), static_cast<float>(limits_.max_kd));
     return result;
@@ -96,7 +104,8 @@ void MotorControlNode::on_motors_commands(const tinker_msgs::msg::LowCmd::Shared
     std::lock_guard<std::mutex> lock(motor_cmd_mutex_);
     for (int i = 0; i < 10; ++i)
     {
-        LimitedMotorParams limited = apply_limits(i,
+        LimitedMotorParams limited = apply_limits(
+            i,
             msg->motor_cmd[i].position,
             msg->motor_cmd[i].velocity,
             msg->motor_cmd[i].torque,
@@ -121,7 +130,8 @@ void MotorControlNode::on_board_parameters(const tinker_msgs::msg::ControlCmd::S
     {
         if (en_motor_atomic.load() != 0)
         {
-            RCLCPP_WARN(this->get_logger(), "SET_ZERO_POSITION: Отклонено - двигатели включены. Сначала отключите двигатели (DISABLE)");
+            RCLCPP_WARN(this->get_logger(),
+                        "SET_ZERO_POSITION: Отклонено - двигатели включены. Сначала отключите двигатели (DISABLE)");
             return;
         }
         reset_q_atomic.store(1);
@@ -145,7 +155,8 @@ void MotorControlNode::on_board_parameters(const tinker_msgs::msg::ControlCmd::S
         mems_.Acc_CALIBRATE = 1;
         mems_.Gyro_CALIBRATE = 1;
         mems_.Mag_CALIBRATE = 1;
-        RCLCPP_INFO(this->get_logger(), "IMU calibration requested: acc/gyro/mag set");
+        imu_filter_.reset();
+        RCLCPP_INFO(this->get_logger(), "IMU calibration requested: acc/gyro/mag set; filter reset");
     }
 }
 
@@ -158,7 +169,8 @@ void MotorControlNode::on_one_motor_command(const tinker_msgs::msg::OneMotorCmd:
         return;
     }
     std::lock_guard<std::mutex> lock(motor_cmd_mutex_);
-    LimitedMotorParams limited = apply_limits(id, msg->position, msg->velocity, msg->torque, msg->kp, msg->kd);
+    LimitedMotorParams limited =
+        apply_limits(id, msg->position, msg->velocity, msg->torque, msg->kp, msg->kd);
     spi_tx_.q_set[id] = static_cast<float>(limited.position);
     spi_tx_.dq_set[id] = static_cast<float>(limited.velocity);
     spi_tx_.tau_ff[id] = limited.torque;
@@ -187,7 +199,8 @@ void MotorControlNode::on_timer()
     if (reset_q_timer_active.load())
     {
         auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - reset_q_set_time).count();
+        auto elapsed =
+            std::chrono::duration_cast<std::chrono::milliseconds>(now - reset_q_set_time).count();
         if (elapsed >= 1000)
         {
             reset_q_atomic.store(0);
@@ -207,36 +220,56 @@ void MotorControlNode::on_timer()
         SPISetup(0, static_cast<int>(motor_control::get_spi_speed()));
     }
 
+    // SPI att_rate is deg/s — convert to rad/s for the filter.
+    // Accel: do not feed raw acc_b. Board convention / legacy offset:
+    //   ay + 1, az - 1  (same as old imu_filter_usage_example).
+    // With robot upright this yields ~[0, 0, 1] instead of ~[0, -1, 2].
+    constexpr float dt = 0.001f;
+    constexpr float kDegToRad = static_cast<float>(M_PI / 180.0);
+    imu_filter::ImuSample sample;
+    sample.gyro = {{
+        spi_rx_.att_rate[0] * kDegToRad,
+        spi_rx_.att_rate[1] * kDegToRad,
+        spi_rx_.att_rate[2] * kDegToRad
+    }};
+    sample.accel = {{
+        spi_rx_.acc_b[0],
+        spi_rx_.acc_b[1] + 1.0f,
+        spi_rx_.acc_b[2] - 1.0f
+    }};
+    std::array<float, 4> filt_quat;
+    std::array<float, 3> filt_rpy;
+    imu_filter_.update(sample, dt, filt_quat, filt_rpy);
+
     counter++;
     if (counter % 1000 == 0)
     {
         auto now = this->now();
-        auto dt = (now - last_time).seconds();
-        RCLCPP_INFO(this->get_logger(), "SPI frequency: %.1f Hz", 1000.0 / dt);
+        auto dt_log = (now - last_time).seconds();
+        RCLCPP_INFO(this->get_logger(), "SPI frequency: %.1f Hz", 1000.0 / dt_log);
         RCLCPP_INFO(this->get_logger(), "  id | position | velocity |  torque  |");
         for (int i = 0; i < 10; ++i)
         {
             RCLCPP_INFO(this->get_logger(), " %2d  | %8.3f | %8.3f | %8.4f |",
-                        i + 1, static_cast<double>(spi_rx_.q[i]), static_cast<double>(spi_rx_.dq[i]), static_cast<double>(spi_rx_.tau[i]));
+                        i + 1, static_cast<double>(spi_rx_.q[i]),
+                        static_cast<double>(spi_rx_.dq[i]), static_cast<double>(spi_rx_.tau[i]));
         }
         last_time = now;
+    }
+
+    // RPY from filtered quaternion (filt_rpy already from quatToEuler)
+    if (counter % 1000 == 0)
+    {
+        RCLCPP_INFO(this->get_logger(),
+                    "RPY (deg): [%7.2f, %7.2f, %7.2f]",
+                    static_cast<double>(filt_rpy[0] * 180.0 / M_PI),
+                    static_cast<double>(filt_rpy[1] * 180.0 / M_PI),
+                    static_cast<double>(filt_rpy[2] * 180.0 / M_PI));
     }
 
     tinker_msgs::msg::LowState low_state_msg;
     low_state_msg.timestamp_state = this->now();
     low_state_msg.tick = static_cast<uint32_t>(counter);
-    low_state_msg.imu_state.timestamp_state = this->now();
-    low_state_msg.imu_state.rpy[0] = spi_rx_.att[0];
-    low_state_msg.imu_state.rpy[1] = spi_rx_.att[1];
-    low_state_msg.imu_state.rpy[2] = spi_rx_.att[2];
-    low_state_msg.imu_state.quaternion = {0.0f, 0.0f, 0.0f, 0.0f};
-    low_state_msg.imu_state.gyroscope[0] = spi_rx_.att_rate[0];
-    low_state_msg.imu_state.gyroscope[1] = spi_rx_.att_rate[1];
-    low_state_msg.imu_state.gyroscope[2] = spi_rx_.att_rate[2];
-    low_state_msg.imu_state.accelerometer[0] = spi_rx_.acc_b[0];
-    low_state_msg.imu_state.accelerometer[1] = spi_rx_.acc_b[1];
-    low_state_msg.imu_state.accelerometer[2] = spi_rx_.acc_b[2];
-    low_state_msg.imu_state.temperature = 0;
 
     for (int i = 0; i < 10; ++i)
     {
@@ -250,23 +283,38 @@ void MotorControlNode::on_timer()
     }
     low_state_pub_->publish(low_state_msg);
 
-    if (imu_pub_)
-    {
-        tinker_msgs::msg::IMUState imu_msg;
-        imu_msg.timestamp_state = this->now();
-        imu_msg.rpy[0] = spi_rx_.att[0];
-        imu_msg.rpy[1] = spi_rx_.att[1];
-        imu_msg.rpy[2] = spi_rx_.att[2];
-        imu_msg.quaternion = {0.0f, 0.0f, 0.0f, 0.0f};
-        imu_msg.gyroscope[0] = spi_rx_.att_rate[0];
-        imu_msg.gyroscope[1] = spi_rx_.att_rate[1];
-        imu_msg.gyroscope[2] = spi_rx_.att_rate[2];
-        imu_msg.accelerometer[0] = spi_rx_.acc_b[0];
-        imu_msg.accelerometer[1] = spi_rx_.acc_b[1];
-        imu_msg.accelerometer[2] = spi_rx_.acc_b[2];
-        imu_msg.temperature = 0;
-        imu_pub_->publish(imu_msg);
-    }
+    const auto stamp = this->now();
+
+    geometry_msgs::msg::Quaternion orientation;
+    orientation.w = filt_quat[0];
+    orientation.x = filt_quat[1];
+    orientation.y = filt_quat[2];
+    orientation.z = filt_quat[3];
+    imu_orientation_pub_->publish(orientation);
+
+    sensor_msgs::msg::Imu imu_msg;
+    imu_msg.header.stamp = stamp;
+    imu_msg.header.frame_id = "imu_link";
+    imu_msg.orientation = orientation;
+    // Non-negative → orientation is valid (RViz / estimators)
+    imu_msg.orientation_covariance[0] = 0.01;
+    imu_msg.orientation_covariance[4] = 0.01;
+    imu_msg.orientation_covariance[8] = 0.01;
+    // Gyro: rad/s (SPI deg/s already converted in sample)
+    imu_msg.angular_velocity.x = sample.gyro[0];
+    imu_msg.angular_velocity.y = sample.gyro[1];
+    imu_msg.angular_velocity.z = sample.gyro[2];
+    imu_msg.angular_velocity_covariance[0] = 0.01;
+    imu_msg.angular_velocity_covariance[4] = 0.01;
+    imu_msg.angular_velocity_covariance[8] = 0.01;
+    // Accel same as filter input (board offset ay+1, az-1)
+    imu_msg.linear_acceleration.x = sample.accel[0];
+    imu_msg.linear_acceleration.y = sample.accel[1];
+    imu_msg.linear_acceleration.z = sample.accel[2];
+    imu_msg.linear_acceleration_covariance[0] = 0.01;
+    imu_msg.linear_acceleration_covariance[4] = 0.01;
+    imu_msg.linear_acceleration_covariance[8] = 0.01;
+    imu_pub_->publish(imu_msg);
 
     sensor_msgs::msg::JointState js;
     js.header.stamp = this->get_clock()->now();
