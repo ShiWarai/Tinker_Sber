@@ -1,0 +1,48 @@
+<mujoco model="BD feetonly flat terrain scene (CPU)">
+  <!-- CPU / interactive viewer: stable integrator, shadows. Use scene_mjx_* for MJX training. -->
+  <include file="BD_mjx.xml"/>
+
+  <statistic center="0 0 0.15" extent="0.6" meansize="0.04"/>
+
+  <compiler usethread="true" inertiagrouprange="0 5" inertiafromgeom="false" />
+  <option integrator="implicitfast" iterations="50" tolerance="1e-6" cone="elliptic" impratio="100">
+    <flag eulerdamp="disable" midphase="disable" nativeccd="disable"/>
+  </option>
+
+  <visual>
+    <headlight diffuse=".8 .8 .8" ambient=".2 .2 .2" specular="1 1 1"/>
+    <rgba force="1 0 0 1"/>
+    <global azimuth="120" elevation="-20"/>
+    <map force="0.01"/>
+    <scale forcewidth="0.3" contactwidth="0.5" contactheight="0.2"/>
+    <quality shadowsize="8192" offsamples="4"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="1 1 1" rgb2="1 1 1" width="800" height="800"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="1 1 1" rgb2="1 1 1" markrgb="0 0 0"
+      width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="0 0 0.01" type="plane" material="groundplane" contype="1" conaffinity="0" priority="1"
+      friction="0.6" condim="3"/>
+    <light name="sun" castshadow="true" directional="true" diffuse=".7 .7 .7" specular="0.3 0.3 0.3"
+           pos="0 0 3" dir="0.2 -0.3 -1"/>
+    <light name="fill" castshadow="false" directional="true" diffuse=".25 .25 .25" specular="0.1 0.1 0.1"
+           pos="0 0 2" dir="-0.3 0.2 -1"/>
+  </worldbody>
+
+  <include file="sensor.xml"/>
+
+  <!-- Feet-only: sole boxes + toe/heel spheres contact the floor. -->
+  <contact>
+    <pair name="left_foot_floor" geom1="left_foot" geom2="floor" condim="3" friction="0.6 0.6"/>
+    <pair name="right_foot_floor" geom1="right_foot" geom2="floor" condim="3" friction="0.6 0.6"/>
+    <pair name="left_foot_toe_floor" geom1="left_foot_toe" geom2="floor" condim="3" friction="0.6 0.6"/>
+    <pair name="left_foot_heel_floor" geom1="left_foot_heel" geom2="floor" condim="3" friction="0.6 0.6"/>
+    <pair name="right_foot_toe_floor" geom1="right_foot_toe" geom2="floor" condim="3" friction="0.6 0.6"/>
+    <pair name="right_foot_heel_floor" geom1="right_foot_heel" geom2="floor" condim="3" friction="0.6 0.6"/>
+  </contact>
+</mujoco>
