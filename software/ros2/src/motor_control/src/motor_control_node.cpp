@@ -81,16 +81,59 @@ MotorControlNode::MotorControlNode()
 MotorControlNode::LimitedMotorParams MotorControlNode::apply_limits(
     int motor_id, float position, float velocity, float torque, float kp, float kd)
 {
-    (void)motor_id;
     LimitedMotorParams result;
-    result.position = std::clamp(position, static_cast<float>(limits_.min_position),
-                                 static_cast<float>(limits_.max_position));
-    result.velocity = std::clamp(velocity, static_cast<float>(limits_.min_velocity),
-                                 static_cast<float>(limits_.max_velocity));
-    result.torque = std::clamp(torque, static_cast<float>(limits_.min_torque),
-                               static_cast<float>(limits_.max_torque));
-    result.kp = std::clamp(kp, static_cast<float>(limits_.min_kp), static_cast<float>(limits_.max_kp));
-    result.kd = std::clamp(kd, static_cast<float>(limits_.min_kd), static_cast<float>(limits_.max_kd));
+    const float min_pos = static_cast<float>(limits_.min_position);
+    const float max_pos = static_cast<float>(limits_.max_position);
+    const float min_vel = static_cast<float>(limits_.min_velocity);
+    const float max_vel = static_cast<float>(limits_.max_velocity);
+    const float min_tau = static_cast<float>(limits_.min_torque);
+    const float max_tau = static_cast<float>(limits_.max_torque);
+    const float min_kp = static_cast<float>(limits_.min_kp);
+    const float max_kp = static_cast<float>(limits_.max_kp);
+    const float min_kd = static_cast<float>(limits_.min_kd);
+    const float max_kd = static_cast<float>(limits_.max_kd);
+
+    result.position = std::clamp(position, min_pos, max_pos);
+    result.velocity = std::clamp(velocity, min_vel, max_vel);
+    result.torque = std::clamp(torque, min_tau, max_tau);
+    result.kp = std::clamp(kp, min_kp, max_kp);
+    result.kd = std::clamp(kd, min_kd, max_kd);
+
+    auto logger = this->get_logger();
+    auto& clock = *this->get_clock();
+    constexpr auto throttle_ms = 1000;
+
+    if (result.position != position)
+    {
+        RCLCPP_WARN_THROTTLE(logger, clock, throttle_ms,
+                             "Motor %d: position clamped from %.4f to %.4f (limits [%.4f, %.4f])",
+                             motor_id, position, result.position, min_pos, max_pos);
+    }
+    if (result.velocity != velocity)
+    {
+        RCLCPP_WARN_THROTTLE(logger, clock, throttle_ms,
+                             "Motor %d: velocity clamped from %.4f to %.4f (limits [%.4f, %.4f])",
+                             motor_id, velocity, result.velocity, min_vel, max_vel);
+    }
+    if (result.torque != torque)
+    {
+        RCLCPP_WARN_THROTTLE(logger, clock, throttle_ms,
+                             "Motor %d: torque clamped from %.4f to %.4f (limits [%.4f, %.4f])",
+                             motor_id, torque, result.torque, min_tau, max_tau);
+    }
+    if (result.kp != kp)
+    {
+        RCLCPP_WARN_THROTTLE(logger, clock, throttle_ms,
+                             "Motor %d: kp clamped from %.4f to %.4f (limits [%.4f, %.4f])",
+                             motor_id, kp, result.kp, min_kp, max_kp);
+    }
+    if (result.kd != kd)
+    {
+        RCLCPP_WARN_THROTTLE(logger, clock, throttle_ms,
+                             "Motor %d: kd clamped from %.4f to %.4f (limits [%.4f, %.4f])",
+                             motor_id, kd, result.kd, min_kd, max_kd);
+    }
+
     return result;
 }
 
@@ -279,7 +322,8 @@ void MotorControlNode::on_timer()
         low_state_msg.motor_state[i].torque = spi_rx_.tau[i];
         low_state_msg.motor_state[i].temperature_mosfet = 0;
         low_state_msg.motor_state[i].temperature_rotor = 0;
-        low_state_msg.motor_state[i].error = static_cast<uint8_t>(spi_rx_.connect_motor[i]);
+        low_state_msg.motor_state[i].connected = spi_rx_.connect_motor[i] != 0;
+        low_state_msg.motor_state[i].enabled = spi_rx_.ready[i] != 0;
     }
     low_state_pub_->publish(low_state_msg);
 
