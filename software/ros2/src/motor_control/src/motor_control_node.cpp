@@ -168,12 +168,10 @@ void MotorControlNode::on_board_parameters(const tinker_msgs::msg::ControlCmd::S
     if (msg->cmd == tinker_msgs::msg::ControlCmd::ENABLE)
     {
         en_motor_atomic.store(1);
-        RCLCPP_WARN(this->get_logger(), "SPI TX: ENABLE -> en_motor=1");
     }
     else if (msg->cmd == tinker_msgs::msg::ControlCmd::DISABLE)
     {
         en_motor_atomic.store(0);
-        RCLCPP_WARN(this->get_logger(), "SPI TX: DISABLE -> en_motor=0");
     }
     else if (msg->cmd == tinker_msgs::msg::ControlCmd::SET_ZERO_POSITION)
     {
@@ -296,29 +294,12 @@ void MotorControlNode::on_timer()
         auto now = this->now();
         auto dt_log = (now - last_time).seconds();
         RCLCPP_INFO(this->get_logger(), "SPI frequency: %.1f Hz", 1000.0 / dt_log);
-        RCLCPP_INFO(this->get_logger(),
-                    "SPI TX: en_motor=%d reset_q=%d reset_err=%d",
-                    static_cast<int>(en_motor_atomic.load()),
-                    static_cast<int>(reset_q_atomic.load()),
-                    static_cast<int>(reset_err_atomic.load()));
         RCLCPP_INFO(this->get_logger(), "  id | position | velocity |  torque  |");
         for (int i = 0; i < 10; ++i)
         {
             RCLCPP_INFO(this->get_logger(), " %2d  | %8.3f | %8.3f | %8.4f |",
                         i + 1, static_cast<double>(spi_rx_.q[i]),
                         static_cast<double>(spi_rx_.dq[i]), static_cast<double>(spi_rx_.tau[i]));
-        }
-        RCLCPP_INFO(this->get_logger(),
-                    "SPI RX status (временный лог): id | status | connected | ready |");
-        for (int i = 0; i < 10; ++i)
-        {
-            const int status_byte =
-                static_cast<int>(spi_rx_.connect_motor[i]) * 10 + static_cast<int>(spi_rx_.ready[i]);
-            RCLCPP_INFO(this->get_logger(),
-                        " %2d  | %6d | %9d | %5d |",
-                        i + 1, status_byte,
-                        static_cast<int>(spi_rx_.connect_motor[i]),
-                        static_cast<int>(spi_rx_.ready[i]));
         }
         last_time = now;
     }
