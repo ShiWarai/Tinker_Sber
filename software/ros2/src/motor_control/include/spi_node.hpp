@@ -79,8 +79,8 @@ typedef struct {
     float tau[10];
     float bat_v[4];
     char connect[4];
-    char connect_motor[10];
-    char ready[10];
+    char connect_motor[10];  // связь по CAN (десятки статус-байта SPI)
+    char ready[10];          // вкл/выкл мотора (единицы статус-байта SPI)
     _OCU ocu;
     _AOA aoa;
     _ARMSS arm_cmd_s;

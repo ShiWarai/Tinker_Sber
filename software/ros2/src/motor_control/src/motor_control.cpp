@@ -135,8 +135,22 @@ int slave_rx(uint8_t *data_buf, int num, _SPI_RX &rx_out)
             rx_out.dq[i] = floatFromData_spi_int(data_buf, &anal_cnt, CAN_POS_DIV);
             rx_out.tau[i] = floatFromData_spi_int(data_buf, &anal_cnt, CAN_T_DIV);
             temp = charFromData_spi(data_buf, &anal_cnt);
+            // Статус-байт: connect*100 + connect_motor*10 + ready (см. MotorState.msg)
             rx_out.connect_motor[i] = (temp % 100) / 10;
             rx_out.ready[i] = temp % 10;
+        }
+        static int spi_status_log_cnt = 0;
+        if (++spi_status_log_cnt >= 1000)
+        {
+            spi_status_log_cnt = 0;
+            printf("SPI RX status (временный лог):");
+            for (int j = 0; j < 10; ++j)
+            {
+                const int raw = static_cast<int>(rx_out.connect_motor[j]) * 10 +
+                                static_cast<int>(rx_out.ready[j]);
+                printf(" m%d=%d", j, raw);
+            }
+            printf("\n");
         }
     }
     else
