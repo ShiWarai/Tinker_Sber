@@ -1,0 +1,39 @@
+# ROS 2 / colcon workspace
+build/
+install/
+log/
+.colcon_install_layout
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# C/C++ / CMake
+*.o
+*.so
+*.a
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# Qt / moc
+moc_*.cpp
+*_autogen/
+
+# Editor / OS
+*~
+*.swp
+*.swo
+.DS_Store
+.vscode/
+.idea/
+
+# External package (ros2-node/unified_messages) — not part of this repo
+button_control/src/tinker_msgs/
+
+# Accidental duplicate from `git checkout`
+software/

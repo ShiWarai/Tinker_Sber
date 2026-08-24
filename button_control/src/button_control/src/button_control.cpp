@@ -1,10 +1,12 @@
 #include "button_control/button_control.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 namespace button_control {
 
 namespace {
 
-/** Standing: left leg 0–4; right leg 5–9 uses the same targets (mirrored leg pose). */
 constexpr std::array<float, 10> kStandingTargets{
     0.0f, 0.0f, -0.2f, -0.9f, -0.5f,
     0.0f, 0.0f, 0.2f, 0.9f, 0.5f};
@@ -16,7 +18,7 @@ constexpr float kStandingPoseKd = 0.65f;
 constexpr float kLyingPoseKp = 15.0f;
 constexpr float kLyingPoseKd = 0.65f;
 
-static void fill_low_cmd_motor_fields(
+void fillLowCmdMotorFields(
     tinker_msgs::msg::LowCmd& cmd, int motor_index, float position, ButtonControl::PoseMotionKind pose_motion)
 {
     cmd.motor_cmd[motor_index].position = position;
@@ -42,70 +44,207 @@ static void fill_low_cmd_motor_fields(
 
 }  // namespace
 
-float ButtonControl::interpolate(float start, float target, float progress, bool smooth) {
-    
+float ButtonControl::interpolate(float start, float target, float progress, bool smooth)
+{
     progress = std::clamp(progress, 0.0f, 1.0f);
-    
-    if (smooth) {
-        // Sinusoidal ease-in-out: плавный старт и остановка
 
-        float smooth_progress = 0.5f * (1.0f - std::cos(M_PI * progress));
-        // float smooth_progress = 3 * progress * progress - 2 * progress * progress * progress;
-        // float smooth_progress = progress;
+    if (smooth) {
+        const float smooth_progress = 0.5f * (1.0f - std::cos(static_cast<float>(M_PI) * progress));
         return start + (target - start) * smooth_progress;
     }
-    // Линейная интерполяция 
     return start + (target - start) * progress;
 }
 
-ButtonControl::ButtonControl() 
-: Node("button_control"), count_(0) {
-
-    // Callback для обратной связи
-    auto low_state_callback = [this](tinker_msgs::msg::LowState::SharedPtr msg) -> void {
-        lowStateCallback(msg);
-    };
-
-    control_cmd_publisher_ = this->create_publisher<tinker_msgs::msg::ControlCmd>(
-        "/control_command", 20);
-    low_cmd_publisher_ = this->create_publisher<tinker_msgs::msg::LowCmd>(
-        "/low_level_command", 20);
-    low_state_subscriber_ = this->create_subscription<tinker_msgs::msg::LowState>(
-        "/low_level_state", 20, low_state_callback);
-    
-    // Таймер для обновления плавного движения (100 Гц)
-    motion_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(5), [this]() { 
-        updateSmoothMotion();
-    });
-}
-
-// Callback: сохраняем текущие позиции двигателей
-void ButtonControl::lowStateCallback(const tinker_msgs::msg::LowState::SharedPtr msg) {
-    for (int i = 0; i < 10; i++) {
-        last_known_positions_[i] = msg->motor_state[i].position;
-    }
-    positions_initialized_ = true;
-}
-
-void ButtonControl::beginSmoothMotionToTargets(const std::array<float, 10>& targets, PoseMotionKind pose_motion)
+ButtonControl::MotorSnapshot ButtonControl::getSnapshot() const
 {
-    if (!positions_initialized_) {
-        RCLCPP_WARN(this->get_logger(),
-                    "Positions not initialized yet, waiting for feedback...");
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    return snapshot_;
+}
+
+bool ButtonControl::feedbackFresh(const MotorSnapshot& snapshot) const
+{
+    if (!snapshot.has_feedback) {
+        return false;
+    }
+    const auto age = std::chrono::steady_clock::now() - snapshot.last_update;
+    return age <= kFeedbackTimeout;
+}
+
+bool ButtonControl::allMotorsConnected(const MotorSnapshot& snapshot) const
+{
+    return std::all_of(snapshot.connected.begin(), snapshot.connected.end(), [](bool value) { return value; });
+}
+
+bool ButtonControl::allMotorsEnabled(const MotorSnapshot& snapshot) const
+{
+    return allMotorsConnected(snapshot) &&
+           std::all_of(snapshot.enabled.begin(), snapshot.enabled.end(), [](bool value) { return value; });
+}
+
+bool ButtonControl::allMotorsDisabled(const MotorSnapshot& snapshot) const
+{
+    return allMotorsConnected(snapshot) &&
+           !std::any_of(snapshot.enabled.begin(), snapshot.enabled.end(), [](bool value) { return value; });
+}
+
+bool ButtonControl::hasPartialMotorConnection(const MotorSnapshot& snapshot) const
+{
+    const bool any_connected = std::any_of(snapshot.connected.begin(), snapshot.connected.end(), [](bool v) { return v; });
+    const bool any_disconnected =
+        std::any_of(snapshot.connected.begin(), snapshot.connected.end(), [](bool v) { return !v; });
+    return any_connected && any_disconnected;
+}
+
+bool ButtonControl::hasPartialMotorEnable(const MotorSnapshot& snapshot) const
+{
+    if (!allMotorsConnected(snapshot)) {
+        return false;
+    }
+    const bool any_enabled = std::any_of(snapshot.enabled.begin(), snapshot.enabled.end(), [](bool v) { return v; });
+    const bool any_disabled =
+        std::any_of(snapshot.enabled.begin(), snapshot.enabled.end(), [](bool v) { return !v; });
+    return any_enabled && any_disabled;
+}
+
+ButtonControl::ButtonControl() : Node("button_control")
+{
+    control_cmd_publisher_ = create_publisher<tinker_msgs::msg::ControlCmd>("/control_command", 20);
+    low_cmd_publisher_ = create_publisher<tinker_msgs::msg::LowCmd>("/low_level_command", 20);
+    low_state_subscriber_ = create_subscription<tinker_msgs::msg::LowState>(
+        "/low_level_state", 20,
+        [this](const tinker_msgs::msg::LowState::SharedPtr msg) { lowStateCallback(msg); });
+
+    motion_timer_ = create_wall_timer(
+        std::chrono::milliseconds(5), [this]() { updateSmoothMotion(); });
+}
+
+void ButtonControl::lowStateCallback(const tinker_msgs::msg::LowState::SharedPtr msg)
+{
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    for (int i = 0; i < kMotorCount; ++i) {
+        snapshot_.positions[i] = msg->motor_state[i].position;
+        snapshot_.connected[i] = msg->motor_state[i].connected;
+        snapshot_.enabled[i] = msg->motor_state[i].enabled;
+    }
+    snapshot_.has_feedback = true;
+    snapshot_.last_update = std::chrono::steady_clock::now();
+}
+
+bool ButtonControl::hasFeedback() const
+{
+    return feedbackFresh(getSnapshot());
+}
+
+bool ButtonControl::anyMotorEnabled() const
+{
+    const auto snapshot = getSnapshot();
+    if (!feedbackFresh(snapshot)) {
+        return false;
+    }
+    return std::any_of(snapshot.enabled.begin(), snapshot.enabled.end(), [](bool value) { return value; });
+}
+
+bool ButtonControl::motorsEnabled() const
+{
+    const auto snapshot = getSnapshot();
+    return feedbackFresh(snapshot) && allMotorsEnabled(snapshot);
+}
+
+bool ButtonControl::motorsDisabled() const
+{
+    const auto snapshot = getSnapshot();
+    return feedbackFresh(snapshot) && allMotorsDisabled(snapshot);
+}
+
+bool ButtonControl::hasMotorFault() const
+{
+    const auto snapshot = getSnapshot();
+    if (!feedbackFresh(snapshot)) {
+        return false;
+    }
+    return !allMotorsConnected(snapshot) && !hasPartialMotorConnection(snapshot);
+}
+
+bool ButtonControl::motionActive() const
+{
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    return motion_params_.active;
+}
+
+bool ButtonControl::isAtCompletedPose(PoseMotionKind pose) const
+{
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    return completed_pose_ == pose;
+}
+
+ButtonControl::MotorIndicatorState ButtonControl::motorIndicatorState() const
+{
+    const auto snapshot = getSnapshot();
+    if (!feedbackFresh(snapshot)) {
+        return MotorIndicatorState::Red;
+    }
+    if (hasMotorFault()) {
+        return MotorIndicatorState::Red;
+    }
+    if (hasPartialMotorConnection(snapshot) || hasPartialMotorEnable(snapshot)) {
+        return MotorIndicatorState::Yellow;
+    }
+    if (allMotorsEnabled(snapshot) || allMotorsDisabled(snapshot)) {
+        return MotorIndicatorState::Green;
+    }
+    return MotorIndicatorState::Red;
+}
+
+std::string ButtonControl::motorIndicatorTooltip() const
+{
+    if (motionActive()) {
+        return "Motion in progress";
+    }
+
+    const auto snapshot = getSnapshot();
+    if (!snapshot.has_feedback) {
+        return "Waiting for /low_level_state";
+    }
+    if (!feedbackFresh(snapshot)) {
+        return "Motor feedback stale";
+    }
+    if (hasPartialMotorConnection(snapshot)) {
+        return "Partial motor connection";
+    }
+    if (hasPartialMotorEnable(snapshot)) {
+        return "Mixed enable state (not all on or off)";
+    }
+    if (!allMotorsConnected(snapshot)) {
+        return "Motors disconnected";
+    }
+    if (allMotorsEnabled(snapshot)) {
+        return "All motors enabled";
+    }
+    if (allMotorsDisabled(snapshot)) {
+        return "All motors disabled";
+    }
+    return "Motor state unknown";
+}
+
+void ButtonControl::beginSmoothMotionToTargets(
+    const std::array<float, 10>& targets, PoseMotionKind pose_motion)
+{
+    std::lock_guard<std::mutex> lock(state_mutex_);
+
+    if (!snapshot_.has_feedback || !feedbackFresh(snapshot_)) {
+        RCLCPP_WARN(get_logger(), "Cannot start motion: no fresh motor feedback");
         return;
     }
 
     if (motion_params_.active) {
-        RCLCPP_WARN(this->get_logger(), "Motion already in progress!");
+        RCLCPP_WARN(get_logger(), "Motion already in progress");
         return;
     }
 
     motion_params_.active = true;
-    motion_params_.start_positions = last_known_positions_;
+    motion_params_.start_positions = snapshot_.positions;
     motion_params_.target_positions = targets;
     motion_params_.pose_motion = pose_motion;
-
     motion_params_.duration_sec = 2.0f;
     motion_params_.control_freq_hz = 200.0f;
     motion_params_.total_steps =
@@ -116,98 +255,164 @@ void ButtonControl::beginSmoothMotionToTargets(const std::array<float, 10>& targ
 void ButtonControl::publishControlCmdForAllMotors(uint8_t cmd)
 {
     tinker_msgs::msg::ControlCmd control_msg;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < kMotorCount; ++i) {
         control_msg.motor_id = static_cast<uint8_t>(i);
         control_msg.cmd = cmd;
         control_cmd_publisher_->publish(control_msg);
-        RCLCPP_INFO(this->get_logger(),
-                    "Published: motor_id=%d, cmd=%d",
-                    control_msg.motor_id, control_msg.cmd);
+        RCLCPP_INFO(get_logger(), "Published: motor_id=%d, cmd=%d", control_msg.motor_id, control_msg.cmd);
     }
 }
 
 void ButtonControl::publishStartMotorsCmdMessage()
 {
-    publishControlCmdForAllMotors(252);
+    if (!hasFeedback()) {
+        RCLCPP_WARN(get_logger(), "Cannot start motors: no fresh feedback from /low_level_state");
+        return;
+    }
+    // TODO: вернуть, когда /low_level_state.enabled стабильно работает:
+    // if (motorsEnabled()) {
+    //     RCLCPP_WARN(get_logger(), "Motors are already enabled");
+    //     return;
+    // }
+    if (motionActive()) {
+        RCLCPP_WARN(get_logger(), "Cannot start motors during motion");
+        return;
+    }
+    publishControlCmdForAllMotors(tinker_msgs::msg::ControlCmd::ENABLE);
 }
 
 void ButtonControl::publishStopMotorsCmdMessage()
 {
-    publishControlCmdForAllMotors(253);
+    if (!hasFeedback()) {
+        RCLCPP_WARN(get_logger(), "Cannot stop motors: no fresh feedback from /low_level_state");
+        return;
+    }
+    // TODO: вернуть, когда /low_level_state.enabled стабильно работает:
+    // if (motorsDisabled()) {
+    //     RCLCPP_WARN(get_logger(), "Motors are already disabled");
+    //     return;
+    // }
+    if (motionActive()) {
+        RCLCPP_WARN(get_logger(), "Cannot stop motors during motion");
+        return;
+    }
+    publishControlCmdForAllMotors(tinker_msgs::msg::ControlCmd::DISABLE);
+    std::lock_guard<std::mutex> lock(state_mutex_);
+    completed_pose_ = PoseMotionKind::None;
 }
 
 void ButtonControl::publishStandingPose()
 {
+    if (!hasFeedback()) {
+        RCLCPP_WARN(get_logger(), "Cannot move to standing pose: no fresh feedback");
+        return;
+    }
+    // TODO: вернуть, когда /low_level_state.enabled стабильно работает:
+    // if (!motorsEnabled()) {
+    //     RCLCPP_WARN(get_logger(), "Cannot move to standing pose: motors are not enabled");
+    //     return;
+    // }
+    if (motionActive()) {
+        RCLCPP_WARN(get_logger(), "Cannot move to standing pose: motion already active");
+        return;
+    }
+    if (isAtCompletedPose(PoseMotionKind::Standing)) {
+        RCLCPP_WARN(get_logger(), "Already at standing pose");
+        return;
+    }
     beginSmoothMotionToTargets(kStandingTargets, PoseMotionKind::Standing);
 }
 
 void ButtonControl::publishLyingPose()
 {
+    if (!hasFeedback()) {
+        RCLCPP_WARN(get_logger(), "Cannot move to lying pose: no fresh feedback");
+        return;
+    }
+    // TODO: вернуть, когда /low_level_state.enabled стабильно работает:
+    // if (!motorsEnabled()) {
+    //     RCLCPP_WARN(get_logger(), "Cannot move to lying pose: motors are not enabled");
+    //     return;
+    // }
+    if (motionActive()) {
+        RCLCPP_WARN(get_logger(), "Cannot move to lying pose: motion already active");
+        return;
+    }
+    if (isAtCompletedPose(PoseMotionKind::Lying)) {
+        RCLCPP_WARN(get_logger(), "Already at lying pose");
+        return;
+    }
     beginSmoothMotionToTargets(kZeroTargets, PoseMotionKind::Lying);
 }
 
-
-// Обновление траектории (вызывается таймером)
-void ButtonControl::updateSmoothMotion() {
-
-    if (!motion_params_.active) {
-        return;  // Движение не активно
+void ButtonControl::publishSetZeroCmdMessage()
+{
+    if (!hasFeedback()) {
+        RCLCPP_WARN(get_logger(), "Cannot set zero position: no fresh feedback");
+        return;
     }
-    
-    // Вычисляем прогресс [0, 1]
-    float progress = static_cast<float>(motion_params_.elapsed_steps) / 
-                     static_cast<float>(motion_params_.total_steps);
-    
-    if (progress >= 1.0f) {
-        // Движение завершено
-        motion_params_.active = false;
-        RCLCPP_INFO(this->get_logger(), "Smooth motion completed!");
-        
-        // Финальная команда: зафиксировать целевые позиции траектории
+    // TODO: вернуть, когда /low_level_state.enabled стабильно работает:
+    // if (anyMotorEnabled()) {
+    //     RCLCPP_WARN(get_logger(), "Cannot set zero position while motors are enabled");
+    //     return;
+    // }
+    if (motionActive()) {
+        RCLCPP_WARN(get_logger(), "Cannot set zero position during motion");
+        return;
+    }
+    publishControlCmdForAllMotors(tinker_msgs::msg::ControlCmd::SET_ZERO_POSITION);
+}
+
+void ButtonControl::updateSmoothMotion()
+{
+    tinker_msgs::msg::LowCmd cmd;
+    PoseMotionKind pose_motion = PoseMotionKind::None;
+    std::array<float, 10> target_positions{};
+    bool publish_final = false;
+    bool publish_step = false;
+
+    {
+        std::lock_guard<std::mutex> lock(state_mutex_);
+        if (!motion_params_.active) {
+            return;
+        }
+
+        const float progress = static_cast<float>(motion_params_.elapsed_steps) /
+                               static_cast<float>(motion_params_.total_steps);
+
+        if (progress >= 1.0f) {
+            motion_params_.active = false;
+            target_positions = motion_params_.target_positions;
+            pose_motion = motion_params_.pose_motion;
+            completed_pose_ = pose_motion;
+            publish_final = true;
+        } else {
+            for (int i = 0; i < kMotorCount; ++i) {
+                const float pos = interpolate(
+                    motion_params_.start_positions[i],
+                    motion_params_.target_positions[i],
+                    progress,
+                    true);
+                fillLowCmdMotorFields(cmd, i, pos, motion_params_.pose_motion);
+            }
+            motion_params_.elapsed_steps++;
+            publish_step = true;
+        }
+    }
+
+    if (publish_final) {
+        RCLCPP_INFO(get_logger(), "Smooth motion completed");
         tinker_msgs::msg::LowCmd final_cmd;
-        for (int i = 0; i < 10; i++) {
-            fill_low_cmd_motor_fields(final_cmd, i, motion_params_.target_positions[i],
-                                      motion_params_.pose_motion);
+        for (int i = 0; i < kMotorCount; ++i) {
+            fillLowCmdMotorFields(final_cmd, i, target_positions[i], pose_motion);
         }
         low_cmd_publisher_->publish(final_cmd);
         return;
     }
-    
-    // Формируем команду с интерполированными позициями
-    tinker_msgs::msg::LowCmd cmd;
-    
-    for (int i = 0; i < 10; i++) {
-        // Интерполяция позиции с плавным easing
-        const float pos = interpolate(
-            motion_params_.start_positions[i],
-            motion_params_.target_positions[i],
-            progress,
-            true  // использовать smooth easing
-        );
-        fill_low_cmd_motor_fields(cmd, i, pos, motion_params_.pose_motion);
+
+    if (publish_step) {
+        low_cmd_publisher_->publish(cmd);
     }
-    
-    low_cmd_publisher_->publish(cmd);
-    motion_params_.elapsed_steps++;
-    
-    // // Лог прогресса каждые 10%
-    // if (motion_params_.elapsed_steps % 10 == 0) {
-    //     RCLCPP_INFO(this->get_logger(), 
-    //                "Motion progress: %.1f%% (step %d/%d)",
-    //                progress * 100.0f,
-    //                motion_params_.elapsed_steps,
-    //                motion_params_.total_steps);
-    // }
 }
 
-
-void ButtonControl::publishSetZeroCmdMessage()
-{
-    publishControlCmdForAllMotors(253);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-    publishControlCmdForAllMotors(254);
-}
-
-} // namespace button_control
+}  // namespace button_control
