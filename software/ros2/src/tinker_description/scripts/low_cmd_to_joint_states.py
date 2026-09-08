@@ -20,7 +20,7 @@ class LowCmdBridge(Node):
         # self._positions = [0.0, 0.08, 0.56, -1.12, -0.57, 0.0, -0.08, -0.56, 1.12, 0.57]
         self._positions = [0.0, 0.0, 0.08, -0.08, 0.56, -0.56, -1.12, 1.12, -0.57, 0.57]
         self.pub = self.create_publisher(JointState, '/joint_states', 10)
-        self.sub = self.create_subscription(LowCmd, '/low_level_cmd', self.on_cmd, 10)
+        self.sub = self.create_subscription(LowCmd, '/low_level_command', self.on_cmd, 10)
         self.create_timer(0.05, self.publish)  # 20 Hz
 
     def on_cmd(self, msg: LowCmd):
