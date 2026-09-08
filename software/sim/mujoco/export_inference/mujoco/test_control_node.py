@@ -9,7 +9,7 @@ class ManualControlNode(Node):
     def __init__(self):
         super().__init__('manual_control_node')
 
-        self.cmd_publisher = self.create_publisher(LowCmd, '/tinker_msgs/lowcmd', 10)
+        self.cmd_publisher = self.create_publisher(LowCmd, '/low_level_command', 10)
 
         self.timer = self.create_timer(0.01, self.control_loop)
 
@@ -17,11 +17,12 @@ class ManualControlNode(Node):
         self.kp = 15.0
         self.kd = 0.65
 
-        self.get_logger().info("Manual control node started. Publishing to /tinker_msgs/lowcmd.")
+        self.get_logger().info("Manual control node started. Publishing to /low_level_command.")
 
     def control_loop(self):
 
         msg = LowCmd()
+        msg.timestamp_state = self.get_clock().now()
         msg.motor_cmd = [MotorCmd() for _ in range(10)]
         t_disc = self.dt * np.floor(time.time() / self.dt)
 

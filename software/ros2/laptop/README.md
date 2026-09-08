@@ -42,8 +42,6 @@ source ~/ws/install/setup.bash
 - `tinker_description`: URDF model, meshes, and RViz launch.
 - `motor_control`: Motor control node and related logic.
 - `hardware_msg`: Custom message definitions used by the system.
-- `tinker_msgs`: Low-level BD messages (`LowState` / `LowCmd`) for MuJoCo twin + inference (`export_inference`).
-- `_ros_ws/`: local colcon overlay that builds `tinker_msgs` (`source _ros_ws/install/setup.bash`).
 
 ## Run
 

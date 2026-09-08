@@ -1,2 +1,0 @@
-builtin_interfaces/Time timestamp_state
-MotorCmd[10] motor_cmd

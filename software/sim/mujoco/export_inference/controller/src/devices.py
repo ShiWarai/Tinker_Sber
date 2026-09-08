@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import rclpy
-import torch
 import numpy as np
 from rclpy.node import Node
 from pynput import keyboard

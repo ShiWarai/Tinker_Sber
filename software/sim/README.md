@@ -9,7 +9,7 @@ MuJoCo-based simulation and RL for Tinker.
 | `mujoco/export_inference/` | Sim2sim: MuJoCo twin + ONNX inference over ROS 2 `tinker_msgs` |
 | `mujoco/mujoco_playground_learnimg/` | Training (Brax PPO, env `BDJoystickFlatTerrain`) |
 
-ROS message package: `software/ros2/laptop/tinker_msgs/`.
+ROS message package: `software/ros2/src/tinker_msgs/` (after merge `ros2-node/unified_messages`).
 
 ## Quick links
 

@@ -1,45 +1,31 @@
 # MuJoCo inference (sim2sim)
 
-ROS 2 sim2sim stack: MuJoCo digital twin + ONNX policy controller over `tinker_msgs`.
+ROS 2 sim2sim: MuJoCo digital twin + ONNX policy controller.
 
-Previously this path was a broken git submodule (gitlink without `.gitmodules`). The code is vendored here as regular files so `git clone` works out of the box.
+**Requires** `tinker_msgs` from `software/ros2/src/tinker_msgs/` (merge `ros2-node/unified_messages` first).
 
 ## Layout
 
 ```
 export_inference/
-├── mujoco/          # MuJoCo twin (publishes LowState, subscribes LowCmd)
+├── mujoco/          # twin: /low_level_state + /imu_state
 │   ├── sim_mujoco.py
 │   ├── xml/
 │   └── meshes/
-└── controller/      # RL inference node (keyboard/gamepad → LowCmd)
+└── controller/      # inference → /low_level_command
     ├── run_inference.py
-    └── src/
-        └── model/tinker/   # params.yaml + policy/policy.onnx
+    └── src/model/tinker/
 ```
-
-Message definitions live in `software/ros2/laptop/tinker_msgs/` (do not duplicate them here).
-
-Training environment: `../mujoco_playground_learnimg/`.
 
 ## Prerequisites
 
-- ROS 2 Jazzy
-- Python 3.10+
-- MuJoCo, ONNX Runtime, SciPy, PyYAML, pynput
-
-Build `tinker_msgs` in your workspace:
+- ROS 2 Jazzy, `tinker_msgs` built from `software/ros2/src/`
+- Python: `pip install -r requirements.txt`
 
 ```bash
-cd ~/ws
+cd ~/ws/src/Tinker_Sber/software/ros2
 colcon build --packages-select tinker_msgs --symlink-install
-source install/setup.bash
-```
-
-Install Python deps (in a venv or system Python):
-
-```bash
-pip install -r requirements.txt
+source ~/ws/install/setup.bash
 ```
 
 ## Run (two terminals)
@@ -53,7 +39,7 @@ cd software/sim/mujoco/export_inference/mujoco
 python3 sim_mujoco.py
 ```
 
-**Terminal 2 — inference controller:**
+**Terminal 2 — inference:**
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -62,13 +48,12 @@ cd software/sim/mujoco/export_inference/controller
 python3 run_inference.py
 ```
 
-Keyboard: `W/S/A/D` — linear velocity, `Q/E` — yaw. See `src/devices.py`.
+## Topics (same as motor_control)
 
-## Topics
-
-| Topic | Type | Direction (twin) | Direction (controller) |
+| Topic | Type | Twin | Controller |
 |---|---|---|---|
-| `/tinker_msgs/lowstate` | `tinker_msgs/LowState` | publish | subscribe |
-| `/tinker_msgs/lowcmd` | `tinker_msgs/LowCmd` | subscribe | publish |
+| `/low_level_state` | `tinker_msgs/LowState` | publish | subscribe |
+| `/imu_state` | `sensor_msgs/Imu` | publish | subscribe |
+| `/low_level_command` | `tinker_msgs/LowCmd` | subscribe | publish |
 
-Replace `policy/policy.onnx` with a model exported from `mujoco_playground_learnimg` training when ready.
+Training: `../mujoco_playground_learnimg/`.
