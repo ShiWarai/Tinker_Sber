@@ -297,8 +297,30 @@ void ButtonControl::publishStopMotorsCmdMessage()
         return;
     }
     publishControlCmdForAllMotors(tinker_msgs::msg::ControlCmd::DISABLE);
+    publishZeroGainsCmd();
     std::lock_guard<std::mutex> lock(state_mutex_);
     completed_pose_ = PoseMotionKind::None;
+}
+
+void ButtonControl::publishZeroGainsCmd()
+{
+    tinker_msgs::msg::LowCmd cmd;
+    MotorSnapshot snapshot;
+    {
+        std::lock_guard<std::mutex> lock(state_mutex_);
+        snapshot = snapshot_;
+        motion_params_.active = false;
+    }
+
+    for (int i = 0; i < kMotorCount; ++i) {
+        cmd.motor_cmd[i].position = snapshot.positions[i];
+        cmd.motor_cmd[i].velocity = 0.0f;
+        cmd.motor_cmd[i].torque = 0.0f;
+        cmd.motor_cmd[i].kp = 0.0f;
+        cmd.motor_cmd[i].kd = 0.0f;
+    }
+    low_cmd_publisher_->publish(cmd);
+    RCLCPP_INFO(get_logger(), "Published LowCmd with kp=0, kd=0 for all motors");
 }
 
 void ButtonControl::publishStandingPose()
