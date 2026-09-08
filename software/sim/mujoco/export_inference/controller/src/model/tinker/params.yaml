@@ -1,0 +1,63 @@
+TinkerCfg:
+  loop_frequency: 500
+  joint_names:
+    - "J_L0"
+    - "J_L1"
+    - "J_L2"
+    - "J_L3"
+    - "J_L4_ankle"
+    - "J_R0"
+    - "J_R1"
+    - "J_R2"
+    - "J_R3"
+    - "J_R4_ankle"
+
+  init_state:
+    # target angles [rad] when action = 0.0
+    default_joint_angle:
+      J_L0: 0.0
+      J_L1: 0.8
+      J_L2: 0.56
+      J_L3: -1.12
+      J_L4_ankle: -0.57
+      J_R0: 0.0
+      J_R1: -0.8
+      J_R2: -0.56
+      J_R3: 1.12
+      J_R4_ankle: 0.57
+
+  control:
+    # PD Drive parameters:
+    stiffness: 13.0
+    damping: 0.65
+    action_scale_pos: 0.2
+    decimation: 10
+    user_torque_limit: 60
+
+  normalization:
+    clip_scales:
+      clip_observations: 100.
+      clip_actions: 100.
+    obs_scales:
+      lin_vel: 1.0
+      ang_vel: 1.0
+      dof_pos: 1.0
+      dof_vel: 1.0
+
+  size:
+    actions_size: 10
+    observations_size: 39   # 27 was for pointfoot, +4 DOF: +4 qpos +4 qvel +4 actions
+    commands_size: 3
+
+  stand_mode:
+    stand_duration: 1.0
+
+  imu_orientation_offset:
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+
+  user_cmd_scales:
+    lin_vel_x: 1.0
+    lin_vel_y: 1.0
+    ang_vel_yaw: 1.0

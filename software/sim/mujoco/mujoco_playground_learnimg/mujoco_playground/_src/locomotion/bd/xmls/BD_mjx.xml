@@ -1,0 +1,182 @@
+<mujoco model="BD">
+  <!-- Geometry/limits from playground_bd/xmls/BD.xml; only training glue added. -->
+  <default>
+    <default class="robot">
+      <default class="visual">
+        <geom contype="0" conaffinity="0" group="2"/>
+      </default>
+      <default class="collision">
+        <!-- Feet-only floor contact: body geoms do not collide with floor. -->
+        <geom contype="0" conaffinity="0" group="3" condim="3"/>
+        <default class="foot">
+          <geom contype="0" conaffinity="0" group="3" condim="3" friction="0.6 0.6 0.005"/>
+          <default class="foot_sphere">
+            <geom contype="0" conaffinity="0" group="3" condim="3" size="0.01" type="sphere"
+                  friction="0.6 0.6 0.005"/>
+          </default>
+        </default>
+      </default>
+    </default>
+    <position kp="25" kv="0.5" inheritrange="1"/>
+  </default>
+
+  <compiler angle="radian" meshdir="meshes/meshes" balanceinertia="true"/>
+
+  <statistic meanmass="0.765"/>
+
+  <visual>
+    <global offwidth="3840" offheight="2160"/>
+    <map stiffness="100" stiffnessrot="500" force="0.005" torque="0.1"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+  </visual>
+
+  <worldbody>
+    <body name="base_link" pos="0 0 0.3538">
+      <freejoint name="floating_base"/>
+      <!-- Rear-right of robot-forward (+X), looking at the COM. -->
+      <camera name="track" pos="-0.85 -0.55 0.25"
+              xyaxes="0.54 -0.84 0 0.20 0.13 0.97" mode="trackcom"/>
+      <inertial pos="0.005 0 0.036" mass="3.0" diaginertia="0.02538 0.03617 0.01306"/>
+      <!-- Visual only: CAD muzzle faces −X in the mesh; 180° yaw points face along +X. -->
+      <geom name="base_link_collision" pos="0.005 0 0" type="box" size="0.06 0.08 0.06" class="collision"/>
+      <geom name="base_link_visual" pos="0.005 0 0" quat="0 0 0 1" type="mesh"
+            mesh="base_link_base_link" material="default_material" class="visual"/>
+      <!-- IMU must stay identity: command/sensor +X = toe/leg +X. Do NOT yaw with the muzzle. -->
+      <site name="imu" pos="0.005 0 0.036" size="0.01" rgba="1 0 0 1" group="4"/>
+
+      <body name="L0_Link" pos="0.0025357 0.053301 0.056145">
+        <inertial pos="0.0006 0 -0.0529" mass="0.587331353457417" diaginertia="0.0007 0.0004 0.0004"/>
+        <joint name="J_L0" type="hinge" range="-0.3 0.3" axis="0 0 1"/>
+        <geom name="L0_Link_visual" type="mesh" mesh="L0_Link_L0_Link" material="default_material" class="visual"/>
+        <body name="L1_Link" pos="-0.010958 0 -0.054965">
+          <inertial pos="-0.0035 0.0342 -0.0092" mass="0.0295521887544817" diaginertia="0.0001 0.0001 5e-05"/>
+          <joint name="J_L1" type="hinge" range="-0.2 0.2" axis="-1 0 0"/>
+          <geom name="L1_Link_visual" type="mesh" mesh="L1_Link_L1_Link" material="default_material" class="visual"/>
+          <body name="L2_Link" pos="0.010958 0.073699 -0.014313">
+            <inertial pos="-0.0008 0.0178 -0.0738" mass="1.34863094594399" diaginertia="0.0075 0.0082 0.0009"/>
+            <joint name="J_L2" type="hinge" range="-0.57 1.57" axis="0 1 0"/>
+            <geom name="L2_Link_collision" pos="0 0.005 -0.06" type="cylinder" size="0.02 0.06" class="collision"/>
+            <geom name="L2_Link_visual" type="mesh" mesh="L2_Link_L2_Link" material="default_material" class="visual"/>
+            <body name="L3_Link" pos="0 0 -0.14738">
+              <inertial pos="0 0.008 -0.122" mass="0.629727076499127" diaginertia="0.0012 0.0013 0.0002"/>
+              <joint name="J_L3" type="hinge" range="-2.35 0.05" axis="0 1 0"/>
+              <geom name="L3_Link_collision" pos="0 0 -0.071" type="cylinder" size="0.022 0.06" class="collision"/>
+              <geom name="L3_Link_visual" type="mesh" mesh="L3_Link_L3_Link" material="default_material" class="visual"/>
+              <body name="L4_Link_ankle" pos="0 0 -0.14149">
+                <inertial pos="0.0118 -0.0068 -0.0296" mass="0.171742682777178" diaginertia="0.0001 0.0003 0.0003"/>
+                <joint name="J_L4_ankle" type="hinge" range="-1.7 1.0" axis="0 -1 0"/>
+                <!-- Sole box matches L4 mesh sole (x from -0.054 to +0.086) and BD.urdf. -->
+                <geom name="left_foot" class="foot" pos="0.015 0 -0.040" type="box" size="0.07 0.025 0.009"/>
+                <!-- Toe/heel at sole bottom for full-plant gait sensing. -->
+                <geom name="left_foot_toe" class="foot_sphere" pos="0.075 0 -0.049"/>
+                <geom name="left_foot_heel" class="foot_sphere" pos="-0.045 0 -0.049"/>
+                <geom name="L4_Link_ankle_visual" type="mesh" mesh="L4_Link_ankle_L4_Link_ankle" material="default_material" class="visual"/>
+                <site name="left_foot" pos="0.015 0 -0.040" size="0.01" rgba="0 1 0 1" group="4"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <body name="R0_Link" pos="0.0025357 -0.053425 0.056145">
+        <inertial pos="0 -0.0001 -0.0512" mass="0.587331353381893" diaginertia="0.0008 0.0005 0.0004"/>
+        <joint name="J_R0" type="hinge" range="-0.3 0.3" axis="0 0 1"/>
+        <geom name="R0_Link_visual" type="mesh" mesh="R0_Link_R0_Link" material="default_material" class="visual"/>
+        <body name="R1_Link" pos="-0.010958 0 -0.054965">
+          <inertial pos="-0.0035 -0.0342 -0.0092" mass="0.029551251476222" diaginertia="0.0001 0.0001 5e-05"/>
+          <joint name="J_R1" type="hinge" range="-0.2 0.2" axis="-1 0 0"/>
+          <geom name="R1_Link_visual" type="mesh" mesh="R1_Link_R1_Link" material="default_material" class="visual"/>
+          <body name="R2_Link" pos="0.010958 -0.073575 -0.014313">
+            <inertial pos="-0.0008 -0.0178 -0.0737" mass="1.35023891621348" diaginertia="0.0075 0.0082 0.001"/>
+            <joint name="J_R2" type="hinge" range="-1.57 0.57" axis="0 -1 0"/>
+            <geom name="R2_Link_collision" pos="0 -0.005 -0.06" type="cylinder" size="0.02 0.06" class="collision"/>
+            <geom name="R2_Link_visual" type="mesh" mesh="R2_Link_R2_Link" material="default_material" class="visual"/>
+            <body name="R3_Link" pos="0 0 -0.14738">
+              <inertial pos="0 -0.0073 -0.1176" mass="0.511661896307101" diaginertia="0.0011 0.0012 0.0002"/>
+              <joint name="J_R3" type="hinge" range="-0.05 2.35" axis="0 -1 0"/>
+              <geom name="R3_Link_collision" pos="0 0 -0.071" type="cylinder" size="0.022 0.06" class="collision"/>
+              <geom name="R3_Link_visual" type="mesh" mesh="R3_Link_R3_Link" material="default_material" class="visual"/>
+              <body name="R4_Link_ankle" pos="0 0 -0.14149">
+                <inertial pos="0.0118 0.0067 -0.0296" mass="0.17174" diaginertia="0.0001 0.0003 0.0003"/>
+                <joint name="J_R4_ankle" type="hinge" range="-1.0 1.5" axis="0 1 0"/>
+                <geom name="right_foot" class="foot" pos="0.015 0 -0.040" type="box" size="0.07 0.025 0.009"/>
+                <geom name="right_foot_toe" class="foot_sphere" pos="0.075 0 -0.049"/>
+                <geom name="right_foot_heel" class="foot_sphere" pos="-0.045 0 -0.049"/>
+                <geom name="R4_Link_ankle_visual" type="mesh" mesh="R4_Link_ankle_R4_Link_ankle" material="default_material" class="visual"/>
+                <site name="right_foot" pos="0.015 0 -0.040" size="0.01" rgba="0 1 0 1" group="4"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+    <light pos="0 0 2." dir="0 0 -1" directional="true"/>
+  </worldbody>
+
+  <asset>
+    <material name="default_material" rgba="0.7 0.7 0.7 1"/>
+    <mesh name="base_link_base_link" file="base_link.STL"/>
+    <mesh name="L0_Link_L0_Link" file="L0_Link.STL"/>
+    <mesh name="L1_Link_L1_Link" file="L1_Link.STL"/>
+    <mesh name="L2_Link_L2_Link" file="L2_Link.STL"/>
+    <mesh name="L3_Link_L3_Link" file="L3_Link.STL"/>
+    <mesh name="L4_Link_ankle_L4_Link_ankle" file="L4_Link_ankle.STL"/>
+    <mesh name="R0_Link_R0_Link" file="R0_Link.STL"/>
+    <mesh name="R1_Link_R1_Link" file="R1_Link.STL"/>
+    <mesh name="R2_Link_R2_Link" file="R2_Link.STL"/>
+    <mesh name="R3_Link_R3_Link" file="R3_Link.STL"/>
+    <mesh name="R4_Link_ankle_R4_Link_ankle" file="R4_Link_ankle.STL"/>
+  </asset>
+
+  <actuator>
+    <position name="J_L0" joint="J_L0" forcerange="-12 12"/>
+    <position name="J_L1" joint="J_L1" forcerange="-20 20"/>
+    <position name="J_L2" joint="J_L2" forcerange="-20 20"/>
+    <position name="J_L3" joint="J_L3" forcerange="-20 20"/>
+    <position name="J_L4_ankle" joint="J_L4_ankle" forcerange="-12 12"/>
+    <position name="J_R0" joint="J_R0" forcerange="-12 12"/>
+    <position name="J_R1" joint="J_R1" forcerange="-20 20"/>
+    <position name="J_R2" joint="J_R2" forcerange="-20 20"/>
+    <position name="J_R3" joint="J_R3" forcerange="-20 20"/>
+    <position name="J_R4_ankle" joint="J_R4_ankle" forcerange="-12 12"/>
+  </actuator>
+
+  <sensor>
+    <gyro site="imu" name="gyro"/>
+    <velocimeter site="imu" name="local_linvel"/>
+    <accelerometer site="imu" name="accelerometer"/>
+    <framezaxis objtype="site" objname="imu" name="upvector"/>
+    <framexaxis objtype="site" objname="imu" name="forwardvector"/>
+    <framelinvel objtype="site" objname="imu" name="global_linvel"/>
+    <frameangvel objtype="site" objname="imu" name="global_angvel"/>
+    <framepos objtype="site" objname="imu" name="position"/>
+    <framequat objtype="site" objname="imu" name="orientation"/>
+    <framelinvel objtype="site" objname="left_foot" name="left_foot_global_linvel"/>
+    <framelinvel objtype="site" objname="right_foot" name="right_foot_global_linvel"/>
+    <framepos objtype="site" objname="left_foot" name="left_foot_pos"/>
+    <framepos objtype="site" objname="right_foot" name="right_foot_pos"/>
+  </sensor>
+
+
+  <!-- squat ~50° hip / 90° knee; ankle flat; robot-forward +X -->
+  <keyframe>
+    <key name="home"
+      qpos="
+    0 0 0.26515348
+    1 0 0 0
+    0 0 1.0 -1.57079633 -0.7
+    0 0 -1.0 1.57079633 0.7"
+      ctrl="
+    0 0 1.0 -1.57079633 -0.7
+    0 0 -1.0 1.57079633 0.7"/>
+    <key name="laying"
+      qpos="
+    0 0 0.19
+    1 0 0 0
+    0 0 1.25 -2.35 -1.3
+    0 0 -1.25 2.35 1.3"
+      ctrl="
+    0 0 1.25 -2.35 -1.3
+    0 0 -1.25 2.35 1.3"/>
+  </keyframe>
+</mujoco>

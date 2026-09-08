@@ -1,0 +1,9 @@
+<mujoco>
+  <sensor>
+    <!-- Full-plant gait sensing: toe + heel spheres (not the sole box). -->
+    <contact name="left_foot_toe_floor_found" geom1="left_foot_toe" geom2="floor" reduce="mindist" num="1" data="found"/>
+    <contact name="left_foot_heel_floor_found" geom1="left_foot_heel" geom2="floor" reduce="mindist" num="1" data="found"/>
+    <contact name="right_foot_toe_floor_found" geom1="right_foot_toe" geom2="floor" reduce="mindist" num="1" data="found"/>
+    <contact name="right_foot_heel_floor_found" geom1="right_foot_heel" geom2="floor" reduce="mindist" num="1" data="found"/>
+  </sensor>
+</mujoco>
