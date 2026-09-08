@@ -1,2 +1,41 @@
-build/*
+build/
+out/
+tmp/
+rte/
+.cmsis/
+.clangd
+DebugConfig/
+
+# VS Code: по умолчанию игнорируем всё, кроме файлов сборки/отладки
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/tasks.json.d/
+
+# CMSIS-Toolbox generated metadata (пересоздаётся командой cbuild)
+F407_FC.cbuild-idx.yml
+F407_FC.cbuild-pack.yml
+
 *.log
+build_log.txt
+JLinkLog.txt
+JLinkSettings.ini
+EventRecorderStub.scvd
+
+# Временные/кэш-файлы инструментов
+*.bak
+*.tmp
+*.cache
+
+# Артефакт сборки (создаётся post-build: fromelf --bin)
+*.bin
+*.axf
+*.hex
+*.map
+
+# Пользовательские/локальные файлы Keil uVision (не нужны в репозитории)
+*.uvguix.*
+*.uvoptx
+*.uvopt
+*.uvgui.user
+*.saved_uv4
