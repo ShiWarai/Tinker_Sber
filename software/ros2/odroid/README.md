@@ -42,6 +42,7 @@ source ~/ws/install/setup.bash
 - `tinker_description`: URDF model, meshes, and RViz launch.
 - `motor_control`: Motor control node and related logic.
 - `hardware_msg`: Custom message definitions used by the system.
+- `spi4stm`: низкоуровневый SPI-мост к STM32 (CMake, не ament-пакет). Раньше дублировался как `hardware_task/` в корне репозитория — каноничный путь только здесь.
 
 ## Run
 
