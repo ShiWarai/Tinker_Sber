@@ -51,15 +51,15 @@ Tinker/           # Директория проекта
 - `main`
   - `dev`
     - `dev-assemble`
-    - `dev-software`
-      - `dev-software-docker`
-      - `dev-software-ros2`
-        - `dev-software-ros2-gui`
-        - `dev-software-ros2-node`
-      - `dev-software-sim`
-        - `dev-software-isaac`
-        - `dev-software-mujoco`
-      - `dev-software-firmware`
+    - `dev-software-docker`
+    - `dev-software-ros2`
+      - `dev-software-ros2-gui`
+      - `dev-software-ros2-node`
+    - `dev-software-sim2sim`
+    - `dev-software-mujoco`
+    - `dev-software-firmware`
+
+  > Ветка `dev-software` архивирована в тег `archive/dev-software-2026-02` и больше не используется как промежуточный узел. Рабочие ветки sim2sim и mujoco сливаются напрямую в `dev`.
 
 - **`main`** - содержит последнюю стабильную сборку проекта
 
