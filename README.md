@@ -143,3 +143,51 @@ bilibili:
 [Другие ролики](https://youtu.be/ASK_Aj-35oE)
 
 ---
+
+## Архивные теги (`archive/*`)
+
+Удалённые ветки сохранены аннотированными тегами. Восстановить ветку:
+
+```bash
+git checkout -b <имя-ветки> archive/<имя-тега>
+```
+
+### `software/` — ROS 2, sim, inference
+
+| Тег | Бывшая ветка | Tip | Содержимое |
+|---|---|---|---|
+| `archive/ros2-node-unified_messages` | `ros2-node/unified_messages` | `07e6bfb` | `motor_control`, unified `tinker_msgs` |
+| `archive/dev-software-ros2-unified` | `dev-software-ros2-unified` | `232ec66` | интеграция ROS2-стека в `software/ros2/src/` |
+| `archive/ros2-gui-unified_messages` | `ros2-gui/unified_messages` | `c3ad921` | `tinker_gui`, `tinker_joy` |
+| `archive/dev-software-ros2-gui-buttons` | `dev-software-ros2-gui-buttons` | `867b7a0` | `button_control` |
+| `archive/dev-software-ros2-laptop-node` | `dev-software-ros2-laptop-node` | `4a382eb` | `test_talker` |
+| `archive/dev-software-mujoco` | `dev-software-mujoco` | `8423e3f` | MuJoCo Playground, `export_inference` |
+| `archive/dev-inf` | `dev-inf` | `a6c179f` | docker inference + sim2sim (→ `software/sim/legacy/dev-inf/`) |
+| `archive/dev-software-sim2sim` | `dev-software-sim2sim` | `ea45f40` | docker sim2sim (#18), подмножество `dev-inf` |
+| `archive/dev-software-simGym` | `dev-software-simGym` | `bc98cb8` | Isaac Gym + Docker (`software/sim/gym/`) |
+| `archive/dev-software-2026-02` | `dev-software` | `a6c179f` | umbrella-ветка (feb 2026) |
+| `archive/dev-software-controller` | `dev-software-controller` | `f77642b` | docker inference controller (step 1) |
+
+### Сборка, прошивка, CAD
+
+| Тег | Бывшая ветка | Tip | Содержимое |
+|---|---|---|---|
+| `archive/assemble` | `assemble` | `c5d1924` | инструкция сборки → сейчас `dev-assemble` |
+| `archive/3d_models` | `3d_models` | `c5d1924` | CAD / модели → сейчас `dev-assemble-3d_models` |
+| `archive/dev-firmware` | `dev-firmware` | `c5d1924` | прошивка → сейчас `dev-software-firmware` |
+| `archive/dev-firmware-freertos` | `dev-firmware-freertos` | `1050e49` | FreeRTOS-прошивка |
+| `archive/dev-firmware-opensource` | `dev-firmware-opensource` | `f97bf9c` | opensource-прошивка |
+| `archive/dev-ros2-DmitryTorov` | `dev-ros2-DmitryTorov` | `70d85e6` | ранний `tinker_joy` / GUI (до unified) |
+
+### Прочие (legacy)
+
+| Тег | Бывшая ветка | Tip |
+|---|---|---|
+| `archive/docker_jetson_nano` | `docker_jetson_nano` | `f526f31` |
+| `archive/docker_notebook_budkhovskaia` | `docker_notebook_budkhovskaia` | `6793c70` |
+| `archive/docker_rl` | `docker_rl` | `b19329c` |
+| `archive/pc_usage_without_docker` | `pc_usage_without_docker` | `1d25123` |
+| `archive/Chellenge-Tinker` | `Chellenge-Tinker` | `4558d90` |
+| `archive/DzirtH-patch-1` | `DzirtH-patch-1` | `0f2d051` |
+
+---
