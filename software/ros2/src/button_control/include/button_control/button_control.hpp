@@ -75,6 +75,7 @@ private:
     void updateSmoothMotion();
     void beginSmoothMotionToTargets(const std::array<float, 10>& targets, PoseMotionKind pose_motion);
     void publishControlCmdForAllMotors(uint8_t cmd);
+    void publishZeroGainsCmd();
 
     static float interpolate(float start, float target, float progress, bool smooth = true);
 
