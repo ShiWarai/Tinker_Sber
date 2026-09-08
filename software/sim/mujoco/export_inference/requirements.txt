@@ -1,0 +1,6 @@
+mujoco>=3.3.0
+numpy>=1.26
+onnxruntime>=1.17
+PyYAML>=6.0
+scipy>=1.11
+pynput>=1.7

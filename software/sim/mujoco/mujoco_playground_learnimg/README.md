@@ -15,7 +15,7 @@ pip install -e ".[cuda]"   # or: pip install -e .
 train-jax-ppo --env_name BDJoystickFlatTerrain --impl jax --use_tb
 ```
 
-See also `learning/train_jax_ppo.py` and the `playground_bd/` helpers in the parent monorepo if present.
+See also `learning/train_jax_ppo.py` and `../export_inference/` for sim2sim inference over ROS 2.
 
 ## Layout
 
