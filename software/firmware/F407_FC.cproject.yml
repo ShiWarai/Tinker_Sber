@@ -1,0 +1,149 @@
+project:
+  rte:
+    base-dir: rte
+  packs:
+    - pack: Keil::ARM_Compiler@^1.6.3
+    - pack: ARM::CMSIS@^6.2.0
+    - pack: Keil::STM32F4xx_DFP@^2.15.0
+    - pack: ARM::CMSIS-NN@^4.0.0
+  setups:
+    - setup: Options for TinkerFirmware
+      processor:
+        fpu: sp
+      add-path:
+        - include
+        - include/app
+        - include/drivers
+        - include/math
+        - include/sensors
+        - include/servos
+        - include/system
+        - build
+        - lib/STM32F4xx_StdPeriph_Driver/inc
+        - lib/CMSIS/ST/STM32F4xx/Include
+        - lib/DSP/Include
+        - lib/DSP
+      debug: "on"
+      define:
+        - USE_STDPERIPH_DRIVER
+        - STM32F40_41xxx
+        - ARM_MATH_CM4
+        - ARM_MATH_MATRIX_CHECK
+        - ARM_MATH_ROUNDING
+        - __FPU_USED: 1U
+        - __FPU_PRESENT: 1U
+        - __MICROLIB
+      define-asm:
+        - __MICROLIB
+      misc:
+        - C-CPP:
+            - -flto
+            - -fno-rtti
+            - -funsigned-char
+            - -fshort-enums
+            - -fshort-wchar
+            - -ffunction-sections
+            - -w
+          CPP:
+            - -xc++
+            - -std=c++11
+            - -fno-exceptions
+          ASM:
+            - -masm=auto
+          Link:
+            - --library_type=microlib
+            - --map
+            - --load_addr_map_info
+            - --xref
+            - --callgraph
+            - --symbols
+            - --info sizes
+            - --info totals
+            - --info unused
+            - --info veneers
+            - --lto
+            - --strict
+            - --summary_stderr
+            - --info summarysizes
+  linker:
+    - script: F407_FC_TinkerFirmware.sct
+  output:
+    type:
+      - elf
+      - hex
+  groups:
+    - group: System
+      misc:
+        - CPP:
+            - -xc++
+            - -fno-exceptions
+      files:
+        - file: include/include.h
+        - file: src/app/main.c
+        - file: src/app/scheduler.c
+        - file: src/app/init.c
+        - file: src/app/stm32f4xx_it.c
+        - file: src/system/sys.c
+        - file: src/system/delay.c
+    - group: Drivers
+      files:
+        - file: src/drivers/Custom_SPI_Device.c
+        - file: src/drivers/spi.c
+        - file: src/drivers/flash.c
+        - file: src/drivers/flash_w25.c
+        - file: src/drivers/time.c
+        - file: src/drivers/beep.c
+        - file: src/drivers/dma.c
+        - file: src/drivers/led_fc.c
+        - file: src/drivers/watch_dog.c
+        - file: src/drivers/wsled_l.c
+    - group: Libraries
+      files:
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/misc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c
+        - file: lib/CMSIS/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c
+        - file: lib/STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c
+        - file: lib/CMSIS/ST/STM32F4xx/Source/Templates/arm/startup_stm32f4xx.s
+          misc:
+            - ASM:
+                - -masm=auto
+                - -x
+                - assembler
+    - group: Math&Fushion
+      files:
+        - file: include/math/gait_math.h
+        - file: src/drivers/rng.c
+        - file: src/math/common_math.c
+        - file: src/math/RT_math.c
+        - file: src/math/fliter_math.c
+        - file: lib/DSP/arm_cortexM4lf_math.lib
+    - group: Motor_Link
+      files:
+        - file: src/drivers/mit_link.c
+        - file: include/math/base_struct.h
+    - group: Communication
+      files:
+        - file: src/drivers/usart_fc.c
+        - file: src/drivers/can.c
+    - group: Sensor
+      files:
+        - file: src/sensors/imu.c
+        - file: src/sensors/mems.c
+        - file: src/drivers/icm20602.c
+  components:
+    - component: ARM::CMSIS:CORE
+    - component: Keil::Compiler&ARM Compiler:I/O:STDOUT&ITM
+

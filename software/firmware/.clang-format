@@ -1,0 +1,19 @@
+# Style aligned with existing firmware (tabs, braces on new line for blocks).
+# Use with extension xaver.clang-format or CLI: clang-format -i <file>
+---
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: ForIndentation
+ContinuationIndentWidth: 4
+ColumnLimit: 120
+BreakBeforeBraces: Allman
+PointerAlignment: Right
+SortIncludes: false
+ReflowComments: true
+AlignConsecutiveMacros: None
+SpaceAfterCStyleCast: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false

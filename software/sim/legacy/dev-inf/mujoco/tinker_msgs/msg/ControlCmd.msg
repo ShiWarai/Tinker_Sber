@@ -1,0 +1,11 @@
+#uint8 ENABLE = 0xFC
+uint8 ENABLE = 252
+#uint8 DISABLE = 0xFD
+uint8 DISABLE = 253
+#uint8 SET_ZERRO_POSITION = 0xFE
+uint8 SET_ZERRO_POSITION = 254
+#uint8 CLEAR_ERROR = 0xFB
+uint8 CLEAR_ERROR = 251
+
+uint8 motor_id
+uint8 cmd

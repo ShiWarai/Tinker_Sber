@@ -1,0 +1,3 @@
+# Исходники C: CRLF — удобно для Keil на Windows (меньше «шума» в diff с локальными файлами).
+*.c text eol=crlf
+*.h text eol=crlf
